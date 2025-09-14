@@ -4,8 +4,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  // Include both lowercase and uppercase to satisfy strict CORS checks in some environments
   'Access-Control-Allow-Headers': 'authorization, Authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
 serve(async (req) => {
@@ -146,11 +146,11 @@ serve(async (req) => {
     );
   } catch (error) {
     const err = error as any;
-    console.error('Error creating Stripe Connect account:', err);
-    const message = err?.message || (typeof err === 'string' ? err : 'Unknown error');
-    const stepInfo = (typeof err === 'object' && 'step' in err) ? (err as any).step : undefined;
+    const message = err?.raw?.message || err?.message || (typeof err === 'string' ? err : 'Unknown error');
+    const code = err?.raw?.code || err?.code;
+    console.error('Error creating Stripe Connect account:', { message, code, step, err });
     return new Response(
-      JSON.stringify({ error: message, step }),
+      JSON.stringify({ error: message, code, step }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
