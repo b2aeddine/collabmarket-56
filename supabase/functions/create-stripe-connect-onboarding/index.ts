@@ -82,12 +82,6 @@ serve(async (req) => {
           card_payments: { requested: true },
           transfers: { requested: true },
         },
-        // Controller is required for Custom accounts on newer API versions
-        // Cast as any to avoid type mismatch between SDK versions
-        controller: {
-          stripe_dashboard: { type: 'none' },
-          fees: { payer: 'application' },
-        } as any,
         settings: {
           payouts: { schedule: { interval: 'manual' } },
         },
