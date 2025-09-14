@@ -1,0 +1,21 @@
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+interface FormSectionProps {
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+  className?: string;
+}
+
+export const FormSection = ({ title, description, children, className }: FormSectionProps) => {
+  return (
+    <Card className={className}>
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+        {description && <p className="text-sm text-gray-600">{description}</p>}
+      </CardHeader>
+      <CardContent>{children}</CardContent>
+    </Card>
+  );
+};

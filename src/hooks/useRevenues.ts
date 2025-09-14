@@ -1,0 +1,153 @@
+
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+
+export const useRevenues = () => {
+  const { data: revenues, isLoading, error } = useQuery({
+    queryKey: ['revenues'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('revenues')
+        .select(`
+          *,
+          orders(
+            id,
+            total_amount,
+            merchant:profiles!orders_merchant_id_fkey(first_name, last_name)
+          )
+        `)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  return { revenues, isLoading, error };
+};
+
+export const useAvailableBalance = () => {
+  const { data: balance, isLoading, error } = useQuery({
+    queryKey: ['available-balance'],
+    queryFn: async () => {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) return 0;
+
+      // Pour l'instant, on calcule le solde disponible comme la somme des revenus avec status 'available'
+      const { data, error } = await supabase
+        .from('revenues')
+        .select('net_amount')
+        .eq('influencer_id', user.user.id)
+        .eq('status', 'available');
+      
+      if (error) throw error;
+      
+      const total = data?.reduce((sum, revenue) => sum + Number(revenue.net_amount), 0) || 0;
+      return total;
+    },
+  });
+
+  return { balance, isLoading, error };
+};
+
+export const useBankAccounts = () => {
+  const { data: bankAccounts, isLoading, error } = useQuery({
+    queryKey: ['bank-accounts'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('bank_accounts')
+        .select('*')
+        .eq('is_active', true)
+        .order('is_default', { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  return { bankAccounts, isLoading, error };
+};
+
+export const useCreateBankAccount = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (bankData: {
+      iban: string;
+      bic: string;
+      account_holder: string;
+      bank_name: string;
+      is_default?: boolean;
+    }) => {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const { data, error } = await supabase
+        .from('bank_accounts')
+        .insert([{
+          ...bankData,
+          user_id: user.id
+        }])
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bank-accounts'] });
+    },
+  });
+};
+
+export const useCreateWithdrawal = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (withdrawalData: {
+      bank_account_id: string;
+      amount: number;
+    }) => {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const { data, error } = await supabase
+        .from('withdrawals')
+        .insert([{
+          ...withdrawalData,
+          influencer_id: user.id
+        }])
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['available-balance'] });
+      queryClient.invalidateQueries({ queryKey: ['withdrawals'] });
+    },
+  });
+};
+
+export const useWithdrawals = () => {
+  const { data: withdrawals, isLoading, error } = useQuery({
+    queryKey: ['withdrawals'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('withdrawals')
+        .select(`
+          *,
+          bank_accounts(bank_name, account_holder)
+        `)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  return { withdrawals, isLoading, error };
+};
