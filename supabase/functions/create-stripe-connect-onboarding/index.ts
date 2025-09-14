@@ -4,7 +4,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  // Include both lowercase and uppercase to satisfy strict CORS checks in some environments
+  'Access-Control-Allow-Headers': 'authorization, Authorization, x-client-info, apikey, content-type',
 };
 
 serve(async (req) => {
@@ -30,7 +31,7 @@ serve(async (req) => {
     );
 
     // Get authenticated user
-    const authHeader = req.headers.get('Authorization');
+    const authHeader = req.headers.get('Authorization') || req.headers.get('authorization');
     if (!authHeader) {
       console.error('Missing Authorization header');
       return new Response(JSON.stringify({ error: 'Missing Authorization header' }), {

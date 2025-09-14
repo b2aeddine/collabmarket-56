@@ -23,8 +23,7 @@ export const useStripeConnect = () => {
       const token = session.data.session?.access_token;
       if (!token) throw new Error('Vous devez être connecté pour configurer Stripe');
       const { data, error } = await supabase.functions.invoke('create-stripe-connect-onboarding', {
-        body: { country, redirectOrigin: window.location.origin },
-        headers: { Authorization: `Bearer ${token}` }
+        body: { country, redirectOrigin: window.location.origin }
       });
       if (error) throw error;
       return data;
