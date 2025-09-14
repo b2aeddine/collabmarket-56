@@ -12,15 +12,19 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
-
+  let step = 'start';
   try {
     console.log('Starting Stripe Connect onboarding...');
     
+    step = 'parse_body';
     const { country = 'FR', redirectOrigin } = await req.json();
     console.log('Request body:', { country, redirectOrigin });
 
     // Initialize Stripe
-    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
+    step = 'init_stripe';
+    const secret = Deno.env.get('STRIPE_SECRET_KEY') || '';
+    if (!secret) throw new Error('Missing STRIPE_SECRET_KEY');
+    const stripe = new Stripe(secret, {
       apiVersion: '2023-10-16',
     });
 
@@ -141,9 +145,12 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error('Error creating Stripe Connect account:', error);
+    const err = error as any;
+    console.error('Error creating Stripe Connect account:', err);
+    const message = err?.message || (typeof err === 'string' ? err : 'Unknown error');
+    const stepInfo = (typeof err === 'object' && 'step' in err) ? (err as any).step : undefined;
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: message, step }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,

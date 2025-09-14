@@ -41,7 +41,8 @@ export const useStripeConnect = () => {
     },
     onError: (error: any) => {
       console.error('Error creating onboarding session:', error);
-      const details = error?.context?.error || error?.context || error?.message || 'Erreur inconnue';
+      const raw = error?.context?.error ?? error?.context ?? error?.message ?? error;
+      const details = typeof raw === 'string' ? raw : (() => { try { return JSON.stringify(raw); } catch { return String(raw); } })();
       toast.error(`Erreur lors de la création de la session d'intégration: ${details}`);
     },
   });
