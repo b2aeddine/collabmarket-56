@@ -23,7 +23,7 @@ export const useStripeConnect = () => {
       const token = session.data.session?.access_token;
       if (!token) throw new Error('Vous devez être connecté pour configurer Stripe');
       const { data, error } = await supabase.functions.invoke('create-stripe-connect-onboarding', {
-        body: { country, redirectOrigin: window.location.origin },
+        body: { country, redirectOrigin: window.location.origin, refreshPath: '/onboarding/refresh', returnPath: '/influencer-dashboard' },
         headers: { Authorization: `Bearer ${token}` }
       });
       if (error) throw error;
@@ -41,8 +41,14 @@ export const useStripeConnect = () => {
     },
     onError: (error: any) => {
       console.error('Error creating onboarding session:', error);
-      const raw = error?.context?.error ?? error?.context ?? error?.message ?? error;
-      const details = typeof raw === 'string' ? raw : (() => { try { return JSON.stringify(raw); } catch { return String(raw); } })();
+      const message = error?.message || error?.name || 'Erreur inconnue';
+      const serverErr = error?.error || error?.context?.error || error?.context?.response || null;
+      const step = error?.context?.step || error?.step;
+      let details = message;
+      if (serverErr) {
+        try { details += ` | ${typeof serverErr === 'string' ? serverErr : JSON.stringify(serverErr)}`; } catch {}
+      }
+      if (step) details += ` | étape: ${step}`;
       toast.error(`Erreur lors de la création de la session d'intégration: ${details}`);
     },
   });

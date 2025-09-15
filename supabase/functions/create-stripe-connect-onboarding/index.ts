@@ -15,10 +15,10 @@ serve(async (req) => {
   let step = 'start';
   try {
     console.log('Starting Stripe Connect onboarding...');
-    
+    // Initialize request body
     step = 'parse_body';
-    const { country = 'FR', redirectOrigin } = await req.json();
-    console.log('Request body:', { country, redirectOrigin });
+    const { country = 'FR', redirectOrigin, refreshPath = '/onboarding/refresh', returnPath = '/influencer-dashboard' } = await req.json();
+    console.log('Request body:', { country, redirectOrigin, refreshPath, returnPath });
 
     // Initialize Stripe
     step = 'init_stripe';
@@ -76,14 +76,12 @@ serve(async (req) => {
       stripeAccountId = existingAccount.stripe_account_id;
       console.log('Using existing Stripe account:', stripeAccountId);
     } else {
-      // Create new Stripe Connect Custom account for individual influencers
+      // Create new Stripe Connect Express account for individual influencers
       const stripeAccount = await stripe.accounts.create({
-        type: 'custom',
+        type: 'express',
         country,
         email: user.email,
-        business_type: 'individual',
         capabilities: {
-          card_payments: { requested: true },
           transfers: { requested: true },
         },
         settings: {
@@ -123,8 +121,8 @@ serve(async (req) => {
     // Create account link for onboarding
     const accountLink = await stripe.accountLinks.create({
       account: stripeAccountId,
-      refresh_url: `${origin}/influencer-dashboard?setup=refresh`,
-      return_url: `${origin}/influencer-dashboard?setup=complete`,
+      refresh_url: `${origin}${refreshPath}`,
+      return_url: `${origin}${returnPath}`,
       type: 'account_onboarding',
     });
 
