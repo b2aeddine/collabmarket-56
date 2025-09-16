@@ -50,24 +50,18 @@ const PaymentButton = ({ orderId, amount, influencerId, description, disabled, c
   };
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-2 text-sm text-amber-600 bg-amber-50 p-2 rounded-md">
-        <span className="font-medium">⚠️ MODE TEST</span>
-        <span>Paiement fictif - Utilisez 4242 4242 4242 4242</span>
-      </div>
-      <Button
-        onClick={handlePayment}
-        disabled={disabled || stripePayment.isPending}
-        className={`bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 ${className}`}
-      >
-        {stripePayment.isPending ? (
-          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-        ) : (
-          <CreditCard className="w-4 h-4 mr-2" />
-        )}
-        {stripePayment.isPending ? 'Redirection...' : 'Payer avec Stripe (Test)'}
-      </Button>
-    </div>
+    <Button
+      onClick={handlePayment}
+      disabled={disabled || stripePayment.isPending}
+      className={`bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 ${className}`}
+    >
+      {stripePayment.isPending ? (
+        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+      ) : (
+        <CreditCard className="w-4 h-4 mr-2" />
+      )}
+      {stripePayment.isPending ? 'Redirection...' : 'Payer avec Stripe'}
+    </Button>
   );
 };
 
