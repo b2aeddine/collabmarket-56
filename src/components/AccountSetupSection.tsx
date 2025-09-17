@@ -289,6 +289,11 @@ const AccountSetupSection = () => {
                     )}
                   </div>
 
+                  {/* Debug info - to be removed */}
+                  <div className="text-xs text-gray-400 mb-2 p-2 bg-gray-50 rounded">
+                    Debug: hasAccount={String(accountStatus?.hasAccount)}, onboardingCompleted={String(accountStatus?.onboardingCompleted)}
+                  </div>
+
                   {(!accountStatus?.hasAccount || !accountStatus?.onboardingCompleted) && (
                     <div className="space-y-3">
                       <Button 
