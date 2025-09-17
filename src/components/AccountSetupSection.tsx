@@ -122,6 +122,19 @@ const AccountSetupSection = () => {
       };
     }
 
+    // Utiliser les informations du profil utilisateur comme pour Stripe Identity
+    const isStripeConnectActive = user?.is_stripe_connect_active;
+    const stripeConnectStatus = user?.stripe_connect_status;
+
+    if (isStripeConnectActive && stripeConnectStatus === 'active') {
+      return {
+        status: 'active',
+        label: 'Configuré',
+        color: 'bg-green-100 text-green-800',
+        icon: CheckCircle
+      };
+    }
+
     if (!accountStatus?.hasAccount) {
       return {
         status: 'no_account',

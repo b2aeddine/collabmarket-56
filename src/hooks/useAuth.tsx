@@ -27,6 +27,10 @@ export interface User {
   stripe_identity_status?: string;
   stripe_identity_url?: string;
   identity_status?: string;
+  // Stripe Connect fields
+  stripe_connect_status?: string;
+  stripe_connect_account_id?: string;
+  is_stripe_connect_active?: boolean;
   // Add aliases for compatibility with EditProfileModal
   firstName?: string;
   lastName?: string;
@@ -75,6 +79,9 @@ export const useAuth = () => {
         stripe_identity_status: data.stripe_identity_status,
         stripe_identity_url: data.stripe_identity_url,
         identity_status: data.identity_status,
+        stripe_connect_status: data.stripe_connect_status,
+        stripe_connect_account_id: data.stripe_connect_account_id,
+        is_stripe_connect_active: data.is_stripe_connect_active,
         firstName: data.first_name,
         lastName: data.last_name,
         gender: undefined,

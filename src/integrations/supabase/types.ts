@@ -820,12 +820,15 @@ export type Database = {
           is_admin: boolean | null
           is_banned: boolean | null
           is_profile_public: boolean | null
+          is_stripe_connect_active: boolean | null
           is_verified: boolean | null
           last_name: string | null
           phone: string | null
           profile_share_count: number | null
           profile_views: number | null
           role: string
+          stripe_connect_account_id: string | null
+          stripe_connect_status: string | null
           stripe_identity_session_id: string | null
           stripe_identity_status: string | null
           stripe_identity_url: string | null
@@ -850,12 +853,15 @@ export type Database = {
           is_admin?: boolean | null
           is_banned?: boolean | null
           is_profile_public?: boolean | null
+          is_stripe_connect_active?: boolean | null
           is_verified?: boolean | null
           last_name?: string | null
           phone?: string | null
           profile_share_count?: number | null
           profile_views?: number | null
           role: string
+          stripe_connect_account_id?: string | null
+          stripe_connect_status?: string | null
           stripe_identity_session_id?: string | null
           stripe_identity_status?: string | null
           stripe_identity_url?: string | null
@@ -880,12 +886,15 @@ export type Database = {
           is_admin?: boolean | null
           is_banned?: boolean | null
           is_profile_public?: boolean | null
+          is_stripe_connect_active?: boolean | null
           is_verified?: boolean | null
           last_name?: string | null
           phone?: string | null
           profile_share_count?: number | null
           profile_views?: number | null
           role?: string
+          stripe_connect_account_id?: string | null
+          stripe_connect_status?: string | null
           stripe_identity_session_id?: string | null
           stripe_identity_status?: string | null
           stripe_identity_url?: string | null

@@ -14,6 +14,8 @@ export const useStripeConnect = () => {
       if (error) throw error;
       return data;
     },
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
   });
 
   // Create onboarding session
