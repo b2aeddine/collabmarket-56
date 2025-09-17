@@ -93,6 +93,25 @@ serve(async (req) => {
       .update(updateData)
       .eq('user_id', user.id);
 
+    // Also update the user profile with Stripe Connect status (like Stripe Identity does)
+    const profileUpdateData = {
+      stripe_connect_status: account.charges_enabled ? 'active' : 'pending',
+      stripe_connect_account_id: stripeAccount.stripe_account_id,
+      is_stripe_connect_active: account.charges_enabled && account.details_submitted,
+      updated_at: new Date().toISOString()
+    };
+
+    const { error: profileUpdateError } = await supabaseService
+      .from('profiles')
+      .update(profileUpdateData)
+      .eq('id', user.id);
+
+    if (profileUpdateError) {
+      console.error('Profile update error:', profileUpdateError);
+    } else {
+      console.log('✅ Profile updated with Stripe Connect status:', account.charges_enabled ? 'active' : 'pending');
+    }
+
     const response = {
       hasAccount: true,
       accountId: stripeAccount.stripe_account_id,
