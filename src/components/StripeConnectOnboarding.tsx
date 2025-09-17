@@ -15,7 +15,8 @@ import {
   Building,
   Loader2,
   Euro,
-  Info
+  Info,
+  RefreshCcw
 } from 'lucide-react';
 import { useStripeConnect } from '@/hooks/useStripeConnect';
 
@@ -35,6 +36,7 @@ const StripeConnectOnboarding = () => {
     accountHolder: '',
     country: 'FR'
   });
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const getStatusInfo = () => {
     if (isLoadingStatus) {
@@ -87,7 +89,18 @@ const StripeConnectOnboarding = () => {
     startOnboarding('FR');
   };
 
-  const handleBankFormSubmit = async (e: React.FormEvent) => {
+  const handleRefresh = async () => {
+    try {
+      setIsRefreshing(true);
+      const result = await refetchAccountStatus();
+      const data = result.data as any;
+      if (data?.onboardingCompleted && data?.chargesEnabled) {
+        // Success toast handled elsewhere; keep it light here
+      }
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
     e.preventDefault();
     if (!bankForm.iban || !bankForm.accountHolder) {
       return;
@@ -129,18 +142,29 @@ const StripeConnectOnboarding = () => {
 
         {/* Action Button */}
         {(!accountStatus?.hasAccount || !accountStatus?.onboardingCompleted) && (
-          <Button 
-            onClick={handleStartOnboarding}
-            disabled={isLoading}
-            className="w-full bg-gradient-to-r from-pink-500 to-orange-500 hover:from-pink-600 hover:to-orange-600 text-white font-medium py-3 rounded-lg"
-          >
-            {isLoading ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            ) : (
-              <ExternalLink className="w-4 h-4 mr-2" />
-            )}
-            Finaliser la configuration
-          </Button>
+          <div className="space-y-3">
+            <Button 
+              onClick={handleStartOnboarding}
+              disabled={isLoading}
+              className="w-full bg-gradient-to-r from-pink-500 to-orange-500 hover:from-pink-600 hover:to-orange-600 text-white font-medium py-3 rounded-lg"
+            >
+              {isLoading ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <ExternalLink className="w-4 h-4 mr-2" />
+              )}
+              Finaliser la configuration
+            </Button>
+            <Button 
+              onClick={handleRefresh}
+              variant="outline"
+              disabled={isRefreshing || isLoadingStatus}
+              className="w-full"
+            >
+              <RefreshCcw className="w-4 h-4 mr-2" />
+              {isRefreshing ? 'Actualisation...' : 'Actualiser le statut'}
+            </Button>
+          </div>
         )}
 
         {accountStatus?.hasAccount && accountStatus?.onboardingCompleted && !showBankForm && (

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Shield, CreditCard, CheckCircle, AlertCircle, Clock, ExternalLink, Loader2, Building } from 'lucide-react';
+import { Shield, CreditCard, CheckCircle, AlertCircle, Clock, ExternalLink, Loader2, Building, RefreshCcw } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useStripeConnect } from '@/hooks/useStripeConnect';
 import { useStripeIdentity } from '@/hooks/useStripeIdentity';
@@ -17,6 +17,7 @@ const AccountSetupSection = () => {
     isLoading: stripeConnectLoading, 
     startOnboarding, 
     updateBankDetails, 
+    refetchAccountStatus,
   } = useStripeConnect();
   const { createIdentitySession, isLoading: identityLoading } = useStripeIdentity();
   const { mutate: checkIdentityStatus, isPending: isCheckingIdentityStatus } = useCheckStripeIdentityStatus();
@@ -28,6 +29,7 @@ const AccountSetupSection = () => {
     accountHolder: '',
     country: 'FR'
   });
+  const [isRefreshingConnect, setIsRefreshingConnect] = useState(false);
 
   // Gérer le retour de Stripe et les messages
   useEffect(() => {
@@ -168,6 +170,27 @@ const AccountSetupSection = () => {
     startOnboarding('FR');
   };
 
+  const handleRefreshConnectStatus = async () => {
+    try {
+      setIsRefreshingConnect(true);
+      toast.info('Actualisation du statut Stripe Connect...');
+      const result = await refetchAccountStatus();
+      const data = result.data as any;
+      if (data?.onboardingCompleted && data?.chargesEnabled) {
+        toast.success('Compte Stripe configuré et activé ✅');
+      } else if (data?.needsOnboarding || !data?.onboardingCompleted) {
+        toast.warning('Configuration incomplète — poursuivez l’onboarding Stripe');
+      } else {
+        toast.success('Statut mis à jour');
+      }
+    } catch (error: any) {
+      console.error('Refresh status error:', error);
+      toast.error(error.message || 'Erreur lors de l’actualisation du statut');
+    } finally {
+      setIsRefreshingConnect(false);
+    }
+  };
+
   const handleBankFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!bankForm.iban || !bankForm.accountHolder) {
@@ -177,6 +200,7 @@ const AccountSetupSection = () => {
     await updateBankDetails(bankForm);
     setShowBankForm(false);
     setBankForm({ iban: '', accountHolder: '', country: 'FR' });
+  };
   };
 
   const identityStatus = getIdentityStatus();
@@ -267,18 +291,29 @@ const AccountSetupSection = () => {
                   </div>
 
                   {(!accountStatus?.hasAccount || !accountStatus?.onboardingCompleted) && (
-                    <Button 
-                      onClick={handleStartOnboarding}
-                      disabled={stripeConnectLoading}
-                      className="w-full bg-gradient-to-r from-pink-500 to-orange-500 hover:from-pink-600 hover:to-orange-600 text-white font-medium py-3 rounded-lg"
-                    >
-                      {stripeConnectLoading ? (
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      ) : (
-                        <ExternalLink className="w-4 h-4 mr-2" />
-                      )}
-                      Finaliser la configuration
-                    </Button>
+                    <div className="space-y-3">
+                      <Button 
+                        onClick={handleStartOnboarding}
+                        disabled={stripeConnectLoading}
+                        className="w-full bg-gradient-to-r from-pink-500 to-orange-500 hover:from-pink-600 hover:to-orange-600 text-white font-medium py-3 rounded-lg"
+                      >
+                        {stripeConnectLoading ? (
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                          <ExternalLink className="w-4 h-4 mr-2" />
+                        )}
+                        Finaliser la configuration
+                      </Button>
+                      <Button 
+                        onClick={handleRefreshConnectStatus}
+                        variant="outline"
+                        disabled={isRefreshingConnect || isLoadingStatus}
+                        className="w-full"
+                      >
+                        <RefreshCcw className="w-4 h-4 mr-2" />
+                        {isRefreshingConnect ? 'Actualisation...' : 'Actualiser le statut'}
+                      </Button>
+                    </div>
                   )}
 
                   {accountStatus?.hasAccount && accountStatus?.onboardingCompleted && !showBankForm && (
