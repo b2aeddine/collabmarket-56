@@ -101,6 +101,8 @@ const StripeConnectOnboarding = () => {
       setIsRefreshing(false);
     }
   };
+
+  const handleBankFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!bankForm.iban || !bankForm.accountHolder) {
       return;

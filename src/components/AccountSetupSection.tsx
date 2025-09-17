@@ -201,7 +201,6 @@ const AccountSetupSection = () => {
     setShowBankForm(false);
     setBankForm({ iban: '', accountHolder: '', country: 'FR' });
   };
-  };
 
   const identityStatus = getIdentityStatus();
   const stripeConnectStatus = getStripeConnectStatus();
