@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
 
 export const useStripeConnect = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const { refreshUser } = useAuth();
 
   // Check account status
   const { data: accountStatus, refetch: refetchAccountStatus, isLoading: isLoadingStatus } = useQuery({
@@ -95,12 +97,36 @@ export const useStripeConnect = () => {
     await updateBankAccount.mutateAsync(bankAccount);
   };
 
+  const handleRefreshConnectStatus = async () => {
+    try {
+      toast.info('Actualisation du statut Stripe Connect...');
+      const result = await refetchAccountStatus();
+      const data = result.data as any;
+      
+      // Forcer le rafraîchissement du profil utilisateur après la mise à jour du statut
+      setTimeout(async () => {
+        await refreshUser();
+      }, 1000);
+      
+      if (data?.onboardingCompleted && data?.chargesEnabled) {
+        toast.success('Compte Stripe configuré et activé ✅');
+      } else if (data?.needsOnboarding || !data?.onboardingCompleted) {
+        toast.warning('Configuration incomplète — poursuivez l\'onboarding Stripe');
+      } else {
+        toast.success('Statut mis à jour');
+      }
+    } catch (error: any) {
+      console.error('Refresh status error:', error);
+      toast.error(error.message || 'Erreur lors de l\'actualisation du statut');
+    }
+  };
+
   return {
     accountStatus,
     isLoadingStatus,
     isLoading: isLoading || createOnboardingSession.isPending || updateBankAccount.isPending,
     startOnboarding,
     updateBankDetails,
-    refetchAccountStatus,
+    refetchAccountStatus: handleRefreshConnectStatus,
   };
 };

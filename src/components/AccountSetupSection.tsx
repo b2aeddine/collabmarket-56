@@ -186,19 +186,10 @@ const AccountSetupSection = () => {
   const handleRefreshConnectStatus = async () => {
     try {
       setIsRefreshingConnect(true);
-      toast.info('Actualisation du statut Stripe Connect...');
-      const result = await refetchAccountStatus();
-      const data = result.data as any;
-      if (data?.onboardingCompleted && data?.chargesEnabled) {
-        toast.success('Compte Stripe configuré et activé ✅');
-      } else if (data?.needsOnboarding || !data?.onboardingCompleted) {
-        toast.warning('Configuration incomplète — poursuivez l’onboarding Stripe');
-      } else {
-        toast.success('Statut mis à jour');
-      }
+      await refetchAccountStatus();
     } catch (error: any) {
       console.error('Refresh status error:', error);
-      toast.error(error.message || 'Erreur lors de l’actualisation du statut');
+      toast.error(error.message || 'Erreur lors de l\'actualisation du statut');
     } finally {
       setIsRefreshingConnect(false);
     }

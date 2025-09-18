@@ -92,11 +92,7 @@ const StripeConnectOnboarding = () => {
   const handleRefresh = async () => {
     try {
       setIsRefreshing(true);
-      const result = await refetchAccountStatus();
-      const data = result.data as any;
-      if (data?.onboardingCompleted && data?.chargesEnabled) {
-        // Success toast handled elsewhere; keep it light here
-      }
+      await refetchAccountStatus();
     } finally {
       setIsRefreshing(false);
     }
