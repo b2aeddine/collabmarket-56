@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useStripeConnect } from '@/hooks/useStripeConnect';
 import { useStripeIdentity } from '@/hooks/useStripeIdentity';
 import { useCheckStripeIdentityStatus } from '@/hooks/useCheckStripeIdentityStatus';
+import { useCheckStripeConnectStatus } from '@/hooks/useCheckStripeConnectStatus';
 import { toast } from 'sonner';
 
 const AccountSetupSection = () => {
@@ -21,6 +22,7 @@ const AccountSetupSection = () => {
   } = useStripeConnect();
   const { createIdentitySession, isLoading: identityLoading } = useStripeIdentity();
   const { mutate: checkIdentityStatus, isPending: isCheckingIdentityStatus } = useCheckStripeIdentityStatus();
+  const { mutate: checkConnectStatus, isPending: isCheckingConnectStatus } = useCheckStripeConnectStatus();
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showBankForm, setShowBankForm] = useState(false);
@@ -186,7 +188,17 @@ const AccountSetupSection = () => {
   const handleRefreshConnectStatus = async () => {
     try {
       setIsRefreshingConnect(true);
-      await refetchAccountStatus();
+      
+      // Utiliser la fonction dédiée pour vérifier et synchroniser le statut
+      checkConnectStatus(undefined, {
+        onSuccess: () => {
+          // Rafraîchir le profil utilisateur après la synchronisation
+          setTimeout(async () => {
+            await refreshUser();
+          }, 1000);
+        }
+      });
+      
     } catch (error: any) {
       console.error('Refresh status error:', error);
       toast.error(error.message || 'Erreur lors de l\'actualisation du statut');
@@ -310,11 +322,11 @@ const AccountSetupSection = () => {
                       <Button 
                         onClick={handleRefreshConnectStatus}
                         variant="outline"
-                        disabled={isRefreshingConnect || isLoadingStatus}
+                        disabled={isRefreshingConnect || isLoadingStatus || isCheckingConnectStatus}
                         className="w-full"
                       >
                         <RefreshCcw className="w-4 h-4 mr-2" />
-                        {isRefreshingConnect ? 'Actualisation...' : 'Actualiser le statut'}
+                        {(isRefreshingConnect || isCheckingConnectStatus) ? 'Actualisation...' : 'Actualiser le statut'}
                       </Button>
                     </div>
                   )}
