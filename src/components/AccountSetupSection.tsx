@@ -124,50 +124,22 @@ const AccountSetupSection = () => {
       };
     }
 
-    // Utiliser les informations du profil utilisateur comme pour Stripe Identity
-    const isStripeConnectActive = user?.is_stripe_connect_active;
+    // Utiliser le stripe_connect_status du profil utilisateur
     const stripeConnectStatus = user?.stripe_connect_status;
 
-    if (isStripeConnectActive && stripeConnectStatus === 'active') {
+    if (stripeConnectStatus === 'complete') {
       return {
-        status: 'active',
-        label: 'Configuré',
-        color: 'bg-green-100 text-green-800',
-        icon: CheckCircle
-      };
-    }
-
-    if (!accountStatus?.hasAccount) {
-      return {
-        status: 'no_account',
-        label: 'Configuration incomplète',
-        color: 'bg-orange-100 text-orange-800',
-        icon: AlertCircle
-      };
-    }
-
-    if (!accountStatus.onboardingCompleted) {
-      return {
-        status: 'pending',
-        label: 'Configuration incomplète',
-        color: 'bg-orange-100 text-orange-800',
-        icon: Clock
-      };
-    }
-
-    if (accountStatus.onboardingCompleted && accountStatus.chargesEnabled) {
-      return {
-        status: 'active',
-        label: 'Configuré',
+        status: 'complete',
+        label: 'Configuration terminée',
         color: 'bg-green-100 text-green-800',
         icon: CheckCircle
       };
     }
 
     return {
-      status: 'error',
-      label: 'Problème détecté',
-      color: 'bg-red-100 text-red-800',
+      status: 'incomplete',
+      label: 'Configuration incomplète',
+      color: 'bg-orange-100 text-orange-800',
       icon: AlertCircle
     };
   };
@@ -223,8 +195,8 @@ const AccountSetupSection = () => {
 
   // Vérifier si les deux sont complètement validés
   const isIdentityVerified = identityStatus.status === 'verified';
-  const isStripeConnectActive = stripeConnectStatus.status === 'active';
-  const bothValidated = isIdentityVerified && isStripeConnectActive;
+  const isStripeConnectComplete = stripeConnectStatus.status === 'complete';
+  const bothValidated = isIdentityVerified && isStripeConnectComplete;
 
   // Si les deux sont validés depuis plus de 24h, ne pas afficher la section
   if (bothValidated && user?.created_at) {
@@ -294,18 +266,14 @@ const AccountSetupSection = () => {
                   </div>
 
                   <div className="text-gray-600 mb-6">
-                    {!accountStatus?.hasAccount && (
-                      <p>Votre compte Stripe Connect est créé mais la configuration n'est pas terminée. Finalisez la configuration pour recevoir des paiements.</p>
-                    )}
-                    {accountStatus?.hasAccount && !accountStatus.onboardingCompleted && (
-                      <p>Votre compte Stripe Connect est créé mais la configuration n'est pas terminée. Finalisez la configuration pour recevoir des paiements.</p>
-                    )}
-                    {accountStatus?.onboardingCompleted && accountStatus.chargesEnabled && (
-                      <p>Votre compte Stripe Connect est entièrement configuré et prêt à recevoir des paiements.</p>
+                    {stripeConnectStatus.status === 'complete' ? (
+                      <p>✅ Votre compte Stripe Connect est entièrement configuré et prêt à recevoir des paiements.</p>
+                    ) : (
+                      <p>⚠️ Votre compte Stripe Connect est créé mais la configuration n'est pas terminée. Finalisez la configuration pour recevoir des paiements.</p>
                     )}
                   </div>
 
-                  {(!accountStatus?.hasAccount || !accountStatus?.onboardingCompleted) && (
+                  {stripeConnectStatus.status !== 'complete' && (
                     <div className="space-y-3">
                       <Button 
                         onClick={handleStartOnboarding}

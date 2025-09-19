@@ -21,16 +21,14 @@ export const useCheckStripeConnectStatus = () => {
     onSuccess: (data) => {
       console.log('Stripe Connect status check result:', data);
       
-      if (data.onboardingCompleted && data.chargesEnabled) {
-        toast.success('🎉 Votre compte Stripe Connect est activé !', {
-          description: 'Vous pouvez maintenant recevoir des paiements.'
+      if (data.stripe_status === 'complete') {
+        toast.success('✅ Configuration terminée', {
+          description: 'Votre compte Stripe Connect est maintenant activé.'
         });
-      } else if (data.needsOnboarding) {
+      } else {
         toast.warning('⚠️ Configuration incomplète', {
           description: 'Veuillez finaliser la configuration de votre compte Stripe.'
         });
-      } else {
-        toast.info(`Statut Stripe Connect: ${data.accountStatus || 'en cours'}`);
       }
     },
     onError: (error: any) => {

@@ -51,15 +51,19 @@ serve(async (req) => {
       .single();
 
     if (!stripeAccount?.stripe_account_id) {
+      console.log('No Stripe account ID found for user');
       return new Response(JSON.stringify({ 
         hasAccount: false,
-        needsOnboarding: true 
+        needsOnboarding: true,
+        stripe_status: 'incomplete'
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       });
     }
 
+    console.log('Retrieving Stripe account:', stripeAccount.stripe_account_id);
+    
     // Get account details from Stripe
     const account = await stripe.accounts.retrieve(stripeAccount.stripe_account_id);
     
@@ -72,13 +76,23 @@ serve(async (req) => {
     const hasExternalAccount = externalAccounts.data.length > 0;
     const externalAccount = hasExternalAccount ? externalAccounts.data[0] : null;
 
+    // Déterminer le statut selon les critères exacts
+    const isComplete = account.charges_enabled && account.details_submitted;
+    const stripeStatus = isComplete ? 'complete' : 'incomplete';
+    
+    console.log('Stripe account status:', {
+      charges_enabled: account.charges_enabled,
+      details_submitted: account.details_submitted,
+      final_status: stripeStatus
+    });
+
     // Update our database with current status
     const updateData = {
       account_status: account.charges_enabled ? 'active' : 'pending',
       details_submitted: account.details_submitted,
       charges_enabled: account.charges_enabled,
       payouts_enabled: account.payouts_enabled,
-      onboarding_completed: account.details_submitted && account.charges_enabled,
+      onboarding_completed: isComplete,
       capabilities_transfers: account.capabilities?.transfers?.status === 'active',
       capabilities_card_payments: account.capabilities?.card_payments?.status === 'active',
       external_account_last4: externalAccount?.last4 || null,
@@ -93,11 +107,11 @@ serve(async (req) => {
       .update(updateData)
       .eq('user_id', user.id);
 
-    // Also update the user profile with Stripe Connect status (like Stripe Identity does)
+    // Update the user profile with exact status
     const profileUpdateData = {
-      stripe_connect_status: account.charges_enabled ? 'active' : 'pending',
+      stripe_connect_status: stripeStatus,
       stripe_connect_account_id: stripeAccount.stripe_account_id,
-      is_stripe_connect_active: account.charges_enabled && account.details_submitted,
+      is_stripe_connect_active: isComplete,
       updated_at: new Date().toISOString()
     };
 
@@ -109,7 +123,7 @@ serve(async (req) => {
     if (profileUpdateError) {
       console.error('Profile update error:', profileUpdateError);
     } else {
-      console.log('✅ Profile updated with Stripe Connect status:', account.charges_enabled ? 'active' : 'pending');
+      console.log('✅ Profile updated with Stripe Connect status:', stripeStatus);
     }
 
     const response = {
@@ -118,14 +132,15 @@ serve(async (req) => {
       detailsSubmitted: account.details_submitted,
       chargesEnabled: account.charges_enabled,
       payoutsEnabled: account.payouts_enabled,
-      onboardingCompleted: account.details_submitted && account.charges_enabled,
+      onboardingCompleted: isComplete,
       requirementsNeeded: account.requirements?.currently_due || [],
       hasExternalAccount: hasExternalAccount,
       externalAccountLast4: externalAccount?.last4,
       externalAccountBankName: externalAccount?.bank_name,
-      needsOnboarding: !account.details_submitted || !account.charges_enabled,
+      needsOnboarding: !isComplete,
       disabledReason: account.requirements?.disabled_reason,
-      verificationStatus: updateData.verification_status
+      verificationStatus: updateData.verification_status,
+      stripe_status: stripeStatus
     };
 
     console.log('Account status response:', response);
