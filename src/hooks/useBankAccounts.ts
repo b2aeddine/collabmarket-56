@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
 
 export interface BankAccount {
   id: string;
@@ -14,10 +15,20 @@ export interface BankAccount {
 
 export const useBankAccounts = () => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   const { data: bankAccounts, isLoading } = useQuery({
     queryKey: ['bank-accounts'],
     queryFn: async () => {
+      // Si l'utilisateur a un compte Stripe Connect configuré, forcer une synchronisation
+      if (user?.stripe_connect_status === 'complete') {
+        try {
+          await supabase.functions.invoke('check-stripe-account-status');
+        } catch (error) {
+          console.error('Error syncing Stripe account:', error);
+        }
+      }
+
       const { data, error } = await supabase
         .from('bank_accounts')
         .select('*')

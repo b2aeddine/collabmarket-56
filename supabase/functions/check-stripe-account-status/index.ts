@@ -146,6 +146,40 @@ serve(async (req) => {
       final_status: stripeStatus
     });
 
+    // Synchroniser le compte bancaire externe dans notre base de données
+    if (hasExternalAccount && externalAccount) {
+      console.log('Synchronizing external bank account to local database...');
+      
+      // Vérifier si le compte bancaire existe déjà dans notre base
+      const { data: existingBankAccount } = await supabaseService
+        .from('bank_accounts')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('iban', `*****${externalAccount.last4}`)
+        .single();
+
+      if (!existingBankAccount && externalAccount.last4 && externalAccount.bank_name) {
+        // Créer une entrée dans notre table bank_accounts
+        const { error: bankAccountError } = await supabaseService
+          .from('bank_accounts')
+          .insert({
+            user_id: user.id,
+            iban: `*****${externalAccount.last4}`, // IBAN partiel pour des raisons de sécurité
+            bic: '', // Pas disponible depuis Stripe
+            account_holder: account.business_profile?.name || account.individual?.first_name + ' ' + account.individual?.last_name || 'Compte Stripe',
+            bank_name: externalAccount.bank_name,
+            is_default: true,
+            is_active: true
+          });
+
+        if (bankAccountError) {
+          console.error('Error creating bank account entry:', bankAccountError);
+        } else {
+          console.log('✅ Bank account synchronized to local database');
+        }
+      }
+    }
+
     // Update our database with current status
     const updateData = {
       account_status: account.charges_enabled ? 'active' : 'pending',
