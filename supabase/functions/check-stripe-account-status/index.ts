@@ -67,25 +67,43 @@ serve(async (req) => {
         if (matchingAccount) {
           console.log('Found matching Stripe account by email:', matchingAccount.id);
           
-          // Créer l'entrée dans notre base de données
-          const { error: insertError } = await supabaseService
+          // Vérifier si l'entrée existe déjà, sinon la créer
+          const { data: existingAccount } = await supabaseService
             .from('stripe_accounts')
-            .insert({
-              user_id: user.id,
-              stripe_account_id: matchingAccount.id,
-              account_status: matchingAccount.charges_enabled ? 'active' : 'pending',
-              details_submitted: matchingAccount.details_submitted,
-              charges_enabled: matchingAccount.charges_enabled,
-              payouts_enabled: matchingAccount.payouts_enabled,
-              onboarding_completed: matchingAccount.details_submitted && matchingAccount.charges_enabled,
-              country: matchingAccount.country || 'FR',
-              updated_at: new Date().toISOString()
-            });
+            .select('*')
+            .eq('stripe_account_id', matchingAccount.id)
+            .single();
           
-          if (insertError) {
-            console.error('Error inserting account:', insertError);
+          if (!existingAccount) {
+            // Créer l'entrée dans notre base de données
+            const { error: insertError } = await supabaseService
+              .from('stripe_accounts')
+              .insert({
+                user_id: user.id,
+                stripe_account_id: matchingAccount.id,
+                account_status: matchingAccount.charges_enabled ? 'active' : 'pending',
+                details_submitted: matchingAccount.details_submitted,
+                charges_enabled: matchingAccount.charges_enabled,
+                payouts_enabled: matchingAccount.payouts_enabled,
+                onboarding_completed: matchingAccount.details_submitted && matchingAccount.charges_enabled,
+                country: matchingAccount.country || 'FR',
+                updated_at: new Date().toISOString()
+              });
+            
+            if (insertError) {
+              console.error('Error inserting account:', insertError);
+              throw insertError;
+            } else {
+              console.log('✅ Successfully linked existing Stripe account');
+            }
           } else {
-            console.log('✅ Successfully linked existing Stripe account');
+            console.log('✅ Stripe account already linked, updating user_id if needed');
+            // Mettre à jour l'user_id si nécessaire
+            await supabaseService
+              .from('stripe_accounts')
+              .update({ user_id: user.id, updated_at: new Date().toISOString() })
+              .eq('stripe_account_id', matchingAccount.id);
+          }
             // Continuer avec ce compte
             const account = matchingAccount;
             const stripeAccountIdToUse = matchingAccount.id;
@@ -130,24 +148,24 @@ serve(async (req) => {
       .update(updateData)
       .eq('user_id', user.id);
 
-            // Update user profile with exact status
-            const profileUpdateData = {
-              stripe_connect_status: stripeStatus,
-              stripe_connect_account_id: stripeAccountIdToUse,
-              is_stripe_connect_active: isComplete,
-              updated_at: new Date().toISOString()
-            };
+          // Update user profile with exact status
+          const profileUpdateData = {
+            stripe_connect_status: stripeStatus,
+            stripe_connect_account_id: stripeAccountIdToUse,
+            is_stripe_connect_active: isComplete,
+            updated_at: new Date().toISOString()
+          };
 
-    const { error: profileUpdateError } = await supabaseService
-      .from('profiles')
-      .update(profileUpdateData)
-      .eq('id', user.id);
+          const { error: profileUpdateError } = await supabaseService
+            .from('profiles')
+            .update(profileUpdateData)
+            .eq('id', user.id);
 
-    if (profileUpdateError) {
-      console.error('Profile update error:', profileUpdateError);
-    } else {
-      console.log('✅ Profile updated with Stripe Connect status:', stripeStatus);
-    }
+          if (profileUpdateError) {
+            console.error('Profile update error:', profileUpdateError);
+          } else {
+            console.log('✅ Profile updated with Stripe Connect status:', stripeStatus);
+          }
 
             const response = {
               hasAccount: true,
