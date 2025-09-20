@@ -31,6 +31,11 @@ export const useCheckStripeConnectStatus = () => {
     onSuccess: (data) => {
       console.log('Stripe Connect status check result:', data);
       
+      // Forcer le rechargement de la page pour actualiser le profil
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+      
       if (data.stripe_status === 'complete') {
         toast.success('✅ Configuration terminée', {
           description: 'Votre compte Stripe Connect est maintenant activé.'

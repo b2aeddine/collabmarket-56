@@ -43,160 +43,75 @@ serve(async (req) => {
       throw new Error('User not authenticated');
     }
 
-    // Get user's Stripe account
-    const { data: stripeAccount } = await supabaseService
+    // D'abord, nettoyer les comptes en double et récupérer le bon compte
+    console.log('Checking for existing Stripe accounts for user:', user.id);
+    
+    // Récupérer tous les comptes Stripe pour cet utilisateur
+    const { data: allStripeAccounts } = await supabaseService
       .from('stripe_accounts')
       .select('*')
       .eq('user_id', user.id)
-      .single();
+      .order('created_at', { ascending: false });
 
-    if (!stripeAccount?.stripe_account_id) {
-      console.log('No Stripe account ID found for user, checking if accounts exist in Stripe...');
+    let stripeAccountToUse = null;
+
+    if (!allStripeAccounts || allStripeAccounts.length === 0) {
+      console.log('No Stripe accounts found in database, searching Stripe...');
       
-      // Rechercher tous les comptes Stripe qui peuvent correspondre à cet utilisateur
+      // Rechercher dans Stripe par email
       try {
-        const accounts = await stripe.accounts.list({ 
-          limit: 100 
-        });
-        
-        // Chercher un compte avec le même email
-        const matchingAccount = accounts.data.find(acc => 
-          acc.email === user.email
-        );
+        const accounts = await stripe.accounts.list({ limit: 100 });
+        const matchingAccount = accounts.data.find(acc => acc.email === user.email);
         
         if (matchingAccount) {
-          console.log('Found matching Stripe account by email:', matchingAccount.id);
+          console.log('Found Stripe account by email:', matchingAccount.id);
           
-          // Vérifier si l'entrée existe déjà, sinon la créer
-          const { data: existingAccount } = await supabaseService
+          // Créer l'entrée dans notre base
+          const { data: newAccount, error: insertError } = await supabaseService
             .from('stripe_accounts')
-            .select('*')
-            .eq('stripe_account_id', matchingAccount.id)
+            .insert({
+              user_id: user.id,
+              stripe_account_id: matchingAccount.id,
+              account_status: matchingAccount.charges_enabled ? 'active' : 'pending',
+              details_submitted: matchingAccount.details_submitted,
+              charges_enabled: matchingAccount.charges_enabled,
+              payouts_enabled: matchingAccount.payouts_enabled,
+              onboarding_completed: matchingAccount.details_submitted && matchingAccount.charges_enabled,
+              country: matchingAccount.country || 'FR',
+              updated_at: new Date().toISOString()
+            })
+            .select()
             .single();
           
-          if (!existingAccount) {
-            // Créer l'entrée dans notre base de données
-            const { error: insertError } = await supabaseService
-              .from('stripe_accounts')
-              .insert({
-                user_id: user.id,
-                stripe_account_id: matchingAccount.id,
-                account_status: matchingAccount.charges_enabled ? 'active' : 'pending',
-                details_submitted: matchingAccount.details_submitted,
-                charges_enabled: matchingAccount.charges_enabled,
-                payouts_enabled: matchingAccount.payouts_enabled,
-                onboarding_completed: matchingAccount.details_submitted && matchingAccount.charges_enabled,
-                country: matchingAccount.country || 'FR',
-                updated_at: new Date().toISOString()
-              });
-            
-            if (insertError) {
-              console.error('Error inserting account:', insertError);
-              throw insertError;
-            } else {
-              console.log('✅ Successfully linked existing Stripe account');
-            }
+          if (insertError) {
+            console.error('Error inserting account:', insertError);
           } else {
-            console.log('✅ Stripe account already linked, updating user_id if needed');
-            // Mettre à jour l'user_id si nécessaire
-            await supabaseService
-              .from('stripe_accounts')
-              .update({ user_id: user.id, updated_at: new Date().toISOString() })
-              .eq('stripe_account_id', matchingAccount.id);
-          }
-            // Continuer avec ce compte
-            const account = matchingAccount;
-            const stripeAccountIdToUse = matchingAccount.id;
-    
-            // Get external accounts for the linked account
-            const externalAccounts = await stripe.accounts.listExternalAccounts(
-              stripeAccountIdToUse,
-              { object: 'bank_account' }
-            );
-
-            const hasExternalAccount = externalAccounts.data.length > 0;
-            const externalAccount = hasExternalAccount ? externalAccounts.data[0] : null;
-            
-            // Continue with the rest of the logic using the linked account
-            const isComplete = account.charges_enabled && account.details_submitted;
-            const stripeStatus = isComplete ? 'complete' : 'incomplete';
-    
-    console.log('Stripe account status:', {
-      charges_enabled: account.charges_enabled,
-      details_submitted: account.details_submitted,
-      final_status: stripeStatus
-    });
-
-    // Update our database with current status
-    const updateData = {
-      account_status: account.charges_enabled ? 'active' : 'pending',
-      details_submitted: account.details_submitted,
-      charges_enabled: account.charges_enabled,
-      payouts_enabled: account.payouts_enabled,
-      onboarding_completed: isComplete,
-      capabilities_transfers: account.capabilities?.transfers?.status === 'active',
-      capabilities_card_payments: account.capabilities?.card_payments?.status === 'active',
-      external_account_last4: externalAccount?.last4 || null,
-      external_account_bank_name: externalAccount?.bank_name || null,
-      verification_status: account.requirements?.disabled_reason ? 'rejected' : 
-                          (account.details_submitted ? 'verified' : 'pending'),
-      updated_at: new Date().toISOString()
-    };
-
-    await supabaseService
-      .from('stripe_accounts')
-      .update(updateData)
-      .eq('user_id', user.id);
-
-          // Update user profile with exact status
-          const profileUpdateData = {
-            stripe_connect_status: stripeStatus,
-            stripe_connect_account_id: stripeAccountIdToUse,
-            is_stripe_connect_active: isComplete,
-            updated_at: new Date().toISOString()
-          };
-
-          const { error: profileUpdateError } = await supabaseService
-            .from('profiles')
-            .update(profileUpdateData)
-            .eq('id', user.id);
-
-          if (profileUpdateError) {
-            console.error('Profile update error:', profileUpdateError);
-          } else {
-            console.log('✅ Profile updated with Stripe Connect status:', stripeStatus);
-          }
-
-            const response = {
-              hasAccount: true,
-              accountId: stripeAccountIdToUse,
-              detailsSubmitted: account.details_submitted,
-              chargesEnabled: account.charges_enabled,
-              payoutsEnabled: account.payouts_enabled,
-              onboardingCompleted: isComplete,
-              requirementsNeeded: account.requirements?.currently_due || [],
-              hasExternalAccount: hasExternalAccount,
-              externalAccountLast4: externalAccount?.last4,
-              externalAccountBankName: externalAccount?.bank_name,
-              needsOnboarding: !isComplete,
-              disabledReason: account.requirements?.disabled_reason,
-              verificationStatus: updateData.verification_status,
-              stripe_status: stripeStatus
-            };
-
-            console.log('Account status response:', response);
-
-            return new Response(JSON.stringify(response), {
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-              status: 200,
-            });
+            stripeAccountToUse = newAccount;
+            console.log('✅ Successfully created new Stripe account entry');
           }
         }
       } catch (err) {
-        console.error('Error searching for Stripe accounts:', err);
+        console.error('Error searching Stripe:', err);
       }
+    } else {
+      // Prendre le compte le plus récent
+      stripeAccountToUse = allStripeAccounts[0];
+      console.log('Using existing Stripe account:', stripeAccountToUse.stripe_account_id);
       
-      // Si aucun compte trouvé, retourner qu'il faut créer un compte
+      // Si on a plusieurs comptes, supprimer les anciens
+      if (allStripeAccounts.length > 1) {
+        console.log('Cleaning up duplicate accounts...');
+        const accountsToDelete = allStripeAccounts.slice(1);
+        for (const accountToDelete of accountsToDelete) {
+          await supabaseService
+            .from('stripe_accounts')
+            .delete()
+            .eq('id', accountToDelete.id);
+        }
+      }
+    }
+
+    if (!stripeAccountToUse?.stripe_account_id) {
       return new Response(JSON.stringify({ 
         hasAccount: false,
         needsOnboarding: true,
@@ -207,14 +122,14 @@ serve(async (req) => {
       });
     }
 
-    console.log('Retrieving Stripe account:', stripeAccount.stripe_account_id);
+    console.log('Retrieving Stripe account:', stripeAccountToUse.stripe_account_id);
     
     // Get account details from Stripe
-    const account = await stripe.accounts.retrieve(stripeAccount.stripe_account_id);
+    const account = await stripe.accounts.retrieve(stripeAccountToUse.stripe_account_id);
     
     // Check if account has external accounts (bank accounts)
     const externalAccounts = await stripe.accounts.listExternalAccounts(
-      stripeAccount.stripe_account_id,
+      stripeAccountToUse.stripe_account_id,
       { object: 'bank_account' }
     );
 
@@ -255,7 +170,7 @@ serve(async (req) => {
     // Update the user profile with exact status
     const profileUpdateData = {
       stripe_connect_status: stripeStatus,
-      stripe_connect_account_id: stripeAccount.stripe_account_id,
+      stripe_connect_account_id: stripeAccountToUse.stripe_account_id,
       is_stripe_connect_active: isComplete,
       updated_at: new Date().toISOString()
     };
@@ -273,7 +188,7 @@ serve(async (req) => {
 
     const response = {
       hasAccount: true,
-      accountId: stripeAccount.stripe_account_id,
+      accountId: stripeAccountToUse.stripe_account_id,
       detailsSubmitted: account.details_submitted,
       chargesEnabled: account.charges_enabled,
       payoutsEnabled: account.payouts_enabled,
