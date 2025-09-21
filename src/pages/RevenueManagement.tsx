@@ -7,12 +7,14 @@ import { Separator } from "@/components/ui/separator";
 import Header from "@/components/Header";
 import WithdrawalModal from "@/components/WithdrawalModal";
 import BankAccountModal from "@/components/BankAccountModal";
+import EditStripeAccountModal from "@/components/EditStripeAccountModal";
 import { useAuth } from "@/hooks/useAuth";
 import { useInfluencerRevenues } from "@/hooks/useInfluencerRevenues";
 import { useBankAccounts } from "@/hooks/useBankAccounts";
+import { useStripeConnect } from "@/hooks/useStripeConnect";
 import StripeConnectRevenues from "@/components/StripeConnectRevenues";
 import StripeConnectOnboarding from "@/components/StripeConnectOnboarding";
-import { Euro, TrendingUp, Clock, CheckCircle, AlertCircle, CreditCard, Download, Plus } from "lucide-react";
+import { Euro, TrendingUp, Clock, CheckCircle, AlertCircle, CreditCard, Download, Plus, Edit, Wallet } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -20,8 +22,10 @@ const RevenueManagement = () => {
   const { user } = useAuth();
   const { balance, revenues, withdrawalRequests, isLoading } = useInfluencerRevenues();
   const { bankAccounts, addBankAccount } = useBankAccounts();
+  const { accountStatus, updateBankDetails } = useStripeConnect();
   const [isWithdrawalModalOpen, setIsWithdrawalModalOpen] = useState(false);
   const [isAddBankModalOpen, setIsAddBankModalOpen] = useState(false);
+  const [isEditBankModalOpen, setIsEditBankModalOpen] = useState(false);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -130,8 +134,68 @@ const RevenueManagement = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
-            {/* Configuration Stripe Connect */}
-            <StripeConnectOnboarding />
+            {/* Gestion des retraits et comptes bancaires */}
+            <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Wallet className="w-5 h-5" />
+                  Gestion des retraits
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {user?.stripe_connect_status === 'complete' && accountStatus?.hasExternalAccount ? (
+                  <>
+                    <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-200">
+                      <div>
+                        <p className="font-medium text-green-800">Compte bancaire configuré</p>
+                        <p className="text-sm text-green-600">
+                          **** **** {accountStatus.externalAccountLast4} ({accountStatus.externalAccountBankName})
+                        </p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setIsEditBankModalOpen(true)}
+                        className="text-green-700 border-green-300 hover:bg-green-100"
+                      >
+                        <Edit className="w-4 h-4 mr-1" />
+                        Modifier
+                      </Button>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <Button
+                        onClick={() => setIsWithdrawalModalOpen(true)}
+                        disabled={!balance || balance <= 0}
+                        className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Demander un retrait ({balance?.toFixed(2) || 0}€)
+                      </Button>
+                      
+                      {withdrawalRequests && withdrawalRequests.length > 0 && (
+                        <div className="space-y-2">
+                          <p className="text-sm font-medium text-gray-700">Derniers retraits:</p>
+                          {withdrawalRequests.slice(0, 3).map((withdrawal) => (
+                            <div key={withdrawal.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                              <div>
+                                <p className="font-medium">{withdrawal.amount}€</p>
+                                <p className="text-xs text-gray-500">
+                                  {format(new Date(withdrawal.created_at), 'dd/MM/yyyy', { locale: fr })}
+                                </p>
+                              </div>
+                              {getWithdrawalStatusBadge(withdrawal.status)}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <StripeConnectOnboarding />
+                )}
+              </CardContent>
+            </Card>
 
             {/* Revenus Stripe Connect */}
             <div className="lg:col-span-1">
@@ -205,6 +269,16 @@ const RevenueManagement = () => {
       <BankAccountModal 
         isOpen={isAddBankModalOpen}
         onClose={() => setIsAddBankModalOpen(false)}
+      />
+      
+      <EditStripeAccountModal 
+        isOpen={isEditBankModalOpen}
+        onClose={() => setIsEditBankModalOpen(false)}
+        currentAccount={accountStatus?.hasExternalAccount ? {
+          iban: `FR76 **** **** **** ${accountStatus.externalAccountLast4}`,
+          account_holder: "Compte Stripe",
+          bank_name: accountStatus.externalAccountBankName || "",
+        } : undefined}
       />
     </div>
   );
