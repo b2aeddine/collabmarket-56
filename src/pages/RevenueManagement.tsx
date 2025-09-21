@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Header from "@/components/Header";
 import WithdrawalModal from "@/components/WithdrawalModal";
 import BankAccountModal from "@/components/BankAccountModal";
@@ -14,7 +15,7 @@ import { useBankAccounts } from "@/hooks/useBankAccounts";
 import { useStripeConnect } from "@/hooks/useStripeConnect";
 import StripeConnectRevenues from "@/components/StripeConnectRevenues";
 import StripeConnectOnboarding from "@/components/StripeConnectOnboarding";
-import { Euro, TrendingUp, Clock, CheckCircle, AlertCircle, CreditCard, Download, Plus, Edit, Wallet } from "lucide-react";
+import { Euro, TrendingUp, Clock, CheckCircle, AlertCircle, CreditCard, Download, Plus, Edit, Wallet, History } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -26,6 +27,7 @@ const RevenueManagement = () => {
   const [isWithdrawalModalOpen, setIsWithdrawalModalOpen] = useState(false);
   const [isAddBankModalOpen, setIsAddBankModalOpen] = useState(false);
   const [isEditBankModalOpen, setIsEditBankModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview");
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -56,7 +58,21 @@ const RevenueManagement = () => {
   };
 
   const totalEarned = revenues?.reduce((sum, revenue) => sum + Number(revenue.net_amount), 0) || 0;
-  const totalWithdrawn = withdrawalRequests?.filter(w => w.status === 'paid').reduce((sum, w) => sum + Number(w.amount), 0) || 0;
+  const totalWithdrawn = withdrawalRequests?.filter(w => w.status === 'completed').reduce((sum, w) => sum + Number(w.amount), 0) || 0;
+  
+  // Statistiques pour les onglets
+  const revenueStats = {
+    available: revenues?.filter(r => r.status === 'available').length || 0,
+    pending: revenues?.filter(r => r.status === 'pending').length || 0,
+    withdrawn: revenues?.filter(r => r.status === 'withdrawn').length || 0,
+  };
+  
+  const withdrawalStats = {
+    pending: withdrawalRequests?.filter(w => w.status === 'pending').length || 0,
+    processing: withdrawalRequests?.filter(w => w.status === 'processing').length || 0,
+    completed: withdrawalRequests?.filter(w => w.status === 'completed').length || 0,
+    rejected: withdrawalRequests?.filter(w => w.status === 'rejected').length || 0,
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-teal-50">
@@ -133,116 +149,300 @@ const RevenueManagement = () => {
             </Card>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
-            {/* Gestion des retraits et comptes bancaires */}
-            <Card className="border-0 shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Wallet className="w-5 h-5" />
-                  Gestion des retraits
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {user?.stripe_connect_status === 'complete' && accountStatus?.hasExternalAccount ? (
-                  <>
-                    <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-200">
-                      <div>
-                        <p className="font-medium text-green-800">Compte bancaire configuré</p>
-                        <p className="text-sm text-green-600">
-                          **** **** {accountStatus.externalAccountLast4} ({accountStatus.externalAccountBankName})
-                        </p>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setIsEditBankModalOpen(true)}
-                        className="text-green-700 border-green-300 hover:bg-green-100"
-                      >
-                        <Edit className="w-4 h-4 mr-1" />
-                        Modifier
-                      </Button>
-                    </div>
-                    
-                    <div className="space-y-3">
-                      <Button
-                        onClick={() => setIsWithdrawalModalOpen(true)}
-                        disabled={!balance || balance <= 0}
-                        className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
-                      >
-                        <Download className="w-4 h-4 mr-2" />
-                        Demander un retrait ({balance?.toFixed(2) || 0}€)
-                      </Button>
-                      
-                      {withdrawalRequests && withdrawalRequests.length > 0 && (
-                        <div className="space-y-2">
-                          <p className="text-sm font-medium text-gray-700">Derniers retraits:</p>
-                          {withdrawalRequests.slice(0, 3).map((withdrawal) => (
-                            <div key={withdrawal.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          {/* Contenu principal avec onglets */}
+          <Card className="border-0 shadow-lg">
+            <CardContent className="p-0">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                {/* Onglets mobile */}
+                <div className="sm:hidden border-b">
+                  <TabsList className="h-auto p-2 grid grid-cols-2 gap-2 w-full">
+                    <TabsTrigger value="overview" className="text-xs">
+                      Vue d'ensemble
+                    </TabsTrigger>
+                    <TabsTrigger value="withdrawals" className="text-xs">
+                      Retraits
+                    </TabsTrigger>
+                  </TabsList>
+                  <TabsList className="h-auto p-2 grid grid-cols-2 gap-2 w-full">
+                    <TabsTrigger value="revenues" className="text-xs">
+                      Revenus
+                    </TabsTrigger>
+                    <TabsTrigger value="history" className="text-xs">
+                      Historique
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
+                
+                {/* Onglets desktop */}
+                <div className="hidden sm:block border-b">
+                  <TabsList className="grid w-full grid-cols-4 p-1">
+                    <TabsTrigger value="overview" className="text-sm">
+                      Vue d'ensemble
+                    </TabsTrigger>
+                    <TabsTrigger value="withdrawals" className="text-sm">
+                      Retraits
+                    </TabsTrigger>
+                    <TabsTrigger value="revenues" className="text-sm">
+                      Revenus ({revenueStats.available + revenueStats.pending + revenueStats.withdrawn})
+                    </TabsTrigger>
+                    <TabsTrigger value="history" className="text-sm">
+                      Historique
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
+
+                {/* Contenu des onglets */}
+                <TabsContent value="overview" className="p-6 space-y-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Gestion des retraits et comptes bancaires */}
+                    <Card className="border shadow-sm">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Wallet className="w-5 h-5" />
+                          Gestion des retraits
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        {user?.stripe_connect_status === 'complete' && accountStatus?.hasExternalAccount ? (
+                          <>
+                            <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-200">
                               <div>
-                                <p className="font-medium">{withdrawal.amount}€</p>
-                                <p className="text-xs text-gray-500">
-                                  {format(new Date(withdrawal.created_at), 'dd/MM/yyyy', { locale: fr })}
+                                <p className="font-medium text-green-800">Compte bancaire configuré</p>
+                                <p className="text-sm text-green-600">
+                                  **** **** {accountStatus.externalAccountLast4} ({accountStatus.externalAccountBankName})
                                 </p>
                               </div>
-                              {getWithdrawalStatusBadge(withdrawal.status)}
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setIsEditBankModalOpen(true)}
+                                className="text-green-700 border-green-300 hover:bg-green-100"
+                              >
+                                <Edit className="w-4 h-4 mr-1" />
+                                Modifier
+                              </Button>
                             </div>
-                          ))}
-                        </div>
+                            
+                            <Button
+                              onClick={() => setIsWithdrawalModalOpen(true)}
+                              disabled={!balance || balance <= 0}
+                              className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
+                            >
+                              <Download className="w-4 h-4 mr-2" />
+                              Demander un retrait ({balance?.toFixed(2) || 0}€)
+                            </Button>
+                          </>
+                        ) : (
+                          <StripeConnectOnboarding />
+                        )}
+                      </CardContent>
+                    </Card>
+
+                    {/* Revenus Stripe Connect */}
+                    <StripeConnectRevenues />
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="withdrawals" className="p-6">
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-lg font-semibold">Demandes de retrait</h3>
+                        <p className="text-sm text-gray-600">Gérez vos demandes de retrait</p>
+                      </div>
+                      <Button
+                        onClick={() => setIsWithdrawalModalOpen(true)}
+                        disabled={!balance || balance <= 0 || user?.stripe_connect_status !== 'complete'}
+                        className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Nouveau retrait
+                      </Button>
+                    </div>
+
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                      <Card className="border shadow-sm">
+                        <CardContent className="p-4">
+                          <div className="text-center">
+                            <p className="text-2xl font-bold text-yellow-600">{withdrawalStats.pending}</p>
+                            <p className="text-sm text-gray-600">En attente</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                      <Card className="border shadow-sm">
+                        <CardContent className="p-4">
+                          <div className="text-center">
+                            <p className="text-2xl font-bold text-blue-600">{withdrawalStats.processing}</p>
+                            <p className="text-sm text-gray-600">En cours</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                      <Card className="border shadow-sm">
+                        <CardContent className="p-4">
+                          <div className="text-center">
+                            <p className="text-2xl font-bold text-green-600">{withdrawalStats.completed}</p>
+                            <p className="text-sm text-gray-600">Terminés</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                      <Card className="border shadow-sm">
+                        <CardContent className="p-4">
+                          <div className="text-center">
+                            <p className="text-2xl font-bold text-red-600">{withdrawalStats.rejected}</p>
+                            <p className="text-sm text-gray-600">Rejetés</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    <div className="space-y-4">
+                      {isLoading ? (
+                        <p className="text-center text-gray-500 py-8">Chargement...</p>
+                      ) : !withdrawalRequests || withdrawalRequests.length === 0 ? (
+                        <p className="text-center text-gray-500 py-8">Aucune demande de retrait</p>
+                      ) : (
+                        withdrawalRequests.map((withdrawal) => (
+                          <div key={withdrawal.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div>
+                              <p className="font-semibold text-lg">{withdrawal.amount}€</p>
+                              <p className="text-sm text-gray-600">
+                                {format(new Date(withdrawal.created_at), 'dd MMMM yyyy à HH:mm', { locale: fr })}
+                              </p>
+                            </div>
+                            {getWithdrawalStatusBadge(withdrawal.status)}
+                          </div>
+                        ))
                       )}
                     </div>
-                  </>
-                ) : (
-                  <StripeConnectOnboarding />
-                )}
-              </CardContent>
-            </Card>
+                  </div>
+                </TabsContent>
 
-            {/* Revenus Stripe Connect */}
-            <div className="lg:col-span-1">
-              <StripeConnectRevenues />
-            </div>
-          </div>
+                <TabsContent value="revenues" className="p-6">
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="text-lg font-semibold">Historique des revenus</h3>
+                      <p className="text-sm text-gray-600">Tous vos revenus détaillés</p>
+                    </div>
 
-          {/* Historique des revenus */}
-          <Card className="border-0 shadow-lg mt-6 sm:mt-8">
-            <CardHeader>
-              <CardTitle>Historique des revenus</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <div className="space-y-4">
-                  {isLoading ? (
-                    <p className="text-center text-gray-500 py-8">Chargement...</p>
-                  ) : !revenues || revenues.length === 0 ? (
-                    <p className="text-center text-gray-500 py-8">Aucun revenu enregistré</p>
-                  ) : (
-                    revenues.map((revenue) => (
-                      <div key={revenue.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-50 rounded-lg gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <p className="font-semibold text-lg">{revenue.net_amount}€</p>
-                            {getStatusBadge(revenue.status)}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                      <Card className="border shadow-sm">
+                        <CardContent className="p-4">
+                          <div className="text-center">
+                            <p className="text-2xl font-bold text-green-600">{revenueStats.available}</p>
+                            <p className="text-sm text-gray-600">Disponibles</p>
                           </div>
-                          <p className="text-sm text-gray-600 mb-1">
-                            Commande #{revenue.order_id?.slice(0, 8)}...
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            {format(new Date(revenue.created_at), 'dd MMMM yyyy à HH:mm', { locale: fr })}
-                          </p>
-                          {revenue.orders && revenue.orders.profiles && (
-                            <p className="text-xs text-gray-500 mt-1">
-                              Client: {revenue.orders.profiles.first_name} {revenue.orders.profiles.last_name}
-                            </p>
-                          )}
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm text-gray-600">Montant brut: {revenue.amount}€</p>
-                          <p className="text-sm text-gray-600">Commission: {revenue.commission}€</p>
-                          <p className="text-sm font-semibold text-green-600">Net: {revenue.net_amount}€</p>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
+                        </CardContent>
+                      </Card>
+                      <Card className="border shadow-sm">
+                        <CardContent className="p-4">
+                          <div className="text-center">
+                            <p className="text-2xl font-bold text-yellow-600">{revenueStats.pending}</p>
+                            <p className="text-sm text-gray-600">En attente</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                      <Card className="border shadow-sm">
+                        <CardContent className="p-4">
+                          <div className="text-center">
+                            <p className="text-2xl font-bold text-purple-600">{revenueStats.withdrawn}</p>
+                            <p className="text-sm text-gray-600">Retirés</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    <div className="space-y-4">
+                      {isLoading ? (
+                        <p className="text-center text-gray-500 py-8">Chargement...</p>
+                      ) : !revenues || revenues.length === 0 ? (
+                        <p className="text-center text-gray-500 py-8">Aucun revenu enregistré</p>
+                      ) : (
+                        revenues.map((revenue) => (
+                          <div key={revenue.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-50 rounded-lg gap-4">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-2">
+                                <p className="font-semibold text-lg">{revenue.net_amount}€</p>
+                                {getStatusBadge(revenue.status)}
+                              </div>
+                              <p className="text-sm text-gray-600 mb-1">
+                                Commande #{revenue.order_id?.slice(0, 8)}...
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                {format(new Date(revenue.created_at), 'dd MMMM yyyy à HH:mm', { locale: fr })}
+                              </p>
+                              {revenue.orders && revenue.orders.profiles && (
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Client: {revenue.orders.profiles.first_name} {revenue.orders.profiles.last_name}
+                                </p>
+                              )}
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm text-gray-600">Montant brut: {revenue.amount}€</p>
+                              <p className="text-sm text-gray-600">Commission: {revenue.commission}€</p>
+                              <p className="text-sm font-semibold text-green-600">Net: {revenue.net_amount}€</p>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="history" className="p-6">
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="text-lg font-semibold flex items-center gap-2">
+                        <History className="w-5 h-5" />
+                        Historique complet
+                      </h3>
+                      <p className="text-sm text-gray-600">Vue chronologique de tous vos revenus et retraits</p>
+                    </div>
+
+                    <div className="space-y-4">
+                      {/* Fusion des revenus et retraits triés par date */}
+                      {(() => {
+                        const allTransactions = [
+                          ...(revenues || []).map(r => ({ ...r, type: 'revenue' as const })),
+                          ...(withdrawalRequests || []).map(w => ({ ...w, type: 'withdrawal' as const }))
+                        ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+                        return allTransactions.length === 0 ? (
+                          <p className="text-center text-gray-500 py-8">Aucune transaction</p>
+                        ) : (
+                          allTransactions.map((transaction, index) => (
+                            <div key={`${transaction.type}-${transaction.id}-${index}`} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-2">
+                                  <p className="font-semibold text-lg">
+                                    {transaction.type === 'revenue' ? '+' : '-'}
+                                    {transaction.type === 'revenue' 
+                                      ? (transaction as any).net_amount 
+                                      : transaction.amount
+                                    }€
+                                  </p>
+                                  {transaction.type === 'revenue' ? (
+                                    getStatusBadge(transaction.status)
+                                  ) : (
+                                    getWithdrawalStatusBadge(transaction.status)
+                                  )}
+                                </div>
+                                <p className="text-sm text-gray-600">
+                                  {transaction.type === 'revenue' ? 'Revenu' : 'Retrait'} - {format(new Date(transaction.created_at), 'dd MMMM yyyy à HH:mm', { locale: fr })}
+                                </p>
+                                {transaction.type === 'revenue' && (transaction as any).order_id && (
+                                  <p className="text-xs text-gray-500">
+                                    Commande #{(transaction as any).order_id.slice(0, 8)}...
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          ))
+                        );
+                      })()}
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
             </CardContent>
           </Card>
         </div>
