@@ -67,14 +67,16 @@ serve(async (req) => {
       throw new Error('Insufficient balance');
     }
 
-    // Create payout
+    // Create payout via Stripe
     const payout = await stripe.payouts.create({
       amount: Math.round(amount * 100), // Convert to cents
       currency: 'eur',
-      method: 'instant',
+      method: 'standard', // Standard transfer (1-2 business days)
     }, {
       stripeAccount: stripeAccount.stripe_account_id,
     });
+
+    console.log('Stripe payout created:', payout);
 
     // Record withdrawal
     const { data: withdrawal } = await supabaseService

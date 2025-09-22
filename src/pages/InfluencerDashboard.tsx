@@ -1,4 +1,4 @@
-import { useState, useMemo, Suspense } from "react";
+import { useState, useMemo, Suspense, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +14,7 @@ import ProfileShareButton from "@/components/ProfileShareButton";
 import ProfileSettingsModal from "@/components/ProfileSettingsModal";
 import { TrendingUp, Eye, ShoppingBag, DollarSign, Instagram, MessageCircle, Bell, User, Trash2, Camera, Play, Zap, Megaphone, Edit, MoreVertical, Euro, ExternalLink, MapPin, Building, Settings } from "lucide-react";
 import { SocialNetwork } from "@/types";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useOrders } from "@/hooks/useOrders";
 import { useOffers, useCreateOffer, useUpdateOffer, useDeleteOffer } from "@/hooks/useOffers";
@@ -28,6 +28,8 @@ import OfferCard from "@/components/OfferCard";
 import { DashboardSkeleton } from "@/components/common/DashboardSkeleton";
 import { OffersSkeleton } from "@/components/common/OffersSkeleton";
 import { SocialNetworksSkeleton } from "@/components/common/SocialNetworksSkeleton";
+import InfluencerOnboardingModal from "@/components/InfluencerOnboardingModal";
+import { useStripeConnect } from "@/hooks/useStripeConnect";
 import { SocialNetworksCarousel } from "@/components/common/SocialNetworksCarousel";
 import { OffersCarousel } from "@/components/common/OffersCarousel";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
@@ -40,6 +42,25 @@ const InfluencerDashboard = () => {
   const { profileCategories, isLoading: categoriesLoading } = useProfileCategories(user?.id);
   const { revenues } = useInfluencerRevenues();
   const unreadMessagesCount = useUnreadMessagesCount();
+  const { accountStatus } = useStripeConnect();
+  const [searchParams] = useSearchParams();
+  const [showOnboardingModal, setShowOnboardingModal] = useState(false);
+
+  // Vérifier si l'onboarding Stripe est nécessaire
+  useEffect(() => {
+    const onboardingParam = searchParams.get('onboarding');
+    const skipped = localStorage.getItem('stripe_onboarding_skipped');
+    
+    if (onboardingParam === 'stripe') {
+      setShowOnboardingModal(true);
+    } else if (!skipped && accountStatus !== undefined) {
+      // Vérifier si le compte Stripe Connect est configuré
+      const needsOnboarding = !accountStatus?.onboardingCompleted || !accountStatus?.payoutsEnabled;
+      if (needsOnboarding) {
+        setShowOnboardingModal(true);
+      }
+    }
+  }, [searchParams, accountStatus]);
   
   const createOfferMutation = useCreateOffer();
   const updateOfferMutation = useUpdateOffer();
@@ -570,6 +591,11 @@ const InfluencerDashboard = () => {
           onClose={() => setIsSettingsModalOpen(false)}
           profile={user}
           onProfileUpdate={handleProfileUpdate}
+        />
+
+        <InfluencerOnboardingModal
+          isOpen={showOnboardingModal}
+          onClose={() => setShowOnboardingModal(false)}
         />
       </div>
     </TooltipProvider>

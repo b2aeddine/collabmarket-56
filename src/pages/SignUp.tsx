@@ -228,7 +228,8 @@ const SignUp = () => {
       // Redirection immédiate selon le rôle sans attendre la vérification email
       setTimeout(() => {
         if (selectedRole === "influencer") {
-          window.location.href = "/influencer-dashboard";
+          // Pour les influenceurs, rediriger vers l'onboarding Stripe obligatoire
+          window.location.href = "/influencer-dashboard?onboarding=stripe";
         } else {
           window.location.href = "/merchant-dashboard";
         }
