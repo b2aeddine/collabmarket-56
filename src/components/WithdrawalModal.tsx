@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { useCreateWithdrawal, useCreateBankAccount } from "@/hooks/useRevenues";
+import { useCreateBankAccount } from "@/hooks/useRevenues";
+import { supabase } from "@/integrations/supabase/client";
 import { BankAccount } from "@/types";
 import { Euro, CreditCard, Plus } from "lucide-react";
 import { toast } from "sonner";
@@ -31,12 +32,12 @@ const WithdrawalModal = ({ isOpen, onClose, availableBalance, bankAccounts }: Wi
     is_default: false,
   });
 
-  const createWithdrawalMutation = useCreateWithdrawal();
   const createBankAccountMutation = useCreateBankAccount();
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleWithdrawal = async () => {
-    if (!amount || !selectedBankAccount) {
-      toast.error("Veuillez remplir tous les champs");
+    if (!amount) {
+      toast.error("Veuillez saisir un montant");
       return;
     }
 
@@ -51,19 +52,26 @@ const WithdrawalModal = ({ isOpen, onClose, availableBalance, bankAccounts }: Wi
       return;
     }
 
+    setIsProcessing(true);
     try {
-      await createWithdrawalMutation.mutateAsync({
-        bank_account_id: selectedBankAccount,
-        amount: withdrawalAmount,
+      // Appeler directement la fonction process-withdrawal pour créer un payout Stripe
+      const { data, error } = await supabase.functions.invoke('process-withdrawal', {
+        body: { amount: withdrawalAmount }
       });
+
+      if (error) {
+        throw error;
+      }
       
-      toast.success("Demande de retrait créée avec succès !");
+      toast.success("Retrait traité avec succès ! Le virement sera effectué sous peu.");
       setAmount("");
       setSelectedBankAccount("");
       onClose();
-    } catch (error) {
-      console.error("Error creating withdrawal:", error);
-      toast.error("Erreur lors de la création de la demande de retrait");
+    } catch (error: any) {
+      console.error("Error processing withdrawal:", error);
+      toast.error(error.message || "Erreur lors du traitement du retrait");
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -127,38 +135,18 @@ const WithdrawalModal = ({ isOpen, onClose, availableBalance, bankAccounts }: Wi
             </p>
           </div>
 
-          {/* Sélection du compte bancaire */}
-          <div className="space-y-2">
-            <Label>Compte bancaire</Label>
-            {bankAccounts.length > 0 ? (
-              <Select value={selectedBankAccount} onValueChange={setSelectedBankAccount}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner un compte" />
-                </SelectTrigger>
-                <SelectContent>
-                  {bankAccounts.map((account) => (
-                    <SelectItem key={account.id} value={account.id}>
-                      <div className="flex items-center gap-2">
-                        <CreditCard className="w-4 h-4" />
-                        {account.bank_name} - {account.account_holder}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            ) : (
-              <p className="text-sm text-gray-500">Aucun compte bancaire configuré</p>
-            )}
-            
-            <Button
-              variant="outline"
-              onClick={() => setShowAddBank(!showAddBank)}
-              className="w-full"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Ajouter un compte bancaire
-            </Button>
-          </div>
+          {/* Info compte Stripe Connect */}
+          <Card className="bg-blue-50">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <CreditCard className="w-4 h-4 text-blue-600" />
+                <p className="text-sm font-medium">Compte bancaire configuré</p>
+              </div>
+              <p className="text-xs text-gray-600">
+                Le retrait sera effectué sur votre compte bancaire Stripe Connect configuré.
+              </p>
+            </CardContent>
+          </Card>
 
           {/* Formulaire d'ajout de compte bancaire */}
           {showAddBank && (
@@ -240,10 +228,10 @@ const WithdrawalModal = ({ isOpen, onClose, availableBalance, bankAccounts }: Wi
             </Button>
             <Button
               onClick={handleWithdrawal}
-              disabled={!amount || !selectedBankAccount || createWithdrawalMutation.isPending}
+              disabled={!amount || isProcessing}
               className="flex-1 bg-gradient-to-r from-pink-500 to-orange-500 hover:from-pink-600 hover:to-orange-600"
             >
-              {createWithdrawalMutation.isPending ? "Traitement..." : "Confirmer le retrait"}
+              {isProcessing ? "Traitement..." : "Confirmer le retrait"}
             </Button>
           </div>
         </div>
