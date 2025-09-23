@@ -67,14 +67,16 @@ serve(async (req) => {
       throw new Error('Insufficient balance');
     }
 
-    // Create transfer via Stripe (from platform account to influencer's Connect account)
-    const transfer = await stripe.transfers.create({
+    // Create payout via Stripe
+    const payout = await stripe.payouts.create({
       amount: Math.round(amount * 100), // Convert to cents
       currency: 'eur',
-      destination: stripeAccount.stripe_account_id,
+      method: 'standard', // Standard transfer (1-2 business days)
+    }, {
+      stripeAccount: stripeAccount.stripe_account_id,
     });
 
-    console.log('Stripe transfer created:', transfer);
+    console.log('Stripe payout created:', payout);
 
     // Record withdrawal
     const { data: withdrawal } = await supabaseService
@@ -82,8 +84,8 @@ serve(async (req) => {
       .insert({
         influencer_id: user.id,
         amount: amount,
-        status: 'completed', // Transfer is immediate
-        stripe_payout_id: transfer.id,
+        status: 'processing',
+        stripe_payout_id: payout.id,
       })
       .select()
       .single();
@@ -117,7 +119,7 @@ serve(async (req) => {
       JSON.stringify({ 
         success: true,
         withdrawalId: withdrawal.id,
-        transferId: transfer.id,
+        payoutId: payout.id,
         amount: amount
       }),
       {
