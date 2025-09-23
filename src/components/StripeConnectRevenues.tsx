@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Euro, TrendingUp, Clock, CheckCircle } from 'lucide-react';
+import { TrendingUp, Clock, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -100,10 +100,7 @@ const StripeConnectRevenues = () => {
     }
   };
 
-  // Calculate totals
-  const totalReceived = transfers?.reduce((sum, transfer) => 
-    transfer.status === 'completed' ? sum + (transfer.influencer_amount / 100) : sum, 0) || 0;
-  
+  // Calculate total pending
   const totalPending = pendingOrders?.reduce((sum, order) => 
     sum + (order.net_amount || 0), 0) || 0;
 
@@ -122,36 +119,20 @@ const StripeConnectRevenues = () => {
 
   return (
     <div className="space-y-6">
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-white">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total reçu</p>
-                <p className="text-3xl font-bold text-green-600">
-                  {totalReceived.toFixed(2)}€
-                </p>
-              </div>
-              <Euro className="w-8 h-8 text-green-600/60" />
+      {/* Solde en attente */}
+      <Card className="border-0 shadow-lg bg-gradient-to-br from-yellow-50 to-white max-w-md mx-auto">
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">En attente</p>
+              <p className="text-3xl font-bold text-yellow-600">
+                {totalPending.toFixed(2)}€
+              </p>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-lg bg-gradient-to-br from-yellow-50 to-white">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">En attente</p>
-                <p className="text-3xl font-bold text-yellow-600">
-                  {totalPending.toFixed(2)}€
-                </p>
-              </div>
-              <Clock className="w-8 h-8 text-yellow-600/60" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            <Clock className="w-8 h-8 text-yellow-600/60" />
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Pending Payments */}
       {pendingOrders && pendingOrders.length > 0 && (
