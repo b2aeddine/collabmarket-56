@@ -184,23 +184,26 @@ const InfluencerProfile = () => {
     return 'instagram'; // Par défaut
   };
 
+  // Cast profile to proper type after validation
+  const validProfile = profile as any;
+
   // Transformer les données pour l'affichage avec les vraies statistiques d'avis
-  const influencer = {
-    id: profile.id,
-    username: `@${(profile.first_name || 'user').toLowerCase()}`,
-    fullName: `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Utilisateur',
-    city: profile.city || "France",
-    avatar: profile.avatar_url || "/placeholder.svg",
-    category: profile.profile_categories?.[0]?.categories?.name || "Lifestyle",
-    bio: profile.bio || "Passionné de création de contenu.",
-    followers: profile.social_links?.reduce((sum, link) => sum + (link.followers || 0), 0) || 0,
-    engagement: profile.social_links?.length > 0 
-      ? Number((profile.social_links.reduce((sum, link) => sum + (link.engagement_rate || 0), 0) / profile.social_links.length).toFixed(1))
+  const influencer = validProfile ? {
+    id: validProfile.id,
+    username: `@${(validProfile.first_name || 'user').toLowerCase()}`,
+    fullName: `${validProfile.first_name || ''} ${validProfile.last_name || ''}`.trim() || 'Utilisateur',
+    city: validProfile.city || "France",
+    avatar: validProfile.avatar_url || "/placeholder.svg",
+    category: validProfile.profile_categories?.[0]?.categories?.name || "Lifestyle",
+    bio: validProfile.bio || "Passionné de création de contenu.",
+    followers: validProfile.social_links?.reduce((sum: any, link: any) => sum + (link.followers || 0), 0) || 0,
+    engagement: validProfile.social_links?.length > 0 
+      ? Number((validProfile.social_links.reduce((sum: any, link: any) => sum + (link.engagement_rate || 0), 0) / validProfile.social_links.length).toFixed(1))
       : 0,
     // Utiliser les vraies données d'avis de la base de données
     rating: reviewStats?.averageRating || 0,
     reviewCount: reviewStats?.totalReviews || 0,
-    profileViews: profile.profile_views || 0,
+    profileViews: validProfile.profile_views || 0,
     gallery: [
       "/placeholder.svg",
       "/placeholder.svg",
@@ -209,7 +212,7 @@ const InfluencerProfile = () => {
       "/placeholder.svg",
       "/placeholder.svg",
     ],
-    socialNetworks: profile.social_links?.map(link => ({
+    socialNetworks: validProfile.social_links?.map((link: any) => ({
       id: link.id,
       platform: link.platform as 'instagram' | 'tiktok' | 'youtube' | 'x' | 'snapchat',
       username: link.username,
@@ -219,10 +222,10 @@ const InfluencerProfile = () => {
       is_connected: link.is_active || false,
     })) || [],
     services: (() => {
-      console.log('Profile offers:', profile.offers);
-      const activeOffers = profile.offers?.filter(offer => offer.is_active);
+      console.log('Profile offers:', validProfile.offers);
+      const activeOffers = validProfile.offers?.filter((offer: any) => offer.is_active);
       console.log('Active offers:', activeOffers);
-      return activeOffers?.map(offer => ({
+      return activeOffers?.map((offer: any) => ({
         id: offer.id,
         type: offer.title,
         description: offer.description || '',
@@ -246,7 +249,7 @@ const InfluencerProfile = () => {
         deliveryTime: "48h",
       }
     ],
-  };
+  } : null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-teal-50">
@@ -398,7 +401,7 @@ const InfluencerProfile = () => {
               </Card>
 
               {/* Reviews Section */}
-              <ReviewsSection influencerId={profile.id} />
+              <ReviewsSection influencerId={validProfile.id} />
 
               {/* Gallery */}
               <Card className="shadow-xl border-0 animate-fade-in">

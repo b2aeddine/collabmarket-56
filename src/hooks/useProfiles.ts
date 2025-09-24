@@ -42,6 +42,7 @@ export const useInfluencers = (filters?: { category?: string; minFollowers?: num
     queryFn: async () => {
       console.log('Fetching influencers from database...');
       
+      // Only request safe public columns to work with new security policies
       let query = supabase
         .from('profiles')
         .select(`
@@ -52,6 +53,11 @@ export const useInfluencers = (filters?: { category?: string; minFollowers?: num
           bio,
           city,
           profile_views,
+          profile_share_count,
+          created_at,
+          custom_username,
+          is_verified,
+          role,
           social_links(
             id,
             platform,
@@ -77,6 +83,7 @@ export const useInfluencers = (filters?: { category?: string; minFollowers?: num
         .eq('role', 'influenceur')
         .eq('is_verified', true) // Inclut les validations manuelles ET Stripe Identity
         .eq('is_profile_public', true) // Only public profiles
+        .eq('is_banned', false) // Only non-banned profiles
         .limit(20); // Pagination - limit to 20 influencers
 
       const { data, error } = await query;
@@ -119,9 +126,22 @@ export const useProfile = (profileId: string) => {
         throw new Error('Profile ID is required');
       }
       
-      const { data, error } = await supabase
-        .from('profiles')
-        .select(`
+      // Get current user to determine access level
+      const { data: { user } } = await supabase.auth.getUser();
+      const isOwnProfile = user?.id === profileId;
+      
+      // Check if user is admin
+      let isAdmin = false;
+      if (user) {
+        const { data: adminCheck } = await supabase.rpc('is_current_user_admin');
+        isAdmin = adminCheck || false;
+      }
+      
+      let selectQuery = '';
+      
+      if (isOwnProfile || isAdmin) {
+        // Full access for own profile or admin
+        selectQuery = `
           id,
           email,
           role,
@@ -164,7 +184,54 @@ export const useProfile = (profileId: string) => {
               icon_name
             )
           )
-        `)
+        `;
+      } else {
+        // Limited access for public viewing - only safe columns
+        selectQuery = `
+          id,
+          role,
+          first_name,
+          last_name,
+          avatar_url,
+          bio,
+          city,
+          custom_username,
+          is_verified,
+          profile_views,
+          profile_share_count,
+          created_at,
+          social_links(
+            id,
+            platform,
+            username,
+            profile_url,
+            followers,
+            engagement_rate,
+            is_active
+          ),
+          offers(
+            id,
+            title,
+            description,
+            price,
+            delivery_time,
+            is_active,
+            is_popular
+          ),
+          profile_categories(
+            categories(
+              id,
+              name,
+              slug,
+              icon_name
+            )
+          )
+        `;
+      }
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .select(selectQuery)
         .eq('id', profileId)
         .maybeSingle();
       
