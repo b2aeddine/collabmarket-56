@@ -10,7 +10,7 @@ import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 
 const ContestationsManagement = () => {
-  const { contestations, isLoading } = useContestations();
+  const { contestations, isLoading } = useContestations(true); // Vue admin
   const updateContestationStatus = useUpdateContestationStatus();
   const [selectedContestation, setSelectedContestation] = useState<any>(null);
   const [adminDecision, setAdminDecision] = useState("");

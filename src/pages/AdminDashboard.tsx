@@ -21,11 +21,11 @@ const AdminDashboard = () => {
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ['admin-stats'],
     queryFn: async () => {
-      const [usersResult, ordersResult, revenuesResult, disputesResult] = await Promise.all([
+      const [usersResult, ordersResult, revenuesResult, contestationsResult] = await Promise.all([
         supabase.from('profiles').select('role', { count: 'exact' }),
         supabase.from('orders').select('total_amount', { count: 'exact' }),
         supabase.from('influencer_revenues').select('amount'),
-        supabase.from('disputes').select('id', { count: 'exact' }).eq('status', 'pending')
+        supabase.from('contestations').select('id', { count: 'exact' }).eq('statut', 'en_attente')
       ]);
 
       const influencers = usersResult.data?.filter(u => u.role === 'influenceur')?.length || 0;
@@ -38,7 +38,7 @@ const AdminDashboard = () => {
         totalMerchants: merchants,
         totalOrders: ordersResult.count || 0,
         totalRevenue,
-        activeDisputes: disputesResult.count || 0
+        activeDisputes: contestationsResult.count || 0
       };
     },
   });

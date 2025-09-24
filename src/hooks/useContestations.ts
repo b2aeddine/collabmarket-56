@@ -2,14 +2,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-export const useContestations = () => {
+export const useContestations = (adminView = false) => {
   const { data: contestations, isLoading, error } = useQuery({
-    queryKey: ['contestations'],
+    queryKey: ['contestations', adminView],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('contestations')
         .select(`
           *,
@@ -23,6 +23,13 @@ export const useContestations = () => {
           )
         `)
         .order('created_at', { ascending: false });
+      
+      // Si ce n'est pas la vue admin, filtrer par utilisateur actuel
+      if (!adminView) {
+        query = query.or(`influencer_id.eq.${user.id},merchant_id.eq.${user.id}`);
+      }
+
+      const { data, error } = await query;
       
       if (error) throw error;
       return data || [];
