@@ -1427,6 +1427,23 @@ export type Database = {
         Args: { user_id: string }
         Returns: number
       }
+      get_public_influencers: {
+        Args: { limit_count?: number }
+        Returns: {
+          avatar_url: string
+          bio: string
+          city: string
+          created_at: string
+          custom_username: string
+          first_name: string
+          id: string
+          is_verified: boolean
+          last_name: string
+          profile_share_count: number
+          profile_views: number
+          role: string
+        }[]
+      }
       get_public_profile_data: {
         Args: { profile_id: string }
         Returns: {

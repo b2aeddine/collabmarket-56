@@ -91,6 +91,8 @@ export const useInfluencers = (filters?: { category?: string; minFollowers?: num
         throw error;
       }
       
+      console.log('Fetched influencers:', data?.length || 0);
+      
       // Filtrer les données si nécessaire
       let filteredData = data || [];
       
