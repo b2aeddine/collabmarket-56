@@ -42,8 +42,8 @@ export const useInfluencers = (filters?: { category?: string; minFollowers?: num
     queryFn: async () => {
       console.log('Fetching influencers from database...');
       
-      // Only request safe public columns to work with new security policies
-      let query = supabase
+      // Direct query that works for both authenticated and anonymous users
+      const { data, error } = await supabase
         .from('profiles')
         .select(`
           id,
@@ -81,14 +81,13 @@ export const useInfluencers = (filters?: { category?: string; minFollowers?: num
           )
         `)
         .eq('role', 'influenceur')
-        .eq('is_verified', true) // Inclut les validations manuelles ET Stripe Identity
-        .eq('is_profile_public', true) // Only public profiles
-        .eq('is_banned', false) // Only non-banned profiles
-        .limit(20); // Pagination - limit to 20 influencers
-
-      const { data, error } = await query;
+        .eq('is_verified', true)
+        .eq('is_profile_public', true)
+        .eq('is_banned', false)
+        .limit(20);
       
       if (error) {
+        console.error('Error fetching influencers:', error);
         throw error;
       }
       
