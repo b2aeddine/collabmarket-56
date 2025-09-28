@@ -9,7 +9,6 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { CatalogSkeleton } from "@/components/common/CatalogSkeleton";
 import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
-
 const InfluencerCatalog = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedNiche, setSelectedNiche] = useState("all");
@@ -18,32 +17,29 @@ const InfluencerCatalog = () => {
 
   // Debounce search term for better performance
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
-
   const queryClient = useQueryClient();
-  const { influencers, isLoading, error } = useInfluencers();
+  const {
+    influencers,
+    isLoading,
+    error
+  } = useInfluencers();
 
   // Function to refresh data
   const handleRefresh = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: ['influencers'] });
+    queryClient.invalidateQueries({
+      queryKey: ['influencers']
+    });
   }, [queryClient]);
 
   // Memoize the transformation to avoid recalculation on every render
   const transformedInfluencers = useMemo(() => {
     if (!influencers) return [];
-    
     return influencers.map(influencer => {
       const totalFollowers = influencer.social_links?.reduce((sum, link) => sum + (link.followers || 0), 0) || 0;
-      const avgEngagement = influencer.social_links?.length > 0 
-        ? influencer.social_links.reduce((sum, link) => sum + (link.engagement_rate || 0), 0) / influencer.social_links.length 
-        : 0;
-      
-      const minPrice = influencer.offers?.length > 0 
-        ? Math.min(...influencer.offers.map(offer => offer.price)) 
-        : 100;
-
+      const avgEngagement = influencer.social_links?.length > 0 ? influencer.social_links.reduce((sum, link) => sum + (link.engagement_rate || 0), 0) / influencer.social_links.length : 0;
+      const minPrice = influencer.offers?.length > 0 ? Math.min(...influencer.offers.map(offer => offer.price)) : 100;
       const categories = influencer.profile_categories?.map(pc => pc.categories?.name).filter(Boolean) || [];
       const primaryCategory = categories[0] || "Lifestyle";
-
       return {
         id: influencer.id,
         name: `@${(influencer.first_name || 'user').toLowerCase()}`,
@@ -56,30 +52,18 @@ const InfluencerCatalog = () => {
         minPrice: minPrice,
         avatar: influencer.avatar_url || "/placeholder.svg",
         location: influencer.city || "France",
-        profileViews: influencer.profile_views || 0,
+        profileViews: influencer.profile_views || 0
       };
     });
   }, [influencers]);
 
   // Memoize filtered results to avoid recalculation on irrelevant state changes
   const filteredInfluencers = useMemo(() => {
-    return transformedInfluencers.filter((influencer) => {
-      const matchesSearch = influencer.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
-                           influencer.fullName.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
-                           influencer.niche.toLowerCase().includes(debouncedSearchTerm.toLowerCase());
-      
+    return transformedInfluencers.filter(influencer => {
+      const matchesSearch = influencer.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) || influencer.fullName.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) || influencer.niche.toLowerCase().includes(debouncedSearchTerm.toLowerCase());
       const matchesNiche = selectedNiche === "all" || influencer.niche === selectedNiche;
-      
-      const matchesBudget = selectedBudget === "all" || 
-                           (selectedBudget === "0-100" && influencer.minPrice <= 100) ||
-                           (selectedBudget === "100-200" && influencer.minPrice > 100 && influencer.minPrice <= 200) ||
-                           (selectedBudget === "200+" && influencer.minPrice > 200);
-      
-      const matchesFollowers = selectedFollowers === "all" ||
-                             (selectedFollowers === "0-30k" && influencer.followers <= 30000) ||
-                             (selectedFollowers === "30k-50k" && influencer.followers > 30000 && influencer.followers <= 50000) ||
-                             (selectedFollowers === "50k+" && influencer.followers > 50000);
-
+      const matchesBudget = selectedBudget === "all" || selectedBudget === "0-100" && influencer.minPrice <= 100 || selectedBudget === "100-200" && influencer.minPrice > 100 && influencer.minPrice <= 200 || selectedBudget === "200+" && influencer.minPrice > 200;
+      const matchesFollowers = selectedFollowers === "all" || selectedFollowers === "0-30k" && influencer.followers <= 30000 || selectedFollowers === "30k-50k" && influencer.followers > 30000 && influencer.followers <= 50000 || selectedFollowers === "50k+" && influencer.followers > 50000;
       return matchesSearch && matchesNiche && matchesBudget && matchesFollowers;
     });
   }, [transformedInfluencers, debouncedSearchTerm, selectedNiche, selectedBudget, selectedFollowers]);
@@ -89,11 +73,9 @@ const InfluencerCatalog = () => {
   const handleNicheChange = useCallback((value: string) => setSelectedNiche(value), []);
   const handleBudgetChange = useCallback((value: string) => setSelectedBudget(value), []);
   const handleFollowersChange = useCallback((value: string) => setSelectedFollowers(value), []);
-
   if (error) {
     console.error('Error loading influencers:', error);
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-teal-50 flex flex-col">
+    return <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-teal-50 flex flex-col">
         <Header />
         <div className="container mx-auto px-4 py-8 flex-1">
           <div className="text-center text-red-600">
@@ -101,21 +83,15 @@ const InfluencerCatalog = () => {
           </div>
         </div>
         <Footer />
-      </div>
-    );
+      </div>;
   }
-
   if (isLoading) {
-    return (
-      <>
+    return <>
         <CatalogSkeleton />
         <Footer />
-      </>
-    );
+      </>;
   }
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-teal-50 flex flex-col">
+  return <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-teal-50 flex flex-col">
       <Header />
       
       <div className="container mx-auto px-4 py-8 flex-1">
@@ -128,29 +104,11 @@ const InfluencerCatalog = () => {
               Trouvez le partenaire idéal pour votre prochaine campagne
             </p>
           </div>
-          <Button 
-            onClick={handleRefresh}
-            variant="outline"
-            size="sm"
-            className="flex items-center gap-2"
-            disabled={isLoading}
-          >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-            Actualiser
-          </Button>
+          
         </div>
 
         {/* Filters */}
-        <CatalogFilters
-          searchTerm={searchTerm}
-          selectedNiche={selectedNiche}
-          selectedBudget={selectedBudget}
-          selectedFollowers={selectedFollowers}
-          onSearchChange={handleSearchChange}
-          onNicheChange={handleNicheChange}
-          onBudgetChange={handleBudgetChange}
-          onFollowersChange={handleFollowersChange}
-        />
+        <CatalogFilters searchTerm={searchTerm} selectedNiche={selectedNiche} selectedBudget={selectedBudget} selectedFollowers={selectedFollowers} onSearchChange={handleSearchChange} onNicheChange={handleNicheChange} onBudgetChange={handleBudgetChange} onFollowersChange={handleFollowersChange} />
 
         {/* Results */}
         <div className="mb-6">
@@ -160,13 +118,10 @@ const InfluencerCatalog = () => {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredInfluencers.map((influencer) => (
-            <InfluencerCard key={influencer.id} influencer={influencer} />
-          ))}
+          {filteredInfluencers.map(influencer => <InfluencerCard key={influencer.id} influencer={influencer} />)}
         </div>
 
-        {filteredInfluencers.length === 0 && !isLoading && (
-          <div className="text-center py-12">
+        {filteredInfluencers.length === 0 && !isLoading && <div className="text-center py-12">
             <div className="text-gray-400 mb-4">
               <Search className="w-16 h-16 mx-auto" />
             </div>
@@ -174,18 +129,12 @@ const InfluencerCatalog = () => {
               Aucun influenceur trouvé
             </h3>
             <p className="text-gray-500">
-              {transformedInfluencers.length === 0 
-                ? "Aucun influenceur n'est encore enregistré dans la base de données."
-                : "Essayez d'ajuster vos filtres de recherche"
-              }
+              {transformedInfluencers.length === 0 ? "Aucun influenceur n'est encore enregistré dans la base de données." : "Essayez d'ajuster vos filtres de recherche"}
             </p>
-          </div>
-        )}
+          </div>}
       </div>
       
       <Footer />
-    </div>
-  );
+    </div>;
 };
-
 export default InfluencerCatalog;
