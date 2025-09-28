@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +8,6 @@ import Footer from "@/components/Footer";
 import { Mail, Phone, MapPin, Clock, Send } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-
 const Contact = () => {
   const [formData, setFormData] = useState({
     firstName: "",
@@ -19,19 +17,17 @@ const Contact = () => {
     message: ""
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!formData.firstName || !formData.lastName || !formData.email || !formData.message) {
       toast.error("Veuillez remplir tous les champs obligatoires");
       return;
     }
-
     setIsSubmitting(true);
-    
     try {
-      const { error } = await supabase.functions.invoke('handle-contact-form', {
+      const {
+        error
+      } = await supabase.functions.invoke('handle-contact-form', {
         body: {
           name: `${formData.firstName} ${formData.lastName}`,
           email: formData.email,
@@ -39,9 +35,7 @@ const Contact = () => {
           message: formData.message
         }
       });
-
       if (error) throw error;
-
       toast.success("Message envoyé avec succès ! Nous vous répondrons bientôt.");
       setFormData({
         firstName: "",
@@ -57,9 +51,7 @@ const Contact = () => {
       setIsSubmitting(false);
     }
   };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-teal-50 flex flex-col">
+  return <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-teal-50 flex flex-col">
       <Header />
       
       <div className="container mx-auto px-4 py-12 flex-1">
@@ -94,23 +86,19 @@ const Contact = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Prénom *
                       </label>
-                      <Input 
-                        placeholder="Votre prénom" 
-                        value={formData.firstName}
-                        onChange={(e) => setFormData({...formData, firstName: e.target.value})}
-                        required
-                      />
+                      <Input placeholder="Votre prénom" value={formData.firstName} onChange={e => setFormData({
+                      ...formData,
+                      firstName: e.target.value
+                    })} required />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Nom *
                       </label>
-                      <Input 
-                        placeholder="Votre nom" 
-                        value={formData.lastName}
-                        onChange={(e) => setFormData({...formData, lastName: e.target.value})}
-                        required
-                      />
+                      <Input placeholder="Votre nom" value={formData.lastName} onChange={e => setFormData({
+                      ...formData,
+                      lastName: e.target.value
+                    })} required />
                     </div>
                   </div>
                   
@@ -118,44 +106,33 @@ const Contact = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Email *
                     </label>
-                    <Input 
-                      type="email" 
-                      placeholder="votre@email.com" 
-                      value={formData.email}
-                      onChange={(e) => setFormData({...formData, email: e.target.value})}
-                      required
-                    />
+                    <Input type="email" placeholder="votre@email.com" value={formData.email} onChange={e => setFormData({
+                    ...formData,
+                    email: e.target.value
+                  })} required />
                   </div>
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Sujet
                     </label>
-                    <Input 
-                      placeholder="Objet de votre message" 
-                      value={formData.subject}
-                      onChange={(e) => setFormData({...formData, subject: e.target.value})}
-                    />
+                    <Input placeholder="Objet de votre message" value={formData.subject} onChange={e => setFormData({
+                    ...formData,
+                    subject: e.target.value
+                  })} />
                   </div>
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Message *
                     </label>
-                    <Textarea 
-                      placeholder="Décrivez votre demande..." 
-                      rows={6}
-                      value={formData.message}
-                      onChange={(e) => setFormData({...formData, message: e.target.value})}
-                      required
-                    />
+                    <Textarea placeholder="Décrivez votre demande..." rows={6} value={formData.message} onChange={e => setFormData({
+                    ...formData,
+                    message: e.target.value
+                  })} required />
                   </div>
                   
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-gradient-primary"
-                    disabled={isSubmitting}
-                  >
+                  <Button type="submit" className="w-full bg-gradient-primary" disabled={isSubmitting}>
                     <Send className="w-4 h-4 mr-2" />
                     {isSubmitting ? "Envoi en cours..." : "Envoyer le message"}
                   </Button>
@@ -164,72 +141,7 @@ const Contact = () => {
             </Card>
 
             {/* Contact Info */}
-            <div className="space-y-6">
-              <Card className="border-0 shadow-lg">
-                <CardContent className="p-6">
-                  <div className="flex items-start space-x-4">
-                    <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
-                      <Mail className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-800 mb-2">Email</h3>
-                      <p className="text-gray-600">contact@collabmarket.fr</p>
-                      <p className="text-gray-600">support@collabmarket.fr</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-0 shadow-lg">
-                <CardContent className="p-6">
-                  <div className="flex items-start space-x-4">
-                    <div className="w-12 h-12 bg-secondary rounded-full flex items-center justify-center flex-shrink-0">
-                      <Phone className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-800 mb-2">Téléphone</h3>
-                      <p className="text-gray-600">+33 1 23 45 67 89</p>
-                      <p className="text-sm text-gray-500">Lun-Ven 9h-18h</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-0 shadow-lg">
-                <CardContent className="p-6">
-                  <div className="flex items-start space-x-4">
-                    <div className="w-12 h-12 bg-accent rounded-full flex items-center justify-center flex-shrink-0">
-                      <MapPin className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-800 mb-2">Adresse</h3>
-                      <p className="text-gray-600">
-                        123 Avenue des Collaborations<br />
-                        75001 Paris, France
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-0 shadow-lg">
-                <CardContent className="p-6">
-                  <div className="flex items-start space-x-4">
-                    <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Clock className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-800 mb-2">Horaires</h3>
-                      <p className="text-gray-600">
-                        Lundi - Vendredi : 9h00 - 18h00<br />
-                        Samedi : 10h00 - 16h00<br />
-                        Dimanche : Fermé
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            
           </div>
 
           {/* FAQ Section */}
@@ -287,8 +199,6 @@ const Contact = () => {
       </div>
 
       <Footer />
-    </div>
-  );
+    </div>;
 };
-
 export default Contact;
