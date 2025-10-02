@@ -13,6 +13,7 @@ import EditProfileModal from "@/components/EditProfileModal";
 import ProfileShareButton from "@/components/ProfileShareButton";
 import ProfileSettingsModal from "@/components/ProfileSettingsModal";
 import { TrendingUp, Eye, ShoppingBag, DollarSign, Instagram, MessageCircle, Bell, User, Trash2, Camera, Play, Zap, Megaphone, Edit, MoreVertical, Euro, ExternalLink, MapPin, Building, Settings } from "lucide-react";
+import snapchatLogo from "@/assets/snapchat-logo.png";
 import { SocialNetwork } from "@/types";
 import { Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -107,7 +108,7 @@ const InfluencerDashboard = () => {
       case "snapchat": return (
         <div className="w-5 h-5 bg-yellow-400 rounded-lg flex items-center justify-center overflow-hidden">
           <img 
-            src="/src/assets/snapchat-logo.png" 
+            src={snapchatLogo} 
             alt="Snapchat" 
             className="w-3 h-3 object-contain"
           />

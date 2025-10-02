@@ -16,6 +16,7 @@ import { useReviews } from "@/hooks/useReviews";
 import { InfluencerProfileSkeleton } from "@/components/common/InfluencerProfileSkeleton";
 import { ServicesCarousel } from "@/components/common/ServicesCarousel";
 import { SocialNetworksCarousel } from "@/components/common/SocialNetworksCarousel";
+import snapchatLogo from "@/assets/snapchat-logo.png";
 
 const InfluencerProfile = () => {
   const { id } = useParams();
@@ -145,7 +146,7 @@ const InfluencerProfile = () => {
         return (
           <div className="w-6 h-6 rounded-lg bg-yellow-400 flex items-center justify-center relative overflow-hidden">
             <img 
-              src="/src/assets/snapchat-logo.png" 
+              src={snapchatLogo} 
               alt="Snapchat" 
               className="w-4 h-4 object-contain"
             />

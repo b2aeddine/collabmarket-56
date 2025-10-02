@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { ExternalLink, Edit, Trash2, Check } from "lucide-react";
 import EditSocialNetworkModal from "./EditSocialNetworkModal";
+import snapchatLogo from "@/assets/snapchat-logo.png";
 
 interface SocialNetworkCardProps {
   id?: string;
@@ -91,7 +92,7 @@ const SocialNetworkCard = ({
         return (
           <div className="w-10 h-10 rounded-xl bg-yellow-400 flex items-center justify-center relative overflow-hidden">
             <img 
-              src="/src/assets/snapchat-logo.png" 
+              src={snapchatLogo} 
               alt="Snapchat" 
               className="w-6 h-6 object-contain"
             />

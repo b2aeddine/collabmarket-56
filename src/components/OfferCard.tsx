@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ExternalLink, Edit, Trash2, Play, Pause } from "lucide-react";
 import EditOfferModal from "./EditOfferModal";
+import snapchatLogo from "@/assets/snapchat-logo.png";
 
 interface OfferCardProps {
   id: string;
@@ -85,7 +86,7 @@ const OfferCard = ({
         return (
           <div className="w-8 h-8 rounded-lg bg-yellow-400 flex items-center justify-center relative overflow-hidden">
             <img 
-              src="/src/assets/snapchat-logo.png" 
+              src={snapchatLogo} 
               alt="Snapchat" 
               className="w-5 h-5 object-contain"
             />
