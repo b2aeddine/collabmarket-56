@@ -16,19 +16,48 @@ import { useFavorites } from "@/hooks/useFavorites";
 
 const MerchantDashboard = () => {
   const { toast } = useToast();
-  const { profile, user, loading: authLoading, refetchUser } = useAuth();
+  const { profile, user, loading: authLoading, refetchUser, updateProfile } = useAuth();
   const unreadCount = useUnreadMessagesCount();
   const { orders, isLoading: ordersLoading } = useOrders('commercant');
   const { favorites, isLoading: favoritesLoading } = useFavorites();
 
   const handleSaveProfile = async (updatedUser: any) => {
-    toast({
-      title: "Profil mis à jour",
-      description: "Vos informations ont été enregistrées avec succès.",
-    });
-    
-    // Rafraîchir les données utilisateur après la sauvegarde
-    await refetchUser();
+    try {
+      const updateData = {
+        first_name: updatedUser.firstName,
+        last_name: updatedUser.lastName,
+        email: updatedUser.email,
+        phone: updatedUser.phone,
+        city: updatedUser.city,
+        bio: updatedUser.bio,
+        avatar_url: updatedUser.avatar,
+        company_name: updatedUser.companyName,
+      };
+
+      const { error } = await updateProfile(updateData);
+      
+      if (error) {
+        toast({
+          title: "Erreur",
+          description: "Erreur lors de la mise à jour du profil",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      await refetchUser();
+      toast({
+        title: "Profil mis à jour",
+        description: "Vos informations ont été enregistrées avec succès.",
+      });
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast({
+        title: "Erreur",
+        description: "Erreur lors de la mise à jour du profil",
+        variant: "destructive"
+      });
+    }
   };
 
   // Memoize stats calculation to avoid recalculation on every render

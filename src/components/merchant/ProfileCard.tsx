@@ -37,28 +37,21 @@ const ProfileCard = ({ profile, user, onSaveProfile }: ProfileCardProps) => {
 
   const handleSaveProfile = async (updatedUser: any) => {
     try {
-      console.log('Saving merchant profile:', updatedUser);
-      
-      // Sauvegarder les informations du profil
+      // La fonction parent gère la sauvegarde du profil de base et affiche le toast
       await onSaveProfile(updatedUser);
       
-      // Sauvegarder les catégories si elles sont présentes
-      if (updatedUser.categories && updatedUser.categories.length > 0) {
-        console.log('Saving categories:', updatedUser.categories);
+      // Si des catégories sont sélectionnées, les sauvegarder
+      if (updatedUser.selectedCategories && updatedUser.selectedCategories.length > 0) {
         await createProfileCategoryMutation.mutateAsync({
           profileId: profile.id,
-          categoryIds: updatedUser.categories
+          categoryIds: updatedUser.selectedCategories,
         });
+        
+        // Recharger uniquement les catégories (l'invalidation est déjà gérée par la mutation)
+        await refetchCategories();
       }
-      
-      // Invalider les requêtes pour forcer un rechargement
-      await queryClient.invalidateQueries({ queryKey: ['profile-categories', profile.id] });
-      await queryClient.invalidateQueries({ queryKey: ['auth-user'] });
-      await refetchCategories();
-      
-      toast.success("Profil et niches mis à jour avec succès !");
     } catch (error) {
-      console.error("Erreur lors de la sauvegarde du profil commerçant:", error);
+      console.error("Erreur lors de la sauvegarde du profil:", error);
       toast.error("Erreur lors de la mise à jour du profil");
     }
   };
