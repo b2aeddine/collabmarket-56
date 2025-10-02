@@ -1,6 +1,8 @@
 
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import EditProfileModal from "@/components/EditProfileModal";
 import { User, Building, Mail, MapPin } from "lucide-react";
@@ -15,6 +17,7 @@ interface ProfileCardProps {
 }
 
 const ProfileCard = ({ profile, user, onSaveProfile }: ProfileCardProps) => {
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const { profileCategories, isLoading: categoriesLoading, refetch: refetchCategories } = useProfileCategories(profile?.id);
   const createProfileCategoryMutation = useCreateProfileCategory();
   const queryClient = useQueryClient();
@@ -61,8 +64,9 @@ const ProfileCard = ({ profile, user, onSaveProfile }: ProfileCardProps) => {
   };
 
   return (
-    <Card className="shadow-xl border-0">
-      <CardContent className="p-6">
+    <>
+      <Card className="shadow-xl border-0">
+        <CardContent className="p-6">
         <div className="text-center mb-6">
           <div className="relative inline-block">
             <Avatar className="w-24 h-24 mx-auto mb-4">
@@ -122,13 +126,29 @@ const ProfileCard = ({ profile, user, onSaveProfile }: ProfileCardProps) => {
           </div>
 
           <div className="space-y-3">
-            {modalUser && (
-              <EditProfileModal user={modalUser} onSave={handleSaveProfile} />
-            )}
+            <Button 
+              onClick={() => setIsEditModalOpen(true)}
+              variant="outline"
+              className="w-full"
+            >
+              <User className="w-4 h-4 mr-2" />
+              Modifier le profil
+            </Button>
           </div>
         </div>
       </CardContent>
     </Card>
+
+    {/* Modal */}
+    {modalUser && (
+      <EditProfileModal 
+        user={modalUser} 
+        onSave={handleSaveProfile} 
+        isOpen={isEditModalOpen} 
+        onClose={() => setIsEditModalOpen(false)} 
+      />
+    )}
+    </>
   );
 };
 
