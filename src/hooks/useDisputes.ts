@@ -7,6 +7,22 @@ export const useDisputes = () => {
   const { data: disputes, isLoading, error } = useQuery({
     queryKey: ['disputes'],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
+      // Récupérer d'abord les commandes de l'utilisateur
+      const { data: userOrders, error: ordersError } = await supabase
+        .from('orders')
+        .select('id')
+        .or(`merchant_id.eq.${user.id},influencer_id.eq.${user.id}`);
+      
+      if (ordersError) throw ordersError;
+      
+      const orderIds = userOrders?.map(o => o.id) || [];
+      
+      if (orderIds.length === 0) return [];
+
+      // Récupérer les litiges liés à ces commandes
       const { data, error } = await supabase
         .from('disputes')
         .select(`
@@ -20,6 +36,7 @@ export const useDisputes = () => {
             influencer:profiles!orders_influencer_id_fkey(first_name, last_name)
           )
         `)
+        .in('order_id', orderIds)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
