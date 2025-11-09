@@ -84,11 +84,11 @@ const OfferCard = ({
         );
       case 'snapchat':
         return (
-          <div className="w-8 h-8 rounded-lg bg-yellow-400 flex items-center justify-center relative overflow-hidden">
+          <div className="w-10 h-10 rounded-xl bg-yellow-400 flex items-center justify-center relative overflow-hidden">
             <img 
               src={snapchatLogo} 
               alt="Snapchat" 
-              className="w-5 h-5 object-contain"
+              className="w-6 h-6 object-contain"
             />
           </div>
         );
