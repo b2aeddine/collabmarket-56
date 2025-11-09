@@ -1,17 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Edit, X } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
-import { useCategories, useProfileCategories, useCreateProfileCategory } from "@/hooks/useCategories";
-import { toast } from "sonner";
+import { useCategories, useProfileCategories } from "@/hooks/useCategories";
 import { AvatarUpload } from "@/components/common/AvatarUpload";
+import { useProfileUpdate } from "@/hooks/useProfileUpdate";
+import { toast } from "sonner";
 interface User {
   id: string;
   firstName: string;
@@ -37,142 +37,114 @@ const EditProfileModal = ({
   isOpen,
   onClose
 }: EditProfileModalProps) => {
-  const {
-    updateProfile,
-    user: currentUser
-  } = useAuth();
-  const {
-    categories
-  } = useCategories();
-  const {
-    profileCategories,
-    refetch: refetchProfileCategories
-  } = useProfileCategories(user.id);
-  const createProfileCategoryMutation = useCreateProfileCategory();
-  const [internalIsOpen, setInternalIsOpen] = useState(false);
+  const { user: currentUser } = useAuth();
+  const { categories } = useCategories();
+  const { profileCategories } = useProfileCategories(user.id);
+  const updateProfileMutation = useProfileUpdate();
+  
   const [formData, setFormData] = useState<User>(user);
-  const [isLoading, setIsLoading] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [newCategory, setNewCategory] = useState("");
 
-  // Use external control if provided, otherwise use internal state
-  const modalIsOpen = isOpen !== undefined ? isOpen : internalIsOpen;
-  const handleClose = () => {
-    if (onClose) {
-      onClose();
-    } else {
-      setInternalIsOpen(false);
-    }
-  };
-  const handleOpen = () => {
-    if (isOpen === undefined) {
-      setInternalIsOpen(true);
-    }
-  };
+  // Mémoïser l'état du rôle
+  const isCommercant = useMemo(() => currentUser?.role === 'commercant', [currentUser?.role]);
+
+  // Initialiser les catégories sélectionnées uniquement quand le modal s'ouvre
   useEffect(() => {
-    if (profileCategories && profileCategories.length > 0) {
-      const categoryIds = profileCategories.map((pc: any) => pc.categories?.id).filter(Boolean) as string[];
+    if (isOpen && profileCategories) {
+      const categoryIds = profileCategories
+        .map((pc: any) => pc.categories?.id)
+        .filter(Boolean) as string[];
       setSelectedCategories(categoryIds);
-    } else {
-      setSelectedCategories([]);
     }
-  }, [profileCategories]);
-  const handleSubmit = async (e: React.FormEvent) => {
+  }, [isOpen, profileCategories]);
+
+  // Réinitialiser le formulaire quand le modal s'ouvre
+  useEffect(() => {
+    if (isOpen) {
+      setFormData(user);
+    }
+  }, [isOpen, user]);
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validation rapide
+    // Validation
     if (!formData.firstName.trim() || !formData.lastName.trim() || !formData.email.trim()) {
       toast.error("Le prénom, nom et email sont obligatoires");
       return;
     }
-    setIsLoading(true);
+
+    const profileData = {
+      first_name: formData.firstName.trim(),
+      last_name: formData.lastName.trim(),
+      email: formData.email.trim(),
+      phone: formData.phone?.trim() || null,
+      city: formData.city?.trim() || null,
+      bio: formData.bio?.trim() || null,
+      company_name: formData.companyName?.trim() || null,
+      avatar_url: formData.avatar || null
+    };
+
     try {
-      // Optimisation: préparation des données simplifiée
-      const updateData = {
-        first_name: formData.firstName.trim(),
-        last_name: formData.lastName.trim(),
-        email: formData.email.trim(),
-        phone: formData.phone?.trim() || null,
-        city: formData.city?.trim() || null,
-        bio: formData.bio?.trim() || null,
-        company_name: formData.companyName?.trim() || null,
-        avatar_url: formData.avatar || null
-      };
-      const result = await updateProfile(updateData);
-      if (result?.error) {
-        toast.error(`Erreur: ${result.error.message}`);
-        return;
-      }
+      await updateProfileMutation.mutateAsync({
+        userId: user.id,
+        profileData,
+        categoryIds: selectedCategories.length > 0 ? selectedCategories : undefined
+      });
 
-      // Sauvegarder les catégories sélectionnées
-      if (selectedCategories.length > 0) {
-        console.log('Saving categories:', selectedCategories);
-        await createProfileCategoryMutation.mutateAsync({
-          profileId: user.id,
-          categoryIds: selectedCategories
-        });
-
-        // Rafraîchir les catégories après sauvegarde
-        await refetchProfileCategories();
-      }
-
-      // Ajouter les catégories sélectionnées aux données utilisateur
-      const updatedUserWithCategories = {
+      // Notifier le parent avec les données mises à jour
+      const updatedUser = {
         ...formData,
         categories: selectedCategories
       };
-      onSave(updatedUserWithCategories);
-      handleClose();
-      toast.success("Profil et niches mis à jour avec succès !");
-    } catch (error: any) {
-      console.error("Erreur lors de la sauvegarde:", error);
-      toast.error(`Erreur: ${error.message || 'Une erreur est survenue'}`);
-    } finally {
-      setIsLoading(false);
+      onSave(updatedUser);
+      
+      if (onClose) onClose();
+    } catch (error) {
+      // L'erreur est déjà gérée dans le hook
+      console.error('Failed to update profile:', error);
     }
-  };
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const {
-      name,
-      value
-    } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-  const handleSelectChange = (name: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-  const handleAddCategory = () => {
+  }, [formData, selectedCategories, user.id, updateProfileMutation, onSave, onClose]);
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  }, []);
+
+  const handleSelectChange = useCallback((name: string, value: string) => {
+    setFormData(prev => ({ ...prev, [name]: value }));
+  }, []);
+
+  const handleAddCategory = useCallback(() => {
     if (newCategory && !selectedCategories.includes(newCategory)) {
       setSelectedCategories(prev => [...prev, newCategory]);
       setNewCategory("");
     }
-  };
-  const handleRemoveCategory = (categoryId: string) => {
+  }, [newCategory, selectedCategories]);
+
+  const handleRemoveCategory = useCallback((categoryId: string) => {
     setSelectedCategories(prev => prev.filter(id => id !== categoryId));
-  };
-  const handleAvatarUpdated = (newAvatarUrl: string) => {
-    setFormData(prev => ({
-      ...prev,
-      avatar: newAvatarUrl
-    }));
-  };
-  const getUserInitials = () => {
+  }, []);
+
+  const handleAvatarUpdated = useCallback((newAvatarUrl: string) => {
+    setFormData(prev => ({ ...prev, avatar: newAvatarUrl }));
+  }, []);
+
+  const getUserInitials = useMemo(() => {
     return `${formData.firstName?.[0] || ''}${formData.lastName?.[0] || ''}`;
-  };
-  const isCommercant = currentUser?.role === 'commercant';
-  return <Dialog open={modalIsOpen} onOpenChange={open => {
-    if (!open) {
-      handleClose();
-    }
-  }}>
+  }, [formData.firstName, formData.lastName]);
+
+  // Mémoïser les catégories disponibles (non sélectionnées)
+  const availableCategories = useMemo(() => {
+    return categories?.filter(cat => !selectedCategories.includes(cat.id)) || [];
+  }, [categories, selectedCategories]);
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      if (!open && onClose) {
+        onClose();
+      }
+    }}>
       <DialogTrigger asChild>
-        
+        {/* Trigger géré par le parent */}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
@@ -180,33 +152,75 @@ const EditProfileModal = ({
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="flex flex-col items-center space-y-4">
-            <AvatarUpload currentAvatarUrl={formData.avatar} onAvatarUpdated={handleAvatarUpdated} userInitials={getUserInitials()} />
+            <AvatarUpload 
+              currentAvatarUrl={formData.avatar} 
+              onAvatarUpdated={handleAvatarUpdated} 
+              userInitials={getUserInitials} 
+            />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="firstName">Prénom *</Label>
-              <Input id="firstName" name="firstName" value={formData.firstName} onChange={handleInputChange} required disabled={isLoading} />
+              <Input 
+                id="firstName" 
+                name="firstName" 
+                value={formData.firstName} 
+                onChange={handleInputChange} 
+                required 
+                disabled={updateProfileMutation.isPending} 
+              />
             </div>
             <div>
               <Label htmlFor="lastName">Nom *</Label>
-              <Input id="lastName" name="lastName" value={formData.lastName} onChange={handleInputChange} required disabled={isLoading} />
+              <Input 
+                id="lastName" 
+                name="lastName" 
+                value={formData.lastName} 
+                onChange={handleInputChange} 
+                required 
+                disabled={updateProfileMutation.isPending} 
+              />
             </div>
             <div>
               <Label htmlFor="email">Email *</Label>
-              <Input id="email" name="email" type="email" value={formData.email} onChange={handleInputChange} required disabled={isLoading} />
+              <Input 
+                id="email" 
+                name="email" 
+                type="email" 
+                value={formData.email} 
+                onChange={handleInputChange} 
+                required 
+                disabled={updateProfileMutation.isPending} 
+              />
             </div>
             <div>
               <Label htmlFor="phone">Numéro de téléphone</Label>
-              <Input id="phone" name="phone" value={formData.phone} onChange={handleInputChange} disabled={isLoading} />
+              <Input 
+                id="phone" 
+                name="phone" 
+                value={formData.phone} 
+                onChange={handleInputChange} 
+                disabled={updateProfileMutation.isPending} 
+              />
             </div>
             <div>
               <Label htmlFor="city">Ville</Label>
-              <Input id="city" name="city" value={formData.city} onChange={handleInputChange} disabled={isLoading} />
+              <Input 
+                id="city" 
+                name="city" 
+                value={formData.city} 
+                onChange={handleInputChange} 
+                disabled={updateProfileMutation.isPending} 
+              />
             </div>
             <div>
               <Label htmlFor="gender">Sexe</Label>
-              <Select value={formData.gender} onValueChange={value => handleSelectChange("gender", value)} disabled={isLoading}>
+              <Select 
+                value={formData.gender} 
+                onValueChange={value => handleSelectChange("gender", value)} 
+                disabled={updateProfileMutation.isPending}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -220,14 +234,31 @@ const EditProfileModal = ({
             </div>
           </div>
 
-          {isCommercant && <div>
+          {isCommercant && (
+            <div>
               <Label htmlFor="companyName">Nom de l'entreprise</Label>
-              <Input id="companyName" name="companyName" value={formData.companyName || ''} onChange={handleInputChange} placeholder="Nom de votre entreprise" disabled={isLoading} />
-            </div>}
+              <Input 
+                id="companyName" 
+                name="companyName" 
+                value={formData.companyName || ''} 
+                onChange={handleInputChange} 
+                placeholder="Nom de votre entreprise" 
+                disabled={updateProfileMutation.isPending} 
+              />
+            </div>
+          )}
           
           <div>
             <Label htmlFor="bio">Biographie courte</Label>
-            <Textarea id="bio" name="bio" value={formData.bio || ''} onChange={handleInputChange} className="min-h-[80px]" placeholder="Parlez-nous de vous..." disabled={isLoading} />
+            <Textarea 
+              id="bio" 
+              name="bio" 
+              value={formData.bio || ''} 
+              onChange={handleInputChange} 
+              className="min-h-[80px]" 
+              placeholder="Parlez-nous de vous..." 
+              disabled={updateProfileMutation.isPending} 
+            />
           </div>
 
           {/* Section Niches/Catégories */}
@@ -235,42 +266,75 @@ const EditProfileModal = ({
             <Label>Niches / Catégories</Label>
             
             <div className="flex gap-2">
-              <Select value={newCategory} onValueChange={setNewCategory} disabled={isLoading}>
+              <Select 
+                value={newCategory} 
+                onValueChange={setNewCategory} 
+                disabled={updateProfileMutation.isPending}
+              >
                 <SelectTrigger className="flex-1">
                   <SelectValue placeholder="Choisir une catégorie" />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories?.filter(cat => !selectedCategories.includes(cat.id)).map(category => <SelectItem key={category.id} value={category.id}>
-                        {category.name}
-                      </SelectItem>)}
+                  {availableCategories.map(category => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
-              <Button type="button" onClick={handleAddCategory} disabled={!newCategory || isLoading}>
+              <Button 
+                type="button" 
+                onClick={handleAddCategory} 
+                disabled={!newCategory || updateProfileMutation.isPending}
+              >
                 Ajouter
               </Button>
             </div>
 
             <div className="flex flex-wrap gap-2 min-h-[60px] p-3 border rounded-md">
-              {selectedCategories.length === 0 ? <span className="text-sm text-gray-500">Aucune catégorie sélectionnée</span> : selectedCategories.map(categoryId => {
-              const category = categories?.find(c => c.id === categoryId);
-              return <Badge key={categoryId} variant="default" className="flex items-center gap-1 bg-gradient-to-r from-pink-500 to-orange-500 text-white">
+              {selectedCategories.length === 0 ? (
+                <span className="text-sm text-gray-500">Aucune catégorie sélectionnée</span>
+              ) : (
+                selectedCategories.map(categoryId => {
+                  const category = categories?.find(c => c.id === categoryId);
+                  return (
+                    <Badge 
+                      key={categoryId} 
+                      variant="default" 
+                      className="flex items-center gap-1 bg-gradient-to-r from-pink-500 to-orange-500 text-white"
+                    >
                       {category?.name}
-                      <X className="w-3 h-3 cursor-pointer hover:text-red-200" onClick={() => handleRemoveCategory(categoryId)} />
-                    </Badge>;
-            })}
+                      <X 
+                        className="w-3 h-3 cursor-pointer hover:text-red-200" 
+                        onClick={() => handleRemoveCategory(categoryId)} 
+                      />
+                    </Badge>
+                  );
+                })
+              )}
             </div>
           </div>
 
           <div className="flex justify-end space-x-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => handleClose()} disabled={isLoading}>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={onClose} 
+              disabled={updateProfileMutation.isPending}
+            >
               Annuler
             </Button>
-            <Button type="submit" className="bg-gradient-to-r from-pink-500 to-orange-500 hover:opacity-90" disabled={isLoading}>
-              {isLoading ? 'Enregistrement...' : 'Enregistrer'}
+            <Button 
+              type="submit" 
+              className="bg-gradient-to-r from-pink-500 to-orange-500 hover:opacity-90" 
+              disabled={updateProfileMutation.isPending}
+            >
+              {updateProfileMutation.isPending ? 'Enregistrement...' : 'Enregistrer'}
             </Button>
           </div>
         </form>
       </DialogContent>
-    </Dialog>;
+    </Dialog>
+  );
 };
 export default EditProfileModal;
