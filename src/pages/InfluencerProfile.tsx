@@ -384,7 +384,7 @@ const InfluencerProfile = () => {
                 <CardContent className="p-4 sm:p-6">
                   <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl sm:text-2xl font-bold">Réseaux sociaux</h2>
-                    {influencer.socialNetworks.length > 3 && (
+                    {influencer.socialNetworks.length > 1 && (
                       <Button 
                         variant="outline" 
                         size="sm"
