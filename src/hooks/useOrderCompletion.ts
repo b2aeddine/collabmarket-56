@@ -16,7 +16,9 @@ export const useCompleteOrderPayment = () => {
       toast.success('Prestation confirmée ! Les fonds ont été distribués.');
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       queryClient.invalidateQueries({ queryKey: ['influencer-revenues'] });
+      queryClient.invalidateQueries({ queryKey: ['influencer-balance'] });
       queryClient.invalidateQueries({ queryKey: ['stripe-transfers'] });
+      queryClient.invalidateQueries({ queryKey: ['pending-orders'] });
     },
     onError: (error) => {
       console.error('Error completing order payment:', error);
