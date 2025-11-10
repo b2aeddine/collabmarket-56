@@ -6,12 +6,12 @@ import { Label } from "@/components/ui/label";
 import { AlertTriangle, Upload } from "lucide-react";
 import { useCreateContestation } from "@/hooks/useContestations";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 
 interface ContestationModalProps {
   isOpen: boolean;
@@ -24,8 +24,6 @@ const ContestationModal = ({ isOpen, onClose, order }: ContestationModalProps) =
   const [preuveInfluenceur, setPreuveInfluenceur] = useState("");
   
   const createContestation = useCreateContestation();
-
-  if (!isOpen) return null;
 
   const handleSubmit = async () => {
     if (!raisonContestation.trim()) return;
@@ -50,39 +48,41 @@ const ContestationModal = ({ isOpen, onClose, order }: ContestationModalProps) =
 
   if (!canContest) {
     return (
-      <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+      <Sheet open={isOpen} onOpenChange={onClose}>
+        <SheetContent side="bottom" className="h-auto">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-amber-500" />
               Contestation non disponible
-            </DialogTitle>
-            <DialogDescription>
+            </SheetTitle>
+            <SheetDescription>
               Vous pouvez contester cette commande seulement après 48h de non-confirmation par le commerçant.
-            </DialogDescription>
-          </DialogHeader>
-          <Button onClick={onClose} variant="outline" className="w-full">
-            Fermer
-          </Button>
-        </DialogContent>
-      </Dialog>
+            </SheetDescription>
+          </SheetHeader>
+          <div className="mt-4">
+            <Button onClick={onClose} variant="outline" className="w-full">
+              Fermer
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
     );
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+    <Sheet open={isOpen} onOpenChange={onClose}>
+      <SheetContent side="bottom" className="h-[90vh] overflow-y-auto">
+        <SheetHeader>
+          <SheetTitle className="flex items-center gap-2">
             <AlertTriangle className="w-5 h-5 text-amber-500" />
-            Contester la commande
-          </DialogTitle>
-          <DialogDescription>
+            Contester la prestation
+          </SheetTitle>
+          <SheetDescription>
             Expliquez pourquoi vous contestez cette prestation et fournissez des preuves si possible.
-          </DialogDescription>
-        </DialogHeader>
+          </SheetDescription>
+        </SheetHeader>
         
-        <div className="space-y-4">
+        <div className="space-y-4 mt-6">
           <div className="text-sm text-muted-foreground space-y-1">
             <p><strong>Service:</strong> {order.offers?.title}</p>
             <p><strong>Montant:</strong> {order.total_amount}€</p>
@@ -121,7 +121,7 @@ const ContestationModal = ({ isOpen, onClose, order }: ContestationModalProps) =
             </p>
           </div>
 
-          <div className="flex flex-col-reverse sm:flex-row gap-2">
+          <div className="flex flex-col-reverse sm:flex-row gap-2 pb-6">
             <Button
               onClick={onClose}
               variant="outline"
@@ -139,8 +139,8 @@ const ContestationModal = ({ isOpen, onClose, order }: ContestationModalProps) =
             </Button>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 };
 
