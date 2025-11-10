@@ -6,10 +6,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Calendar, MapPin, Clock, Euro, CheckCircle, XCircle, Loader2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import OrderTimelineInfo from "./OrderTimelineInfo";
-import { useAcceptOrder, useRefuseOrder, useMarkOrderAsDelivered, useConfirmOrderCompletion, useContestOrder } from "@/hooks/useOrders";
+import { useAcceptOrder, useRefuseOrder, useMarkOrderAsDelivered, useConfirmOrderCompletion } from "@/hooks/useOrders";
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import ReviewModal from "./ReviewModal";
+import ContestationModal from "./ContestationModal";
 
 interface OrderDetailsModalProps {
   isOpen: boolean;
@@ -42,20 +43,15 @@ interface OrderDetailsModalProps {
   };
 }
 
-// Composant pour les actions sur les commandes
 const OrderActions = ({ order, userRole, onClose }: { order: any, userRole: string, onClose: () => void }) => {
   const queryClient = useQueryClient();
   const [showContestationModal, setShowContestationModal] = useState(false);
-  const [showMerchantContestModal, setShowMerchantContestModal] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
-  const [preuveInfluenceur, setPreuveInfluenceur] = useState('');
-  const [preuveMerchant, setPreuveMerchant] = useState('');
   
   const acceptOrder = useAcceptOrder();
   const refuseOrder = useRefuseOrder();
   const markAsDelivered = useMarkOrderAsDelivered();
   const confirmCompletion = useConfirmOrderCompletion();
-  const contestOrder = useContestOrder();
 
   // Hook for capturing payment when influencer accepts
   const capturePayment = useMutation({
@@ -146,42 +142,8 @@ const OrderActions = ({ order, userRole, onClose }: { order: any, userRole: stri
     }
   };
 
-  const handleContest = async () => {
-    if (!preuveInfluenceur.trim()) {
-      toast.error('Veuillez fournir une preuve ou explication');
-      return;
-    }
-    
-    try {
-      await contestOrder.mutateAsync({ orderId: order.id, preuveInfluenceur });
-      toast.success('Contestation envoyée à l\'administration');
-      setShowContestationModal(false);
-      setPreuveInfluenceur('');
-      onClose();
-    } catch (error) {
-      toast.error('Erreur lors de l\'envoi de la contestation');
-    }
-  };
-
-  const handleMerchantContest = async () => {
-    if (!preuveMerchant.trim()) {
-      toast.error('Veuillez fournir une preuve ou explication');
-      return;
-    }
-    
-    try {
-      await contestOrder.mutateAsync({ orderId: order.id, preuveInfluenceur: preuveMerchant });
-      toast.success('Contestation envoyée à l\'administration');
-      setShowMerchantContestModal(false);
-      setPreuveMerchant('');
-      onClose();
-    } catch (error) {
-      toast.error('Erreur lors de l\'envoi de la contestation');
-    }
-  };
-
   const canContestOrder = (order: any) => {
-    if (order.status !== 'delivered') return false;
+    if (order.status !== 'delivered' && order.status !== 'terminée') return false;
     if (!order.updated_at) return false;
     const deliveredAt = new Date(order.updated_at);
     const now = new Date();
@@ -203,9 +165,8 @@ const OrderActions = ({ order, userRole, onClose }: { order: any, userRole: stri
   );
   
   const canMarkDelivered = userRole === 'influenceur' && order.status === 'en_cours';
-  const canConfirmCompletion = userRole === 'commercant' && order.status === 'delivered';
-  const canContest = userRole === 'influenceur' && order.status === 'delivered' && canContestOrder(order);
-  const canMerchantContest = userRole === 'commercant' && order.status === 'delivered';
+  const canConfirmCompletion = userRole === 'commercant' && (order.status === 'delivered' || order.status === 'terminée');
+  const canContest = (userRole === 'influenceur' || userRole === 'commercant') && (order.status === 'delivered' || order.status === 'terminée') && canContestOrder(order);
 
   // Debug: Toujours afficher le composant pour voir ce qui se passe
   console.log('OrderActions - Status:', order.status, 'UserRole:', userRole);
@@ -286,9 +247,9 @@ const OrderActions = ({ order, userRole, onClose }: { order: any, userRole: stri
         </Button>
       )}
 
-      {canMerchantContest && (
+      {canContest && (
         <Button
-          onClick={() => setShowMerchantContestModal(true)}
+          onClick={() => setShowContestationModal(true)}
           variant="outline"
           className="w-full border-amber-300 text-amber-600 hover:bg-amber-50"
         >
@@ -297,103 +258,19 @@ const OrderActions = ({ order, userRole, onClose }: { order: any, userRole: stri
         </Button>
       )}
 
-      {canContest && (
-        <Button
-          onClick={() => setShowContestationModal(true)}
-          variant="outline"
-          className="w-full border-amber-300 text-amber-600 hover:bg-amber-50"
-        >
-          <AlertTriangle className="w-4 h-4 mr-2" />
-          Contester le blocage
-        </Button>
-      )}
-
-      {order.status === 'delivered' && userRole === 'influenceur' && !canContest && (
+      {(order.status === 'delivered' || order.status === 'terminée') && (userRole === 'influenceur' || userRole === 'commercant') && !canContest && (
         <div className="flex items-center gap-2 text-sm text-blue-600 bg-blue-50 p-3 rounded-lg">
           <Clock className="w-4 h-4" />
-          Vous pourrez contester après 48h si le commerçant ne confirme pas
+          Vous pourrez contester après 48h si le {userRole === 'commercant' ? 'problème persiste' : 'commerçant ne confirme pas'}
         </div>
       )}
 
-      {/* Modal de contestation influenceur */}
-      {showContestationModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4">Contester la commande</h3>
-            <p className="text-sm text-gray-600 mb-4">
-              Expliquez pourquoi vous contestez cette commande et fournissez des preuves si possible.
-            </p>
-            <textarea
-              value={preuveInfluenceur}
-              onChange={(e) => setPreuveInfluenceur(e.target.value)}
-              placeholder="Décrivez votre situation et fournissez des preuves..."
-              className="w-full p-3 border rounded-lg h-32 resize-none"
-            />
-            <div className="flex gap-3 mt-4">
-              <Button
-                onClick={handleContest}
-                disabled={contestOrder.isPending}
-                className="flex-1"
-              >
-                {contestOrder.isPending ? (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                ) : null}
-                Envoyer la contestation
-              </Button>
-              <Button
-                onClick={() => {
-                  setShowContestationModal(false);
-                  setPreuveInfluenceur('');
-                }}
-                variant="outline"
-                className="flex-1"
-              >
-                Annuler
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal de contestation commerçant */}
-      {showMerchantContestModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4">Contester la prestation</h3>
-            <p className="text-sm text-gray-600 mb-4">
-              Expliquez pourquoi vous contestez cette prestation et fournissez des preuves si possible.
-            </p>
-            <textarea
-              value={preuveMerchant}
-              onChange={(e) => setPreuveMerchant(e.target.value)}
-              placeholder="Décrivez votre situation et fournissez des preuves..."
-              className="w-full p-3 border rounded-lg h-32 resize-none"
-            />
-            <div className="flex gap-3 mt-4">
-              <Button
-                onClick={handleMerchantContest}
-                disabled={contestOrder.isPending}
-                className="flex-1"
-              >
-                {contestOrder.isPending ? (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                ) : null}
-                Envoyer la contestation
-              </Button>
-              <Button
-                onClick={() => {
-                  setShowMerchantContestModal(false);
-                  setPreuveMerchant('');
-                }}
-                variant="outline"
-                className="flex-1"
-              >
-                Annuler
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Modal de contestation */}
+      <ContestationModal
+        isOpen={showContestationModal}
+        onClose={() => setShowContestationModal(false)}
+        order={order}
+      />
 
       {/* Modal d'avis */}
       <ReviewModal

@@ -43,7 +43,7 @@ const ContestationModal = ({ isOpen, onClose, order }: ContestationModalProps) =
   };
 
   // Vérifier si 48h se sont écoulées depuis la livraison
-  const canContest = order.status === 'delivered' && order.updated_at && 
+  const canContest = (order.status === 'delivered' || order.status === 'terminée') && order.updated_at && 
     new Date().getTime() - new Date(order.updated_at).getTime() > 48 * 60 * 60 * 1000;
 
   if (!canContest) {
