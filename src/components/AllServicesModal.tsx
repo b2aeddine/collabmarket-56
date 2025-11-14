@@ -55,7 +55,7 @@ const AllServicesModal = ({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {services.map((service) => {
               const platform = getPlatformFromTitle ? getPlatformFromTitle(service.type) : '';
-              const platformName = platform ? (platform === 'x' ? 'X (Twitter)' : platform.charAt(0).toUpperCase() + platform.slice(1)) : '';
+              const platformName = platform === 'x' ? 'X (Twitter)' : platform.charAt(0).toUpperCase() + platform.slice(1);
               
               return (
                 <div 

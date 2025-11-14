@@ -66,7 +66,7 @@ export const ServicesCarousel = ({
       <CarouselContent className="-ml-2 md:-ml-4">
         {services.map((service) => {
           const platform = getPlatformFromTitle ? getPlatformFromTitle(service.type) : '';
-          const platformName = platform ? (platform === 'x' ? 'X (Twitter)' : platform.charAt(0).toUpperCase() + platform.slice(1)) : '';
+          const platformName = platform === 'x' ? 'X (Twitter)' : platform.charAt(0).toUpperCase() + platform.slice(1);
           
           return (
             <CarouselItem key={service.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 lg:basis-1/3">
