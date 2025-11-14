@@ -6,6 +6,13 @@ import snapchatLogo from "@/assets/snapchat-logo.png";
  * avec des dimensions uniformes (w-10 h-10 pour le conteneur, w-6 h-6 pour les SVG)
  */
 export const getPlatformLogo = (platform: string) => {
+  if (!platform || typeof platform !== 'string') {
+    return (
+      <div className="w-10 h-10 rounded-lg bg-gray-500 flex items-center justify-center flex-shrink-0">
+        <ExternalLink className="w-6 h-6 text-white" />
+      </div>
+    );
+  }
   const platformName = platform.toLowerCase();
   switch (platformName) {
     case 'instagram':
