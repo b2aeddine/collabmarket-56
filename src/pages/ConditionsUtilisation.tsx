@@ -1,6 +1,7 @@
 
 import React from "react";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield, Users, CreditCard, AlertCircle, CheckCircle, XCircle } from "lucide-react";
 
@@ -249,6 +250,8 @@ const ConditionsUtilisation = () => {
           </div>
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 };

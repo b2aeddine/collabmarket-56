@@ -43,13 +43,7 @@ export const CatalogSkeleton = () => {
         {/* Influencer Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[...Array(9)].map((_, i) => (
-            <Card 
-              key={i} 
-              className="border-0 shadow-lg bg-white rounded-lg overflow-hidden hover:shadow-xl transition-all duration-300 animate-pulse-subtle"
-              style={{
-                animationDelay: `${i * 100}ms`
-              }}
-            >
+            <Card key={i} className="border-0 shadow-lg bg-white rounded-lg overflow-hidden hover:shadow-xl transition-all duration-300">
               <CardContent className="p-0">
                 {/* Avatar and Header */}
                 <div className="p-6 text-center">

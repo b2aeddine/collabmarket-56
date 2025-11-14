@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import CatalogFilters from "@/components/catalog/CatalogFilters";
 import InfluencerCard from "@/components/catalog/InfluencerCard";
 import { Search, RefreshCw } from "lucide-react";
@@ -81,10 +82,14 @@ const InfluencerCatalog = () => {
             Erreur lors du chargement des influenceurs. Veuillez réessayer.
           </div>
         </div>
+        <Footer />
       </div>;
   }
   if (isLoading) {
-    return <CatalogSkeleton />;
+    return <>
+        <CatalogSkeleton />
+        <Footer />
+      </>;
   }
   return <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-teal-50 flex flex-col">
       <Header />
@@ -113,18 +118,7 @@ const InfluencerCatalog = () => {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredInfluencers.map((influencer, index) => (
-            <div
-              key={influencer.id}
-              className="animate-fade-in"
-              style={{
-                animationDelay: `${Math.min(index * 50, 500)}ms`, // Cap delay at 500ms
-                animationFillMode: 'both'
-              }}
-            >
-              <InfluencerCard influencer={influencer} />
-            </div>
-          ))}
+          {filteredInfluencers.map(influencer => <InfluencerCard key={influencer.id} influencer={influencer} />)}
         </div>
 
         {filteredInfluencers.length === 0 && !isLoading && <div className="text-center py-12">
@@ -139,6 +133,8 @@ const InfluencerCatalog = () => {
             </p>
           </div>}
       </div>
+      
+      <Footer />
     </div>;
 };
 export default InfluencerCatalog;
