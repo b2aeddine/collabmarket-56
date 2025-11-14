@@ -162,6 +162,26 @@ const InfluencerProfile = () => {
       deliveryTime: "48h"
     }]
   } : null;
+
+  // Si le profil n'existe pas, afficher un message d'erreur
+  if (!influencer) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-teal-50">
+        <Header />
+        <div className="container mx-auto px-4 py-8 flex-1">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold mb-4 text-gray-800">Profil introuvable</h1>
+            <p className="text-gray-600 mb-6">L'influenceur que vous recherchez n'existe pas ou a été supprimé.</p>
+            <Button onClick={() => navigate('/catalog')} variant="outline">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Retour au catalogue
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-teal-50">
       <Header />
       
