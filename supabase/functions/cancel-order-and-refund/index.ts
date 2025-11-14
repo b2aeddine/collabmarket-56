@@ -65,7 +65,6 @@ serve(async (req) => {
       .from('orders')
       .update({
         status: 'annulée',
-        date_cancelled: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
       .eq('id', orderId);
