@@ -118,7 +118,7 @@ const InfluencerCatalog = () => {
               key={influencer.id}
               className="animate-fade-in"
               style={{
-                animationDelay: `${index * 50}ms`,
+                animationDelay: `${Math.min(index * 50, 500)}ms`, // Cap delay at 500ms
                 animationFillMode: 'both'
               }}
             >

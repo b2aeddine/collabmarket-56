@@ -16,7 +16,7 @@ import { useReviews } from "@/hooks/useReviews";
 import { InfluencerProfileSkeleton } from "@/components/common/InfluencerProfileSkeleton";
 import { ServicesCarousel } from "@/components/common/ServicesCarousel";
 import { SocialNetworksCarousel } from "@/components/common/SocialNetworksCarousel";
-import snapchatLogo from "@/assets/snapchat-logo.png";
+import { ScrollReveal } from "@/components/common/ScrollReveal";
 const InfluencerProfile = () => {
   const {
     id
@@ -34,8 +34,6 @@ const InfluencerProfile = () => {
     reviewStats
   } = useReviews(id || '');
   const incrementViews = useIncrementProfileViews();
-  console.log('Profile data:', profile);
-  console.log('Review stats:', reviewStats);
 
   // Incrémenter les vues du profil
   useEffect(() => {
@@ -190,10 +188,9 @@ const InfluencerProfile = () => {
       is_connected: link.is_active || false
     })) || [],
     services: (() => {
-      console.log('Profile offers:', validProfile.offers);
-      const activeOffers = validProfile.offers?.filter((offer: any) => offer.is_active);
-      console.log('Active offers:', activeOffers);
-      return activeOffers?.map((offer: any) => ({
+      const activeOffers = validProfile.offers?.filter((offer: any) => offer.is_active) || [];
+      if (activeOffers.length === 0) return [];
+      return activeOffers.map((offer: any) => ({
         id: offer.id,
         type: offer.title,
         description: offer.description || '',
@@ -232,7 +229,8 @@ const InfluencerProfile = () => {
             {/* Profile Info Sidebar */}
             <div className="lg:col-span-1">
               <div className="sticky top-20 lg:top-24">
-                <Card className="shadow-xl border-0">
+                <ScrollReveal animation="fade-in" delay={0}>
+                  <Card className="shadow-xl border-0">
                   <CardContent className="p-4 sm:p-6">
                     <div className="text-center mb-6">
                       <Avatar className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-4">
@@ -302,13 +300,15 @@ const InfluencerProfile = () => {
                     </div>
                   </CardContent>
                 </Card>
+                </ScrollReveal>
               </div>
             </div>
 
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-6 sm:space-y-8">
               {/* Services */}
-              <Card className="shadow-xl border-0 animate-fade-in">
+              <ScrollReveal animation="slide-up" delay={150}>
+                <Card className="shadow-xl border-0 animate-fade-in">
                 <CardContent className="p-4 sm:p-6">
                   <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl sm:text-2xl font-bold">Mes prestations</h2>
@@ -319,9 +319,11 @@ const InfluencerProfile = () => {
                   <ServicesCarousel services={influencer.services} influencerId={id} getPlatformLogo={getPlatformLogo} getPlatformFromTitle={getPlatformFromTitle} />
                 </CardContent>
               </Card>
+              </ScrollReveal>
 
               {/* Social Networks */}
-              <Card className="shadow-xl border-0 animate-fade-in">
+              <ScrollReveal animation="slide-up" delay={300}>
+                <Card className="shadow-xl border-0 animate-fade-in">
                 <CardContent className="p-4 sm:p-6">
                   <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl sm:text-2xl font-bold">Réseaux sociaux</h2>
@@ -332,14 +334,19 @@ const InfluencerProfile = () => {
                   <SocialNetworksCarousel networks={influencer.socialNetworks} />
                 </CardContent>
               </Card>
+              </ScrollReveal>
 
               {/* Reviews Section */}
-              <ReviewsSection influencerId={validProfile.id} />
+              <ScrollReveal animation="slide-up" delay={450}>
+                <ReviewsSection influencerId={validProfile.id} />
+              </ScrollReveal>
 
               {/* Gallery */}
-              <Card className="shadow-xl border-0 animate-fade-in">
-                
-              </Card>
+              <ScrollReveal animation="slide-up" delay={600}>
+                <Card className="shadow-xl border-0 animate-fade-in">
+                  
+                </Card>
+              </ScrollReveal>
             </div>
           </div>
         </div>
