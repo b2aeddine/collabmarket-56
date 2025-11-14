@@ -1,28 +1,29 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { getCorsHeaders } from "../_shared/cors.ts";
+import { validateRequest, createPaymentSchema } from "../_shared/validation.ts";
 
 serve(async (req) => {
+  const origin = req.headers.get('origin');
+  const corsHeaders = getCorsHeaders(origin);
+  
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { 
-      influencerId, 
-      offerId, 
-      amount, 
-      brandName, 
-      productName, 
+    // Validate request body
+    const {
+      influencerId,
+      offerId,
+      amount,
+      brandName,
+      productName,
       brief,
       deadline,
-      specialInstructions 
-    } = await req.json();
+      specialInstructions
+    } = await validateRequest(req, createPaymentSchema);
 
     console.log('Creating payment with Stripe Connect:', { influencerId, offerId, amount });
 
@@ -53,20 +54,20 @@ serve(async (req) => {
       throw new Error('User not authenticated');
     }
 
-    // Get offer and influencer details
+    // Get offer and influencer details (optimized: only select needed fields)
     const [offerResponse, influencerResponse] = await Promise.all([
-      supabaseService.from('offers').select('*').eq('id', offerId).single(),
-      supabaseService.from('profiles').select('*').eq('id', influencerId).single()
+      supabaseService.from('offers').select('id, title, price, delivery_time, influencer_id').eq('id', offerId).single(),
+      supabaseService.from('profiles').select('id, first_name, last_name, email').eq('id', influencerId).single()
     ]);
 
     if (offerResponse.error || influencerResponse.error) {
       throw new Error('Failed to fetch offer or influencer details');
     }
 
-    // Get influencer's Stripe Connect account
+    // Get influencer's Stripe Connect account (optimized: only select needed fields)
     const { data: stripeAccount } = await supabaseService
       .from('stripe_accounts')
-      .select('*')
+      .select('stripe_account_id, charges_enabled, payouts_enabled, account_status')
       .eq('user_id', influencerId)
       .single();
 
