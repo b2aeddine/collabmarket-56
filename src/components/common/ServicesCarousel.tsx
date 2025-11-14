@@ -67,6 +67,7 @@ export const ServicesCarousel = ({
         {services.map((service) => {
           const platform = getPlatformFromTitle ? getPlatformFromTitle(service.type) : '';
           const platformName = platform ? (platform === 'x' ? 'X (Twitter)' : platform.charAt(0).toUpperCase() + platform.slice(1)) : '';
+          const platformLogo = getPlatformLogo ? getPlatformLogo(platform) : null;
           
           return (
             <CarouselItem key={service.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 lg:basis-1/3">
@@ -84,7 +85,7 @@ export const ServicesCarousel = ({
                 <div className="flex flex-col h-full">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-3">
-                      {getPlatformLogo && getPlatformLogo(platform)}
+                      {platformLogo}
                       <div>
                         <h3 className="text-lg font-semibold">{service.type}</h3>
                         {platformName && <p className="text-sm text-gray-500">{platformName}</p>}

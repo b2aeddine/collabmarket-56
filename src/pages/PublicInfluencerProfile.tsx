@@ -14,6 +14,7 @@ import { InfluencerProfileSkeleton } from "@/components/common/InfluencerProfile
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { ServicesCarousel } from "@/components/common/ServicesCarousel";
 import { SocialNetworksCarousel } from "@/components/common/SocialNetworksCarousel";
+import { ScrollReveal } from "@/components/common/ScrollReveal";
 
 const PublicInfluencerProfile = () => {
   const { username } = useParams();
@@ -99,7 +100,6 @@ const PublicInfluencerProfile = () => {
   };
 
   // Transformer les données pour l'affichage
-  console.log('Profile categories data:', profile.profile_categories);
   const influencer = {
     id: profile.id,
     username: `@${profile.custom_username}`,
@@ -124,9 +124,7 @@ const PublicInfluencerProfile = () => {
       is_connected: link.is_connected || false,
     })) || [],
     services: (() => {
-      console.log('Public profile offers:', profile.offers);
       const activeOffers = profile.offers?.filter(offer => offer.is_active);
-      console.log('Public active offers:', activeOffers);
       return activeOffers?.map(offer => ({
         id: offer.id,
         type: offer.title,
@@ -148,7 +146,8 @@ const PublicInfluencerProfile = () => {
             {/* Profile Info Sidebar */}
             <div className="lg:col-span-1">
               <div className="sticky top-24">
-                <Card className="shadow-xl border-0">
+                <ScrollReveal animation="fade-in" delay={0}>
+                  <Card className="shadow-xl border-0">
                   <CardContent className="p-6">
                     <div className="text-center mb-6">
                       <Avatar className="w-24 h-24 mx-auto mb-4">
@@ -206,6 +205,7 @@ const PublicInfluencerProfile = () => {
                     </div>
                   </CardContent>
                 </Card>
+                </ScrollReveal>
               </div>
             </div>
 
@@ -213,7 +213,8 @@ const PublicInfluencerProfile = () => {
             <div className="lg:col-span-2 space-y-8">
               {/* Services */}
               {influencer.services.length > 0 && (
-                <Card className="shadow-xl border-0 animate-fade-in">
+                <ScrollReveal animation="slide-up" delay={150}>
+                  <Card className="shadow-xl border-0 animate-fade-in">
                   <CardContent className="p-6">
                     <h2 className="text-2xl font-bold mb-6">Prestations disponibles</h2>
                     <ServicesCarousel 
@@ -224,11 +225,13 @@ const PublicInfluencerProfile = () => {
                     />
                   </CardContent>
                 </Card>
+                </ScrollReveal>
               )}
 
               {/* Social Networks */}
               {influencer.socialNetworks.length > 0 && (
-                <Card className="shadow-xl border-0 animate-fade-in">
+                <ScrollReveal animation="slide-up" delay={300}>
+                  <Card className="shadow-xl border-0 animate-fade-in">
                   <CardContent className="p-6">
                     <h2 className="text-2xl font-bold mb-4">Réseaux sociaux</h2>
                     <SocialNetworksCarousel 
@@ -236,10 +239,13 @@ const PublicInfluencerProfile = () => {
                     />
                   </CardContent>
                 </Card>
+                </ScrollReveal>
               )}
 
               {/* Reviews Section */}
-              <ReviewsSection influencerId={profile.id} />
+              <ScrollReveal animation="slide-up" delay={450}>
+                <ReviewsSection influencerId={profile.id} />
+              </ScrollReveal>
             </div>
           </div>
         </div>

@@ -38,7 +38,10 @@ const InfluencerCard = memo(({ influencer }: InfluencerCardProps) => {
             src={influencer.avatar}
             alt={influencer.name}
             className="w-16 h-16 rounded-full object-cover ring-2 ring-primary/20"
-            loading="lazy" // Lazy load images for better performance
+            loading="lazy"
+            width={64}
+            height={64}
+            decoding="async"
           />
           <div className="flex-1 min-w-0">
             <h3 className="text-lg font-bold text-gray-800 truncate">{influencer.name}</h3>
