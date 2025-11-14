@@ -1,7 +1,6 @@
 
 import React from "react";
 import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, Database, Shield, Cookie, Users, Lock } from "lucide-react";
 
@@ -344,8 +343,6 @@ const PolitiqueConfidentialite = () => {
           </div>
         </div>
       </div>
-
-      <Footer />
     </div>
   );
 };
