@@ -17,7 +17,6 @@ import { useReviews } from "@/hooks/useReviews";
 import { InfluencerProfileSkeleton } from "@/components/common/InfluencerProfileSkeleton";
 import { ServicesCarousel } from "@/components/common/ServicesCarousel";
 import { SocialNetworksCarousel } from "@/components/common/SocialNetworksCarousel";
-import snapchatLogo from "@/assets/snapchat-logo.png";
 const InfluencerProfile = () => {
   const {
     id
