@@ -138,33 +138,38 @@ const InfluencerProfile = () => {
     })) || [],
     services: (() => {
       console.log('Profile offers:', validProfile.offers);
-      const activeOffers = validProfile.offers?.filter((offer: any) => offer.is_active);
+      const activeOffers = validProfile.offers?.filter((offer: any) => offer.is_active) || [];
       console.log('Active offers:', activeOffers);
-      return activeOffers?.map((offer: any) => ({
+      if (activeOffers.length === 0) return [];
+      return activeOffers.map((offer: any) => ({
         id: offer.id,
-        type: offer.title,
+        type: offer.title || 'Service',
         description: offer.description || '',
-        price: Number(offer.price),
+        price: Number(offer.price) || 0,
         deliveryTime: offer.delivery_time || '48h',
         popular: offer.is_popular || false
       }));
-    })() || [{
-      id: 'default-1',
-      type: "Story Instagram",
-      description: "Story de 24h avec mention de votre produit",
-      price: 100,
-      deliveryTime: "24h"
-    }, {
-      id: 'default-2',
-      type: "Post Instagram",
-      description: "Post permanent avec photo de votre produit",
-      price: 150,
-      deliveryTime: "48h"
-    }]
-  } : null;
+    })()
+  } : {
+    id: '',
+    username: '@user',
+    fullName: 'Utilisateur',
+    city: 'France',
+    avatar: '/placeholder.svg',
+    category: 'Lifestyle',
+    bio: '',
+    followers: 0,
+    engagement: 0,
+    rating: 0,
+    reviewCount: 0,
+    profileViews: 0,
+    gallery: [],
+    socialNetworks: [],
+    services: []
+  };
 
   // Si le profil n'existe pas, afficher un message d'erreur
-  if (!influencer) {
+  if (!influencer || !influencer.id) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-teal-50">
         <Header />
@@ -283,7 +288,7 @@ const InfluencerProfile = () => {
                         Voir tout
                       </Button>}
                   </div>
-                  <ServicesCarousel services={influencer.services} influencerId={id} getPlatformLogo={getPlatformLogo} getPlatformFromTitle={getPlatformFromTitle} />
+                  <ServicesCarousel services={influencer.services || []} influencerId={id} getPlatformLogo={getPlatformLogo} getPlatformFromTitle={getPlatformFromTitle} />
                 </CardContent>
               </Card>
 
@@ -296,7 +301,7 @@ const InfluencerProfile = () => {
                         Voir tout
                       </Button>}
                   </div>
-                  <SocialNetworksCarousel networks={influencer.socialNetworks} />
+                  <SocialNetworksCarousel networks={influencer.socialNetworks || []} />
                 </CardContent>
               </Card>
 
@@ -316,10 +321,10 @@ const InfluencerProfile = () => {
       <MessagingModal isOpen={isMessagingOpen} onClose={() => setIsMessagingOpen(false)} influencer={influencer} />
 
       {/* All Services Modal */}
-      <AllServicesModal isOpen={showAllServices} onClose={() => setShowAllServices(false)} services={influencer.services} influencerId={id} getPlatformLogo={getPlatformLogo} getPlatformFromTitle={getPlatformFromTitle} />
+      <AllServicesModal isOpen={showAllServices} onClose={() => setShowAllServices(false)} services={influencer.services || []} influencerId={id} getPlatformLogo={getPlatformLogo} getPlatformFromTitle={getPlatformFromTitle} />
 
       {/* All Social Networks Modal */}
-      <AllSocialNetworksModal isOpen={showAllNetworks} onClose={() => setShowAllNetworks(false)} networks={influencer.socialNetworks} />
+      <AllSocialNetworksModal isOpen={showAllNetworks} onClose={() => setShowAllNetworks(false)} networks={influencer.socialNetworks || []} />
     </div>;
 };
 export default InfluencerProfile;
