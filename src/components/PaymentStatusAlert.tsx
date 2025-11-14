@@ -63,7 +63,7 @@ export const PaymentStatusAlert = () => {
   if (pendingPaymentOrders.length === 0) return null;
 
   return (
-    <Alert className="mb-4 border-amber-200 bg-amber-50">
+    <Alert className="mb-4 border-amber-200 bg-amber-50 animate-slide-in-top">
       <AlertCircle className="h-4 w-4 text-amber-600" />
       <AlertDescription className="flex items-center justify-between">
         <div>
