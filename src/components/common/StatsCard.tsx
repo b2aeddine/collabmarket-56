@@ -1,6 +1,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { LucideIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface StatsCardProps {
   title: string;
@@ -12,7 +13,7 @@ interface StatsCardProps {
 
 export const StatsCard = ({ title, value, icon: Icon, description, className }: StatsCardProps) => {
   return (
-    <Card className={className}>
+    <Card className={cn("transition-all duration-300 ease-in-out hover:shadow-lg hover:scale-[1.02]", className)}>
       <CardContent className="flex items-center p-6">
         <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-pink-500 to-orange-500 rounded-lg mr-4">
           <Icon className="w-6 h-6 text-white" />
