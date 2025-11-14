@@ -2,7 +2,6 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
-import { ScrollReveal } from "@/components/common/ScrollReveal";
 import { User, FileEdit, Search, Handshake, Star, Briefcase, Target, Zap, BarChart3 } from "lucide-react";
 
 const HowItWorks = () => {
@@ -13,37 +12,30 @@ const HowItWorks = () => {
       {/* Hero Section */}
       <section className="py-12 px-4">
         <div className="container mx-auto text-center max-w-md">
-          <ScrollReveal animation="fade-in" delay={0}>
-            <h1 className="text-4xl md:text-5xl font-bold mb-8 leading-tight">
-              <span className="text-gray-800">Comment</span>
-              <br />
-              <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                ça marche
-              </span>
-              <span className="text-secondary text-5xl">?</span>
-            </h1>
-          </ScrollReveal>
-          <ScrollReveal animation="fade-in" delay={150}>
-            <p className="text-lg text-gray-600 mb-12 leading-relaxed">
-              Découvrez comment Collabmarket révolutionne les collaborations entre influenceurs et commerçants
-            </p>
-          </ScrollReveal>
+          <h1 className="text-4xl md:text-5xl font-bold mb-8 leading-tight">
+            <span className="text-gray-800">Comment</span>
+            <br />
+            <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+              ça marche
+            </span>
+            <span className="text-secondary text-5xl">?</span>
+          </h1>
+          <p className="text-lg text-gray-600 mb-12 leading-relaxed">
+            Découvrez comment Collabmarket révolutionne les collaborations entre influenceurs et commerçants
+          </p>
         </div>
       </section>
 
       {/* 4 Steps Section */}
       <section className="py-12 px-4">
         <div className="container mx-auto max-w-md">
-          <ScrollReveal animation="fade-in" delay={0}>
-            <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">
-              4 étapes simples pour commencer
-            </h2>
-          </ScrollReveal>
+          <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">
+            4 étapes simples pour commencer
+          </h2>
           
           <div className="space-y-8">
             {/* Step 1 */}
-            <ScrollReveal animation="slide-up" delay={0}>
-              <div className="relative">
+            <div className="relative">
               <div className="flex items-start">
                 <div className="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center text-white font-bold text-xl mr-4 flex-shrink-0">
                   1
@@ -61,12 +53,10 @@ const HowItWorks = () => {
                 </div>
               </div>
               <div className="absolute left-6 top-16 w-0.5 h-12 bg-gray-200"></div>
-              </div>
-            </ScrollReveal>
+            </div>
 
             {/* Step 2 */}
-            <ScrollReveal animation="slide-up" delay={150}>
-              <div className="relative">
+            <div className="relative">
               <div className="flex items-start">
                 <div className="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center text-white font-bold text-xl mr-4 flex-shrink-0">
                   2
@@ -84,12 +74,10 @@ const HowItWorks = () => {
                 </div>
               </div>
               <div className="absolute left-6 top-16 w-0.5 h-12 bg-gray-200"></div>
-              </div>
-            </ScrollReveal>
+            </div>
 
             {/* Step 3 */}
-            <ScrollReveal animation="slide-up" delay={300}>
-              <div className="relative">
+            <div className="relative">
               <div className="flex items-start">
                 <div className="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center text-white font-bold text-xl mr-4 flex-shrink-0">
                   3
@@ -107,12 +95,10 @@ const HowItWorks = () => {
                 </div>
               </div>
               <div className="absolute left-6 top-16 w-0.5 h-12 bg-gray-200"></div>
-              </div>
-            </ScrollReveal>
+            </div>
 
             {/* Step 4 */}
-            <ScrollReveal animation="slide-up" delay={450}>
-              <div className="relative">
+            <div className="relative">
               <div className="flex items-start">
                 <div className="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center text-white font-bold text-xl mr-4 flex-shrink-0">
                   4
@@ -129,8 +115,7 @@ const HowItWorks = () => {
                   </p>
                 </div>
               </div>
-              </div>
-            </ScrollReveal>
+            </div>
           </div>
         </div>
       </section>
@@ -138,21 +123,16 @@ const HowItWorks = () => {
       {/* For Influencers Section */}
       <section className="py-12 px-4">
         <div className="container mx-auto max-w-md">
-          <ScrollReveal animation="fade-in" delay={0}>
-            <h2 className="text-4xl font-bold text-center mb-4 text-gray-800">
-              Pour les <span className="text-primary">Influenceurs</span>
-            </h2>
-          </ScrollReveal>
-          <ScrollReveal animation="fade-in" delay={150}>
-            <p className="text-lg text-gray-600 text-center mb-12 leading-relaxed">
-              Monétisez votre audience et développez vos partenariats
-            </p>
-          </ScrollReveal>
+          <h2 className="text-4xl font-bold text-center mb-4 text-gray-800">
+            Pour les <span className="text-primary">Influenceurs</span>
+          </h2>
+          <p className="text-lg text-gray-600 text-center mb-12 leading-relaxed">
+            Monétisez votre audience et développez vos partenariats
+          </p>
 
           <div className="space-y-8">
             {/* Create Showcase */}
-            <ScrollReveal animation="slide-up" delay={0}>
-              <div className="bg-pink-50 rounded-3xl p-8">
+            <div className="bg-pink-50 rounded-3xl p-8">
               <div className="text-center mb-6">
                 ⭐
               </div>
@@ -162,12 +142,10 @@ const HowItWorks = () => {
               <p className="text-gray-600 text-center leading-relaxed">
                 Présentez vos réseaux sociaux, votre audience et vos tarifs
               </p>
-              </div>
-            </ScrollReveal>
+            </div>
 
             {/* Manage Offers */}
-            <ScrollReveal animation="slide-up" delay={150}>
-              <div className="bg-orange-50 rounded-3xl p-8">
+            <div className="bg-orange-50 rounded-3xl p-8">
               <div className="text-center mb-6 text-2xl">
                 💼
               </div>
@@ -177,12 +155,10 @@ const HowItWorks = () => {
               <p className="text-gray-600 text-center leading-relaxed">
                 Définissez vos services : posts, stories, reels avec vos prix
               </p>
-              </div>
-            </ScrollReveal>
+            </div>
 
             {/* Receive Orders */}
-            <ScrollReveal animation="slide-up" delay={300}>
-              <div className="bg-teal-50 rounded-3xl p-8">
+            <div className="bg-teal-50 rounded-3xl p-8">
               <div className="text-center mb-6 text-2xl">
                 📦
               </div>
@@ -192,12 +168,10 @@ const HowItWorks = () => {
               <p className="text-gray-600 text-center leading-relaxed">
                 Les marques vous trouvent et commandent directement vos services
               </p>
-              </div>
-            </ScrollReveal>
+            </div>
 
             {/* Track Revenue */}
-            <ScrollReveal animation="slide-up" delay={450}>
-              <div className="bg-yellow-50 rounded-3xl p-8">
+            <div className="bg-yellow-50 rounded-3xl p-8">
               <div className="text-center mb-6 text-2xl">
                 💰
               </div>
@@ -207,12 +181,10 @@ const HowItWorks = () => {
               <p className="text-gray-600 text-center leading-relaxed">
                 Dashboard complet avec statistiques et gestion des paiements
               </p>
-              </div>
-            </ScrollReveal>
+            </div>
           </div>
 
-          <ScrollReveal animation="slide-up" delay={600}>
-            <div className="mt-12 text-center">
+          <div className="mt-12 text-center">
             <Button 
               size="lg" 
               asChild 
@@ -222,29 +194,23 @@ const HowItWorks = () => {
                 Devenir influenceur
               </Link>
             </Button>
-            </div>
-          </ScrollReveal>
+          </div>
         </div>
       </section>
 
       {/* For Merchants Section */}
       <section className="py-12 px-4">
         <div className="container mx-auto max-w-md">
-          <ScrollReveal animation="fade-in" delay={0}>
-            <h2 className="text-4xl font-bold text-center mb-4 text-gray-800">
-              Pour les <span className="text-accent">Commerçants</span>
-            </h2>
-          </ScrollReveal>
-          <ScrollReveal animation="fade-in" delay={150}>
-            <p className="text-lg text-gray-600 text-center mb-12 leading-relaxed">
-              Trouvez les parfaits ambassadeurs pour votre marque
-            </p>
-          </ScrollReveal>
+          <h2 className="text-4xl font-bold text-center mb-4 text-gray-800">
+            Pour les <span className="text-accent">Commerçants</span>
+          </h2>
+          <p className="text-lg text-gray-600 text-center mb-12 leading-relaxed">
+            Trouvez les parfaits ambassadeurs pour votre marque
+          </p>
 
           <div className="space-y-8">
             {/* Browse Catalog */}
-            <ScrollReveal animation="slide-up" delay={0}>
-              <div className="bg-teal-50 rounded-3xl p-8">
+            <div className="bg-teal-50 rounded-3xl p-8">
               <div className="text-center mb-6 text-2xl">
                 🔍
               </div>
@@ -254,12 +220,10 @@ const HowItWorks = () => {
               <p className="text-gray-600 text-center leading-relaxed">
                 Découvrez des milliers d'influenceurs par niche et budget
               </p>
-              </div>
-            </ScrollReveal>
+            </div>
 
             {/* Filter Precisely */}
-            <ScrollReveal animation="slide-up" delay={150}>
-              <div className="bg-red-50 rounded-3xl p-8">
+            <div className="bg-red-50 rounded-3xl p-8">
               <div className="text-center mb-6 text-2xl">
                 🎯
               </div>
@@ -269,12 +233,10 @@ const HowItWorks = () => {
               <p className="text-gray-600 text-center leading-relaxed">
                 Trouvez l'influenceur parfait selon vos critères spécifiques
               </p>
-              </div>
-            </ScrollReveal>
+            </div>
 
             {/* Order Simply */}
-            <ScrollReveal animation="slide-up" delay={300}>
-              <div className="bg-yellow-50 rounded-3xl p-8">
+            <div className="bg-yellow-50 rounded-3xl p-8">
               <div className="text-center mb-6 text-2xl">
                 ⚡
               </div>
@@ -284,12 +246,10 @@ const HowItWorks = () => {
               <p className="text-gray-600 text-center leading-relaxed">
                 Choisissez un service et passez commande en quelques clics
               </p>
-              </div>
-            </ScrollReveal>
+            </div>
 
             {/* Track Campaigns */}
-            <ScrollReveal animation="slide-up" delay={450}>
-              <div className="bg-green-50 rounded-3xl p-8">
+            <div className="bg-green-50 rounded-3xl p-8">
               <div className="text-center mb-6 text-2xl">
                 📊
               </div>
@@ -299,12 +259,10 @@ const HowItWorks = () => {
               <p className="text-gray-600 text-center leading-relaxed">
                 Tableau de bord pour gérer toutes vos collaborations
               </p>
-              </div>
-            </ScrollReveal>
+            </div>
           </div>
 
-          <ScrollReveal animation="slide-up" delay={600}>
-            <div className="mt-12 text-center">
+          <div className="mt-12 text-center">
             <Button 
               size="lg" 
               asChild 
@@ -314,68 +272,57 @@ const HowItWorks = () => {
                 Devenir commerçant
               </Link>
             </Button>
-            </div>
-          </ScrollReveal>
+          </div>
         </div>
       </section>
 
       {/* FAQ Section */}
       <section className="py-12 px-4">
         <div className="container mx-auto max-w-md">
-          <ScrollReveal animation="fade-in" delay={0}>
-            <h2 className="text-4xl font-bold text-center mb-12 text-gray-800">
-              Questions fréquentes
-            </h2>
-          </ScrollReveal>
+          <h2 className="text-4xl font-bold text-center mb-12 text-gray-800">
+            Questions fréquentes
+          </h2>
 
           <div className="space-y-6">
             {/* FAQ Item 1 */}
-            <ScrollReveal animation="slide-up" delay={0}>
-              <div className="bg-white rounded-3xl p-8 shadow-lg">
+            <div className="bg-white rounded-3xl p-8 shadow-lg">
               <h3 className="text-xl font-bold mb-4 text-gray-800">
                 Collabmarket prend-elle une commission ?
               </h3>
               <p className="text-gray-600 leading-relaxed">
                 Oui, nous prélevons une petite commission sur chaque transaction pour maintenir et améliorer la plateforme.
               </p>
-              </div>
-            </ScrollReveal>
+            </div>
 
             {/* FAQ Item 2 */}
-            <ScrollReveal animation="slide-up" delay={150}>
-              <div className="bg-white rounded-3xl p-8 shadow-lg">
+            <div className="bg-white rounded-3xl p-8 shadow-lg">
               <h3 className="text-xl font-bold mb-4 text-gray-800">
                 Comment sont protégés les paiements ?
               </h3>
               <p className="text-gray-600 leading-relaxed">
                 Tous les paiements sont sécurisés et le versement aux influenceurs se fait après validation du travail.
               </p>
-              </div>
-            </ScrollReveal>
+            </div>
 
             {/* FAQ Item 3 */}
-            <ScrollReveal animation="slide-up" delay={300}>
-              <div className="bg-white rounded-3xl p-8 shadow-lg">
+            <div className="bg-white rounded-3xl p-8 shadow-lg">
               <h3 className="text-xl font-bold mb-4 text-gray-800">
                 Puis-je modifier mes tarifs ?
               </h3>
               <p className="text-gray-600 leading-relaxed">
                 Oui, vous pouvez ajuster vos tarifs et services à tout moment depuis votre dashboard.
               </p>
-              </div>
-            </ScrollReveal>
+            </div>
 
             {/* FAQ Item 4 */}
-            <ScrollReveal animation="slide-up" delay={450}>
-              <div className="bg-white rounded-3xl p-8 shadow-lg">
+            <div className="bg-white rounded-3xl p-8 shadow-lg">
               <h3 className="text-xl font-bold mb-4 text-gray-800">
                 Y a-t-il un minimum de followers ?
               </h3>
               <p className="text-gray-600 leading-relaxed">
                 Non, nous accueillons tous les influenceurs, des nano aux macro-influenceurs.
               </p>
-              </div>
-            </ScrollReveal>
+            </div>
           </div>
         </div>
       </section>
@@ -384,19 +331,14 @@ const HowItWorks = () => {
       <section className="py-16 px-4">
         <div className="container mx-auto text-center max-w-md">
           <div className="bg-gradient-hero rounded-3xl p-12 text-white">
-            <ScrollReveal animation="fade-in" delay={0}>
-              <h2 className="text-4xl font-bold mb-6">
-                Prêt à commencer ?
-              </h2>
-            </ScrollReveal>
-            <ScrollReveal animation="fade-in" delay={150}>
-              <p className="text-lg mb-10 opacity-90 leading-relaxed">
-                Rejoignez des milliers d'utilisateurs qui font déjà confiance à Collabmarket
-              </p>
-            </ScrollReveal>
+            <h2 className="text-4xl font-bold mb-6">
+              Prêt à commencer ?
+            </h2>
+            <p className="text-lg mb-10 opacity-90 leading-relaxed">
+              Rejoignez des milliers d'utilisateurs qui font déjà confiance à Collabmarket
+            </p>
             
-            <ScrollReveal animation="slide-up" delay={300}>
-              <div className="space-y-4">
+            <div className="space-y-4">
               <Button 
                 size="lg" 
                 asChild 
@@ -415,8 +357,7 @@ const HowItWorks = () => {
                   Je suis commerçant
                 </Link>
               </Button>
-              </div>
-            </ScrollReveal>
+            </div>
           </div>
         </div>
       </section>
