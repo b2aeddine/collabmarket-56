@@ -4,7 +4,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Header from "@/components/Header";
-import { ScrollReveal } from "@/components/common/ScrollReveal";
 import { Mail, Phone, MapPin, Clock, Send } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -58,26 +57,21 @@ const Contact = () => {
         <div className="max-w-4xl mx-auto">
           {/* Hero Section */}
           <div className="text-center mb-12">
-            <ScrollReveal animation="fade-in" delay={0}>
-              <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
-                <span className="text-gray-800">Contactez</span>
-                <br />
-                <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                  notre équipe
-                </span>
-              </h1>
-            </ScrollReveal>
-            <ScrollReveal animation="fade-in" delay={150}>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
-                Une question ? Un projet ? Notre équipe est là pour vous accompagner dans vos collaborations.
-              </p>
-            </ScrollReveal>
+            <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
+              <span className="text-gray-800">Contactez</span>
+              <br />
+              <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                notre équipe
+              </span>
+            </h1>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
+              Une question ? Un projet ? Notre équipe est là pour vous accompagner dans vos collaborations.
+            </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
             {/* Contact Form */}
-            <ScrollReveal animation="slide-right" delay={0}>
-              <Card className="border-0 shadow-lg">
+            <Card className="border-0 shadow-lg">
               <CardHeader>
                 <CardTitle className="text-2xl font-bold text-gray-800 flex items-center">
                   <Send className="w-6 h-6 mr-2 text-primary" />
@@ -143,8 +137,7 @@ const Contact = () => {
                   </Button>
                 </form>
               </CardContent>
-              </Card>
-            </ScrollReveal>
+            </Card>
 
             {/* Contact Info */}
             
@@ -152,14 +145,11 @@ const Contact = () => {
 
           {/* FAQ Section */}
           <div className="mt-16">
-            <ScrollReveal animation="fade-in" delay={0}>
-              <h2 className="text-3xl font-bold text-center mb-8 text-gray-800">
-                Questions fréquentes
-              </h2>
-            </ScrollReveal>
+            <h2 className="text-3xl font-bold text-center mb-8 text-gray-800">
+              Questions fréquentes
+            </h2>
             <div className="grid md:grid-cols-2 gap-6">
-              <ScrollReveal animation="slide-up" delay={0}>
-                <Card className="border-0 shadow-lg">
+              <Card className="border-0 shadow-lg">
                 <CardContent className="p-6">
                   <h3 className="text-lg font-semibold text-gray-800 mb-3">
                     Comment devenir influenceur sur Collabmarket ?
@@ -169,10 +159,8 @@ const Contact = () => {
                   </p>
                 </CardContent>
               </Card>
-              </ScrollReveal>
 
-              <ScrollReveal animation="slide-up" delay={150}>
-                <Card className="border-0 shadow-lg">
+              <Card className="border-0 shadow-lg">
                 <CardContent className="p-6">
                   <h3 className="text-lg font-semibold text-gray-800 mb-3">
                     Quels sont les frais de commission ?
@@ -182,10 +170,8 @@ const Contact = () => {
                   </p>
                 </CardContent>
               </Card>
-              </ScrollReveal>
 
-              <ScrollReveal animation="slide-up" delay={300}>
-                <Card className="border-0 shadow-lg">
+              <Card className="border-0 shadow-lg">
                 <CardContent className="p-6">
                   <h3 className="text-lg font-semibold text-gray-800 mb-3">
                     Comment sont traités les paiements ?
@@ -195,10 +181,8 @@ const Contact = () => {
                   </p>
                 </CardContent>
               </Card>
-              </ScrollReveal>
 
-              <ScrollReveal animation="slide-up" delay={450}>
-                <Card className="border-0 shadow-lg">
+              <Card className="border-0 shadow-lg">
                 <CardContent className="p-6">
                   <h3 className="text-lg font-semibold text-gray-800 mb-3">
                     Puis-je annuler une collaboration ?
@@ -208,7 +192,6 @@ const Contact = () => {
                   </p>
                 </CardContent>
               </Card>
-              </ScrollReveal>
             </div>
           </div>
         </div>

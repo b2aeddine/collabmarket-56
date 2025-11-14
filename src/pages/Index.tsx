@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Header from "@/components/Header";
-import { ScrollReveal } from "@/components/common/ScrollReveal";
 import { User, HandHeart, Building2, Target, Zap, BarChart3, Star, Users } from "lucide-react";
 const Index = () => {
   return <div className="min-h-screen bg-white flex flex-col">
@@ -12,22 +11,17 @@ const Index = () => {
       <section className="py-12 px-4">
         <div className="container mx-auto text-center">
           <div className="max-w-4xl mx-auto">
-            <ScrollReveal animation="fade-in" delay={0}>
-              <h1 className="text-4xl md:text-6xl font-bold mb-8 leading-tight">
-                <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">Des 
+            <h1 className="text-4xl md:text-6xl font-bold mb-8 leading-tight">
+              <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">Des 
 Collaborations</span>
-                <br />
-                <span className="text-gray-800">qui cartonnent</span>
-              </h1>
-            </ScrollReveal>
-            <ScrollReveal animation="fade-in" delay={150}>
-              <p className="text-lg text-gray-600 mb-12 max-w-xl mx-auto leading-relaxed">
-                La plateforme qui connecte influenceurs et commerçants pour des partenariats authentiques et rentables
-              </p>
-            </ScrollReveal>
+              <br />
+              <span className="text-gray-800">qui cartonnent</span>
+            </h1>
+            <p className="text-lg text-gray-600 mb-12 max-w-xl mx-auto leading-relaxed">
+              La plateforme qui connecte influenceurs et commerçants pour des partenariats authentiques et rentables
+            </p>
             
-            <ScrollReveal animation="slide-up" delay={300}>
-              <div className="flex flex-col gap-4 mb-16 max-w-sm mx-auto">
+            <div className="flex flex-col gap-4 mb-16 max-w-sm mx-auto">
               <Button size="lg" asChild className="bg-gradient-primary text-white text-lg px-8 py-6 rounded-full hover:opacity-90 w-full">
                 <Link to="/signup?role=influencer">
                   <Star className="w-5 h-5 mr-2" />
@@ -40,8 +34,7 @@ Collaborations</span>
                   Je suis commerçant
                 </Link>
               </Button>
-              </div>
-            </ScrollReveal>
+            </div>
           </div>
         </div>
       </section>
@@ -52,8 +45,7 @@ Collaborations</span>
           <div className="bg-gradient-to-br from-pink-100 via-orange-100 to-teal-100 rounded-3xl p-8 mb-8">
             
             {/* Influenceurs */}
-            <ScrollReveal animation="slide-up" delay={0}>
-              <div className="text-center mb-12">
+            <div className="text-center mb-12">
               <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center mx-auto mb-6">
                 <User className="w-10 h-10 text-white" />
               </div>
@@ -63,12 +55,10 @@ Collaborations</span>
               <p className="text-gray-600 leading-relaxed">
                 Créez votre profil et monétisez votre audience
               </p>
-              </div>
-            </ScrollReveal>
+            </div>
 
             {/* Collaboration */}
-            <ScrollReveal animation="slide-up" delay={150}>
-              <div className="text-center mb-12">
+            <div className="text-center mb-12">
               <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center mx-auto mb-6">
                 <HandHeart className="w-10 h-10 text-white" />
               </div>
@@ -78,12 +68,10 @@ Collaborations</span>
               <p className="text-gray-600 leading-relaxed">
                 Connexion simple et efficace
               </p>
-              </div>
-            </ScrollReveal>
+            </div>
 
             {/* Commerçants */}
-            <ScrollReveal animation="slide-up" delay={300}>
-              <div className="text-center">
+            <div className="text-center">
               <div className="w-20 h-20 bg-accent rounded-full flex items-center justify-center mx-auto mb-6">
                 <Building2 className="w-10 h-10 text-white" />
               </div>
@@ -93,8 +81,7 @@ Collaborations</span>
               <p className="text-gray-600 leading-relaxed">
                 Trouvez les parfaits ambassadeurs
               </p>
-              </div>
-            </ScrollReveal>
+            </div>
           </div>
         </div>
       </section>
@@ -102,21 +89,16 @@ Collaborations</span>
       {/* Why Choose Section */}
       <section className="py-12 px-4">
         <div className="container mx-auto text-center max-w-md">
-          <ScrollReveal animation="fade-in" delay={0}>
-            <h2 className="text-3xl font-bold mb-4 text-gray-800">
-              Pourquoi choisir <span className="bg-gradient-primary bg-clip-text text-transparent">Collabmarket</span> ?
-            </h2>
-          </ScrollReveal>
-          <ScrollReveal animation="fade-in" delay={150}>
-            <p className="text-gray-600 mb-12 leading-relaxed">
-              Une plateforme pensée pour faciliter vos collaborations et maximiser vos résultats
-            </p>
-          </ScrollReveal>
+          <h2 className="text-3xl font-bold mb-4 text-gray-800">
+            Pourquoi choisir <span className="bg-gradient-primary bg-clip-text text-transparent">Collabmarket</span> ?
+          </h2>
+          <p className="text-gray-600 mb-12 leading-relaxed">
+            Une plateforme pensée pour faciliter vos collaborations et maximiser vos résultats
+          </p>
 
           <div className="space-y-12">
             {/* Ciblage précis */}
-            <ScrollReveal animation="slide-up" delay={0}>
-              <div className="bg-gradient-to-br from-pink-50 to-white rounded-3xl p-8">
+            <div className="bg-gradient-to-br from-pink-50 to-white rounded-3xl p-8">
               <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center mx-auto mb-6">
                 <Target className="w-10 h-10 text-white" />
               </div>
@@ -126,12 +108,10 @@ Collaborations</span>
               <p className="text-gray-600 leading-relaxed">
                 Filtrez par niche, audience et budget pour trouver le partenaire idéal
               </p>
-              </div>
-            </ScrollReveal>
+            </div>
 
             {/* Process simplifié */}
-            <ScrollReveal animation="slide-up" delay={150}>
-              <div className="bg-gradient-to-br from-orange-50 to-white rounded-3xl p-8">
+            <div className="bg-gradient-to-br from-orange-50 to-white rounded-3xl p-8">
               <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center mx-auto mb-6">
                 <Zap className="w-10 h-10 text-white" />
               </div>
@@ -141,12 +121,10 @@ Collaborations</span>
               <p className="text-gray-600 leading-relaxed">
                 Commandez et gérez vos collaborations en quelques clics
               </p>
-              </div>
-            </ScrollReveal>
+            </div>
 
             {/* Analytics complets */}
-            <ScrollReveal animation="slide-up" delay={300}>
-              <div className="bg-gradient-to-br from-teal-50 to-white rounded-3xl p-8">
+            <div className="bg-gradient-to-br from-teal-50 to-white rounded-3xl p-8">
               <div className="w-20 h-20 bg-accent rounded-full flex items-center justify-center mx-auto mb-6">
                 <BarChart3 className="w-10 h-10 text-white" />
               </div>
@@ -156,8 +134,7 @@ Collaborations</span>
               <p className="text-gray-600 leading-relaxed">
                 Suivez vos performances et optimisez vos stratégies
               </p>
-              </div>
-            </ScrollReveal>
+            </div>
           </div>
         </div>
       </section>
@@ -166,19 +143,14 @@ Collaborations</span>
       <section className="py-16 px-4 bg-gradient-hero">
         <div className="container mx-auto text-center max-w-md">
           <div className="text-white">
-            <ScrollReveal animation="fade-in" delay={0}>
-              <h2 className="text-4xl font-bold mb-6">
-                Prêt à démarrer ?
-              </h2>
-            </ScrollReveal>
-            <ScrollReveal animation="fade-in" delay={150}>
-              <p className="text-lg mb-10 opacity-90 leading-relaxed">
-                Rejoignez des milliers d'influenceurs et commerçants qui font déjà confiance à Collabmarket
-              </p>
-            </ScrollReveal>
+            <h2 className="text-4xl font-bold mb-6">
+              Prêt à démarrer ?
+            </h2>
+            <p className="text-lg mb-10 opacity-90 leading-relaxed">
+              Rejoignez des milliers d'influenceurs et commerçants qui font déjà confiance à Collabmarket
+            </p>
             
-            <ScrollReveal animation="slide-up" delay={300}>
-              <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4">
               <Button size="lg" asChild className="bg-white text-primary text-lg px-10 py-6 rounded-full hover:bg-gray-100 w-full">
                 <Link to="/signup?role=influencer">
                   Commencer comme influenceur
@@ -189,8 +161,7 @@ Collaborations</span>
                   Commencer comme commerçant
                 </Link>
               </Button>
-              </div>
-            </ScrollReveal>
+            </div>
           </div>
         </div>
       </section>
