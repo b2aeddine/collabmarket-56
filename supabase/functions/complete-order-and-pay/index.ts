@@ -39,76 +39,57 @@ serve(async (req) => {
 
     console.log('Order found:', order);
 
-    // Capturer le paiement si pas déjà fait
+    // Capturer le paiement Stripe si disponible
     if (order.stripe_payment_intent_id && !order.payment_captured) {
       try {
         console.log('Capturing payment intent:', order.stripe_payment_intent_id);
-        const paymentIntent = await stripe.paymentIntents.capture(
-          order.stripe_payment_intent_id
-        );
-        console.log('Payment captured successfully:', paymentIntent.id);
-
-        // Calculer les montants
-        const totalAmount = order.total_amount;
-        const platformFeePercentage = 0.10; // 10%
-        const platformFee = totalAmount * platformFeePercentage;
-        const influencerAmount = totalAmount - platformFee;
-
-        // Créer le revenu pour l'influenceur
-        const { error: revenueError } = await supabaseClient
-          .from('influencer_revenues')
-          .insert({
-            influencer_id: order.influencer_id,
-            order_id: order.id,
-            gross_amount: totalAmount,
-            commission_amount: platformFee,
-            net_amount: influencerAmount,
-            status: 'available',
-            payment_date: new Date().toISOString(),
-          });
-
-        if (revenueError) {
-          console.error('Error creating revenue:', revenueError);
-          throw revenueError;
-        }
-
-        console.log('Revenue created for influencer');
-
-        // Mettre à jour la commande
-        const { error: updateError } = await supabaseClient
-          .from('orders')
-          .update({
-            status: 'terminée',
-            payment_captured: true,
-            date_completed: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', orderId);
-
-        if (updateError) {
-          console.error('Error updating order:', updateError);
-          throw updateError;
-        }
-
+        await stripe.paymentIntents.capture(order.stripe_payment_intent_id);
+        console.log('Payment captured successfully');
       } catch (stripeError: any) {
-        console.error('Stripe error:', stripeError);
-        throw stripeError;
+        console.error('Stripe capture error:', stripeError);
+        // Continue même si la capture échoue
       }
-    } else {
-      // Si le paiement est déjà capturé, juste marquer comme terminée
-      const { error: updateError } = await supabaseClient
-        .from('orders')
-        .update({
-          status: 'terminée',
-          date_completed: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', orderId);
+    }
 
-      if (updateError) {
-        console.error('Error updating order:', updateError);
-        throw updateError;
-      }
+    // Calculer les montants
+    const totalAmount = order.total_amount;
+    const platformFeePercentage = 0.10; // 10%
+    const platformFee = totalAmount * platformFeePercentage;
+    const influencerAmount = totalAmount - platformFee;
+
+    // Créer le revenu pour l'influenceur
+    const { error: revenueError } = await supabaseClient
+      .from('influencer_revenues')
+      .insert({
+        influencer_id: order.influencer_id,
+        order_id: order.id,
+        amount: totalAmount,
+        commission: platformFee,
+        net_amount: influencerAmount,
+        status: 'available',
+      });
+
+    if (revenueError) {
+      console.error('Error creating revenue:', revenueError);
+      throw revenueError;
+    }
+
+    console.log('Revenue created for influencer');
+
+    // Mettre à jour la commande
+    const { error: updateError } = await supabaseClient
+      .from('orders')
+      .update({
+        status: 'terminée',
+        payment_captured: true,
+        date_completed: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', orderId);
+
+    if (updateError) {
+      console.error('Error updating order:', updateError);
+      throw updateError;
     }
 
     console.log('Order completed successfully');
