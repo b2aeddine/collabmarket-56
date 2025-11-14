@@ -31,7 +31,7 @@ const InfluencerCard = memo(({ influencer }: InfluencerCardProps) => {
     : '0';
 
   return (
-    <Card className="border-0 shadow-lg hover-scale transition-all duration-300 bg-white">
+    <Card className="border-0 shadow-lg transition-all duration-300 bg-white hover:shadow-xl hover:scale-[1.02] animate-fade-in">
       <CardContent className="p-6">
         <div className="flex items-start gap-4 mb-4">
           <img

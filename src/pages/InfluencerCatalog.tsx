@@ -113,7 +113,18 @@ const InfluencerCatalog = () => {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredInfluencers.map(influencer => <InfluencerCard key={influencer.id} influencer={influencer} />)}
+          {filteredInfluencers.map((influencer, index) => (
+            <div
+              key={influencer.id}
+              className="animate-fade-in"
+              style={{
+                animationDelay: `${index * 50}ms`,
+                animationFillMode: 'both'
+              }}
+            >
+              <InfluencerCard influencer={influencer} />
+            </div>
+          ))}
         </div>
 
         {filteredInfluencers.length === 0 && !isLoading && <div className="text-center py-12">
