@@ -149,19 +149,7 @@ const InfluencerProfile = () => {
         deliveryTime: offer.delivery_time || '48h',
         popular: offer.is_popular || false
       }));
-    })(),
-      id: 'default-1',
-      type: "Story Instagram",
-      description: "Story de 24h avec mention de votre produit",
-      price: 100,
-      deliveryTime: "24h"
-    }, {
-      id: 'default-2',
-      type: "Post Instagram",
-      description: "Post permanent avec photo de votre produit",
-      price: 150,
-      deliveryTime: "48h"
-    }]
+    })()
   } : {
     id: '',
     username: '@user',
