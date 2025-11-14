@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import { User, HandHeart, Building2, Target, Zap, BarChart3, Star, Users } from "lucide-react";
 const Index = () => {
   return <div className="min-h-screen bg-white flex flex-col">
@@ -166,8 +165,6 @@ Collaborations</span>
           </div>
         </div>
       </section>
-
-      <Footer />
     </div>;
 };
 export default Index;
