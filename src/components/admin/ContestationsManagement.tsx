@@ -41,7 +41,6 @@ const ContestationsManagement = () => {
         contestationId,
         statut,
         adminDecision,
-        orderStatus: statut === 'validée' ? 'validée_par_plateforme' : undefined,
       });
       setSelectedContestation(null);
       setAdminDecision("");

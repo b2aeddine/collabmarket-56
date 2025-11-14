@@ -1,0 +1,134 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import Stripe from 'https://esm.sh/stripe@14.21.0';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { orderId } = await req.json();
+    console.log('Completing order and paying influencer:', orderId);
+
+    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
+      apiVersion: '2023-10-16',
+    });
+
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    // Récupérer la commande
+    const { data: order, error: orderError } = await supabaseClient
+      .from('orders')
+      .select('*')
+      .eq('id', orderId)
+      .single();
+
+    if (orderError) {
+      console.error('Error fetching order:', orderError);
+      throw orderError;
+    }
+
+    console.log('Order found:', order);
+
+    // Capturer le paiement si pas déjà fait
+    if (order.stripe_payment_intent_id && !order.payment_captured) {
+      try {
+        console.log('Capturing payment intent:', order.stripe_payment_intent_id);
+        const paymentIntent = await stripe.paymentIntents.capture(
+          order.stripe_payment_intent_id
+        );
+        console.log('Payment captured successfully:', paymentIntent.id);
+
+        // Calculer les montants
+        const totalAmount = order.total_amount;
+        const platformFeePercentage = 0.10; // 10%
+        const platformFee = totalAmount * platformFeePercentage;
+        const influencerAmount = totalAmount - platformFee;
+
+        // Créer le revenu pour l'influenceur
+        const { error: revenueError } = await supabaseClient
+          .from('influencer_revenues')
+          .insert({
+            influencer_id: order.influencer_id,
+            order_id: order.id,
+            gross_amount: totalAmount,
+            commission_amount: platformFee,
+            net_amount: influencerAmount,
+            status: 'available',
+            payment_date: new Date().toISOString(),
+          });
+
+        if (revenueError) {
+          console.error('Error creating revenue:', revenueError);
+          throw revenueError;
+        }
+
+        console.log('Revenue created for influencer');
+
+        // Mettre à jour la commande
+        const { error: updateError } = await supabaseClient
+          .from('orders')
+          .update({
+            status: 'terminée',
+            payment_captured: true,
+            date_completed: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', orderId);
+
+        if (updateError) {
+          console.error('Error updating order:', updateError);
+          throw updateError;
+        }
+
+      } catch (stripeError: any) {
+        console.error('Stripe error:', stripeError);
+        throw stripeError;
+      }
+    } else {
+      // Si le paiement est déjà capturé, juste marquer comme terminée
+      const { error: updateError } = await supabaseClient
+        .from('orders')
+        .update({
+          status: 'terminée',
+          date_completed: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', orderId);
+
+      if (updateError) {
+        console.error('Error updating order:', updateError);
+        throw updateError;
+      }
+    }
+
+    console.log('Order completed successfully');
+
+    return new Response(
+      JSON.stringify({ 
+        success: true,
+        message: 'Commande terminée et paiement effectué à l\'influenceur'
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+
+  } catch (error: any) {
+    console.error('Error in complete-order-and-pay:', error);
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      { 
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
+    );
+  }
+});

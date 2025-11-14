@@ -122,12 +122,10 @@ export const useUpdateContestationStatus = () => {
       contestationId,
       statut,
       adminDecision,
-      orderStatus
     }: {
       contestationId: string;
       statut: 'validée' | 'refusée';
       adminDecision: string;
-      orderStatus?: string;
     }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
@@ -147,14 +145,29 @@ export const useUpdateContestationStatus = () => {
       
       if (error) throw error;
 
-      // Si validée, mettre à jour le statut de la commande
-      if (statut === 'validée' && orderStatus) {
-        const { error: orderError } = await supabase
-          .from('orders')
-          .update({ status: orderStatus })
-          .eq('id', data.order_id);
+      // Traiter selon le statut
+      if (statut === 'validée') {
+        // Annuler la commande et rembourser le commerçant
+        console.log('Cancelling order and refunding merchant for order:', data.order_id);
+        const { error: cancelError } = await supabase.functions.invoke('cancel-order-and-refund', {
+          body: { orderId: data.order_id }
+        });
 
-        if (orderError) throw orderError;
+        if (cancelError) {
+          console.error('Error cancelling order:', cancelError);
+          throw cancelError;
+        }
+      } else if (statut === 'refusée') {
+        // Terminer la commande et payer l'influenceur
+        console.log('Completing order and paying influencer for order:', data.order_id);
+        const { error: completeError } = await supabase.functions.invoke('complete-order-and-pay', {
+          body: { orderId: data.order_id }
+        });
+
+        if (completeError) {
+          console.error('Error completing order:', completeError);
+          throw completeError;
+        }
       }
 
       return data;
