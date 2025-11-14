@@ -1,3 +1,4 @@
+import React from "react";
 import { ExternalLink } from "lucide-react";
 import snapchatLogo from "@/assets/snapchat-logo.png";
 
