@@ -38,7 +38,7 @@ const InfluencerCatalog = () => {
       const totalFollowers = influencer.social_links?.reduce((sum, link) => sum + (link.followers || 0), 0) || 0;
       const avgEngagement = influencer.social_links?.length > 0 ? influencer.social_links.reduce((sum, link) => sum + (link.engagement_rate || 0), 0) / influencer.social_links.length : 0;
       const minPrice = influencer.offers?.length > 0 ? Math.min(...influencer.offers.map(offer => offer.price)) : 100;
-      const categories = influencer.profile_categories?.map(pc => pc.categories?.name).filter(Boolean) || [];
+      const categories = influencer.profile_categories?.map(pc => pc.categories?.name).filter((name): name is string => Boolean(name)) || [];
       const primaryCategory = categories[0] || "Lifestyle";
       return {
         id: influencer.id,

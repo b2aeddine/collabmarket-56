@@ -66,8 +66,9 @@ export const useInfluencers = (filters?: { category?: string; minFollowers?: num
             engagement_rate,
             is_active
           ),
-          profile_categories(
-            categories(
+          profile_categories!inner(
+            category_id,
+            categories!inner(
               id,
               name,
               slug
