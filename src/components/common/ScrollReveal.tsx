@@ -64,6 +64,7 @@ export const ScrollReveal = ({
       style={{
         transitionDuration: `${duration}ms`,
         transitionDelay: `${delay}ms`,
+        cursor: 'default',
       }}
     >
       {children}
