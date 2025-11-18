@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import { User, FileEdit, Search, Handshake, Star, Briefcase, Target, Zap, BarChart3 } from "lucide-react";
 
 const HowItWorks = () => {
@@ -361,6 +362,8 @@ const HowItWorks = () => {
           </div>
         </div>
       </section>
+
+      <Footer />
     </div>
   );
 };
