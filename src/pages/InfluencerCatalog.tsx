@@ -1,7 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
 import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import CatalogFilters from "@/components/catalog/CatalogFilters";
 import InfluencerCard from "@/components/catalog/InfluencerCard";
 import { Search, RefreshCw } from "lucide-react";
@@ -84,14 +83,10 @@ const InfluencerCatalog = () => {
             Erreur lors du chargement des influenceurs. Veuillez réessayer.
           </div>
         </div>
-        <Footer />
       </div>;
   }
   if (isLoading) {
-    return <>
-        <CatalogSkeleton />
-        <Footer />
-      </>;
+    return <CatalogSkeleton />;
   }
   return <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-teal-50 flex flex-col">
       <Header />
@@ -151,11 +146,9 @@ const InfluencerCatalog = () => {
             </h3>
             <p className="text-gray-500">
               {transformedInfluencers.length === 0 ? "Aucun influenceur n'est encore enregistré dans la base de données." : "Essayez d'ajuster vos filtres de recherche"}
-            </p>
-          </div>}
+             </p>
+           </div>}
       </div>
-      
-      <Footer />
     </div>;
 };
 export default InfluencerCatalog;
