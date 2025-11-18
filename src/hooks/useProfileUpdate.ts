@@ -22,6 +22,16 @@ export const useProfileUpdate = () => {
 
   return useMutation({
     mutationFn: async ({ userId, profileData, categoryIds }: UpdateProfileParams) => {
+      // SECURITY: Verify that the authenticated user can only update their own profile
+      // This prevents unauthorized profile modifications (IDOR - Insecure Direct Object Reference)
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+      if (user.id !== userId) {
+        throw new Error('Unauthorized: You can only update your own profile');
+      }
+
       // 1. Mettre à jour le profil
       const { data: profileUpdateData, error: profileError } = await supabase
         .from('profiles')
