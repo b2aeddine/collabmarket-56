@@ -31,17 +31,14 @@ const InfluencerCard = memo(({ influencer }: InfluencerCardProps) => {
     : '0';
 
   return (
-    <Card className="border-0 shadow-lg transition-all duration-300 bg-white hover:shadow-xl hover:scale-[1.02] animate-fade-in">
+    <Card className="border-0 shadow-lg transition-all duration-300 bg-white animate-fade-in">
       <CardContent className="p-6">
         <div className="flex items-start gap-4 mb-4">
           <img
             src={influencer.avatar}
             alt={influencer.name}
             className="w-16 h-16 rounded-full object-cover ring-2 ring-primary/20"
-            loading="lazy"
-            width={64}
-            height={64}
-            decoding="async"
+            loading="lazy" // Lazy load images for better performance
           />
           <div className="flex-1 min-w-0">
             <h3 className="text-lg font-bold text-gray-800 truncate">{influencer.name}</h3>
