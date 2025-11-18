@@ -17,6 +17,7 @@ import { InfluencerProfileSkeleton } from "@/components/common/InfluencerProfile
 import { ServicesCarousel } from "@/components/common/ServicesCarousel";
 import { SocialNetworksCarousel } from "@/components/common/SocialNetworksCarousel";
 import snapchatLogo from "@/assets/snapchat-logo.png";
+import ScrollReveal from "@/components/common/ScrollReveal";
 const InfluencerProfile = () => {
   const {
     id
@@ -221,18 +222,21 @@ const InfluencerProfile = () => {
       <div className="py-4 sm:py-8 px-4">
         <div className="container mx-auto max-w-6xl">
           {/* Bouton retour */}
-          <div className="mb-4">
-            <Button onClick={() => navigate('/catalog')} variant="outline" className="flex items-center gap-2">
-              <ArrowLeft className="w-4 h-4" />
-              Retour au catalogue
-            </Button>
-          </div>
+          <ScrollReveal variant="fade-right" delay={0.1}>
+            <div className="mb-4">
+              <Button onClick={() => navigate('/catalog')} variant="outline" className="flex items-center gap-2">
+                <ArrowLeft className="w-4 h-4" />
+                Retour au catalogue
+              </Button>
+            </div>
+          </ScrollReveal>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
             {/* Profile Info Sidebar */}
             <div className="lg:col-span-1">
               <div className="sticky top-20 lg:top-24">
-                <Card className="shadow-xl border-0">
+                <ScrollReveal variant="fade-right" delay={0.2}>
+                  <Card className="shadow-xl border-0">
                   <CardContent className="p-4 sm:p-6">
                     <div className="text-center mb-6">
                       <Avatar className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-4">
@@ -302,44 +306,53 @@ const InfluencerProfile = () => {
                     </div>
                   </CardContent>
                 </Card>
+                </ScrollReveal>
               </div>
             </div>
 
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-6 sm:space-y-8">
               {/* Services */}
-              <Card className="shadow-xl border-0 animate-fade-in">
-                <CardContent className="p-4 sm:p-6">
-                  <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl sm:text-2xl font-bold">Mes prestations</h2>
-                    {influencer.services.length > 3 && <Button variant="outline" size="sm" onClick={() => setShowAllServices(true)}>
-                        Voir tout
-                      </Button>}
-                  </div>
-                  <ServicesCarousel services={influencer.services} influencerId={id} getPlatformLogo={getPlatformLogo} getPlatformFromTitle={getPlatformFromTitle} />
-                </CardContent>
-              </Card>
+              <ScrollReveal variant="fade-left" delay={0.1}>
+                <Card className="shadow-xl border-0 animate-fade-in">
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="flex justify-between items-center mb-6">
+                      <h2 className="text-xl sm:text-2xl font-bold">Mes prestations</h2>
+                      {influencer.services.length > 3 && <Button variant="outline" size="sm" onClick={() => setShowAllServices(true)}>
+                          Voir tout
+                        </Button>}
+                    </div>
+                    <ServicesCarousel services={influencer.services} influencerId={id} getPlatformLogo={getPlatformLogo} getPlatformFromTitle={getPlatformFromTitle} />
+                  </CardContent>
+                </Card>
+              </ScrollReveal>
 
               {/* Social Networks */}
-              <Card className="shadow-xl border-0 animate-fade-in">
-                <CardContent className="p-4 sm:p-6">
-                  <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl sm:text-2xl font-bold">Réseaux sociaux</h2>
-                    {influencer.socialNetworks.length > 1 && <Button variant="outline" size="sm" onClick={() => setShowAllNetworks(true)}>
-                        Voir tout
-                      </Button>}
-                  </div>
-                  <SocialNetworksCarousel networks={influencer.socialNetworks} />
-                </CardContent>
-              </Card>
+              <ScrollReveal variant="fade-left" delay={0.2}>
+                <Card className="shadow-xl border-0 animate-fade-in">
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="flex justify-between items-center mb-4">
+                      <h2 className="text-xl sm:text-2xl font-bold">Réseaux sociaux</h2>
+                      {influencer.socialNetworks.length > 1 && <Button variant="outline" size="sm" onClick={() => setShowAllNetworks(true)}>
+                          Voir tout
+                        </Button>}
+                    </div>
+                    <SocialNetworksCarousel networks={influencer.socialNetworks} />
+                  </CardContent>
+                </Card>
+              </ScrollReveal>
 
               {/* Reviews Section */}
-              <ReviewsSection influencerId={validProfile.id} />
+              <ScrollReveal variant="fade-up" delay={0.3}>
+                <ReviewsSection influencerId={validProfile.id} />
+              </ScrollReveal>
 
               {/* Gallery */}
-              <Card className="shadow-xl border-0 animate-fade-in">
-                
-              </Card>
+              <ScrollReveal variant="zoom-in" delay={0.4}>
+                <Card className="shadow-xl border-0 animate-fade-in">
+                  
+                </Card>
+              </ScrollReveal>
             </div>
           </div>
         </div>

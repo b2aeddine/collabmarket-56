@@ -10,6 +10,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { CatalogSkeleton } from "@/components/common/CatalogSkeleton";
 import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
+import ScrollReveal from "@/components/common/ScrollReveal";
 const InfluencerCatalog = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedNiche, setSelectedNiche] = useState("all");
@@ -96,27 +97,33 @@ const InfluencerCatalog = () => {
       <Header />
       
       <div className="container mx-auto px-4 py-8 flex-1">
-        <div className="flex justify-between items-start mb-6">
-          <div>
-            <h1 className="text-4xl font-bold mb-2 text-gradient">
-              Catalogue des Influenceurs
-            </h1>
-            <p className="text-xl text-gray-600">
-              Trouvez le partenaire idéal pour votre prochaine campagne
-            </p>
+        <ScrollReveal variant="fade-down" delay={0.1}>
+          <div className="flex justify-between items-start mb-6">
+            <div>
+              <h1 className="text-4xl font-bold mb-2 text-gradient">
+                Catalogue des Influenceurs
+              </h1>
+              <p className="text-xl text-gray-600">
+                Trouvez le partenaire idéal pour votre prochaine campagne
+              </p>
+            </div>
+            
           </div>
-          
-        </div>
+        </ScrollReveal>
 
         {/* Filters */}
-        <CatalogFilters searchTerm={searchTerm} selectedNiche={selectedNiche} selectedBudget={selectedBudget} selectedFollowers={selectedFollowers} onSearchChange={handleSearchChange} onNicheChange={handleNicheChange} onBudgetChange={handleBudgetChange} onFollowersChange={handleFollowersChange} />
+        <ScrollReveal variant="fade-up" delay={0.2}>
+          <CatalogFilters searchTerm={searchTerm} selectedNiche={selectedNiche} selectedBudget={selectedBudget} selectedFollowers={selectedFollowers} onSearchChange={handleSearchChange} onNicheChange={handleNicheChange} onBudgetChange={handleBudgetChange} onFollowersChange={handleFollowersChange} />
+        </ScrollReveal>
 
         {/* Results */}
-        <div className="mb-6">
-          <p className="text-gray-600">
-            {filteredInfluencers.length} influenceur{filteredInfluencers.length > 1 ? 's' : ''} trouvé{filteredInfluencers.length > 1 ? 's' : ''}
-          </p>
-        </div>
+        <ScrollReveal variant="fade-up" delay={0.3}>
+          <div className="mb-6">
+            <p className="text-gray-600">
+              {filteredInfluencers.length} influenceur{filteredInfluencers.length > 1 ? 's' : ''} trouvé{filteredInfluencers.length > 1 ? 's' : ''}
+            </p>
+          </div>
+        </ScrollReveal>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredInfluencers.map((influencer, index) => (
