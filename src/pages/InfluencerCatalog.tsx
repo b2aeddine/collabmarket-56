@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from "react";
+import { motion } from "framer-motion";
 import Header from "@/components/Header";
 import CatalogFilters from "@/components/catalog/CatalogFilters";
 import InfluencerCard from "@/components/catalog/InfluencerCard";
@@ -114,16 +115,18 @@ const InfluencerCatalog = () => {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredInfluencers.map((influencer, index) => (
-            <div
+            <motion.div
               key={influencer.id}
-              className="animate-fade-in"
-              style={{
-                animationDelay: `${Math.min(index * 50, 500)}ms`, // Cap delay at 500ms
-                animationFillMode: 'both'
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: 0.3,
+                delay: index * 0.05,
+                ease: "easeOut"
               }}
             >
               <InfluencerCard influencer={influencer} />
-            </div>
+            </motion.div>
           ))}
         </div>
 
