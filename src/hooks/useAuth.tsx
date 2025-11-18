@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
+import { logger } from '@/utils/logger';
 
 export interface User {
   id: string;
@@ -52,7 +53,7 @@ export const useAuth = () => {
         .single();
 
       if (error) {
-        console.error('Error fetching user profile:', error);
+        logger.error('Error fetching user profile:', error);
         return null;
       }
 
@@ -87,7 +88,7 @@ export const useAuth = () => {
         gender: undefined,
       };
     } catch (error) {
-      console.error('Error loading user profile:', error);
+      logger.error('Error loading user profile:', error);
       return null;
     }
   };
@@ -109,7 +110,7 @@ export const useAuth = () => {
         setLoading(false);
         setInitialized(true);
       } catch (error) {
-        console.error('Auth initialization error:', error);
+        logger.error('Auth initialization error:', error);
         setLoading(false);
         setInitialized(true);
       }
@@ -123,10 +124,10 @@ export const useAuth = () => {
         setUser(null);
         setLoading(false);
       } else if (event === 'SIGNED_IN' && session?.user) {
-        console.log('SIGNED_IN event triggered, loading profile...');
+        logger.debug('SIGNED_IN event triggered, loading profile...');
         setLoading(true);
         const profile = await loadUserProfile(session.user.id);
-        console.log('Profile loaded:', profile);
+        logger.debug('Profile loaded successfully');
         setUser(profile);
         setLoading(false);
       } else if (event === 'TOKEN_REFRESHED' && session?.user && !user) {
@@ -152,7 +153,7 @@ export const useAuth = () => {
       });
       return { error };
     } catch (error) {
-      console.error('Error signing in:', error);
+      logger.error('Error signing in:', error);
       return { error };
     }
   };
@@ -169,7 +170,7 @@ export const useAuth = () => {
       });
       return { error, data };
     } catch (error) {
-      console.error('Error signing up:', error);
+      logger.error('Error signing up:', error);
       return { error, data: null };
     }
   };
@@ -181,7 +182,7 @@ export const useAuth = () => {
       setUser(null);
       window.location.href = '/';
     } catch (error) {
-      console.error('Error signing out:', error);
+      logger.error('Error signing out:', error);
     }
   };
 
@@ -225,7 +226,7 @@ export const useAuth = () => {
         return profile;
       }
     } catch (error) {
-      console.error('Error refreshing user:', error);
+      logger.error('Error refreshing user:', error);
     }
     return null;
   };
