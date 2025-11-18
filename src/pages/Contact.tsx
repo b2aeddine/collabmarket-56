@@ -18,6 +18,7 @@ const Contact = () => {
     message: ""
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.firstName || !formData.lastName || !formData.email || !formData.message) {
@@ -26,9 +27,7 @@ const Contact = () => {
     }
     setIsSubmitting(true);
     try {
-      const {
-        error
-      } = await supabase.functions.invoke('handle-contact-form', {
+      const { error } = await supabase.functions.invoke('handle-contact-form', {
         body: {
           name: `${formData.firstName} ${formData.lastName}`,
           email: formData.email,
@@ -52,7 +51,9 @@ const Contact = () => {
       setIsSubmitting(false);
     }
   };
-  return <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-teal-50 flex flex-col">
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-teal-50 flex flex-col">
       <Header />
       
       <div className="container mx-auto px-4 py-12 flex-1">
@@ -79,76 +80,101 @@ const Contact = () => {
             {/* Contact Form */}
             <ScrollReveal variant="fade-left" delay={0.1}>
               <Card className="border-0 shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-2xl font-bold text-gray-800 flex items-center">
-                  <Send className="w-6 h-6 mr-2 text-primary" />
-                  Envoyez-nous un message
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="grid md:grid-cols-2 gap-4">
+                <CardHeader>
+                  <CardTitle className="text-2xl font-bold text-gray-800 flex items-center">
+                    <Send className="w-6 h-6 mr-2 text-primary" />
+                    Envoyez-nous un message
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Prénom *
+                        </label>
+                        <Input 
+                          placeholder="Votre prénom" 
+                          value={formData.firstName} 
+                          onChange={(e) => setFormData({
+                            ...formData,
+                            firstName: e.target.value
+                          })} 
+                          required 
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Nom *
+                        </label>
+                        <Input 
+                          placeholder="Votre nom" 
+                          value={formData.lastName} 
+                          onChange={(e) => setFormData({
+                            ...formData,
+                            lastName: e.target.value
+                          })} 
+                          required 
+                        />
+                      </div>
+                    </div>
+                    
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Prénom *
+                        Email *
                       </label>
-                      <Input placeholder="Votre prénom" value={formData.firstName} onChange={e => setFormData({
-                      ...formData,
-                      firstName: e.target.value
-                    })} required />
+                      <Input 
+                        type="email" 
+                        placeholder="votre@email.com" 
+                        value={formData.email} 
+                        onChange={(e) => setFormData({
+                          ...formData,
+                          email: e.target.value
+                        })} 
+                        required 
+                      />
                     </div>
+                    
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Nom *
+                        Sujet
                       </label>
-                      <Input placeholder="Votre nom" value={formData.lastName} onChange={e => setFormData({
-                      ...formData,
-                      lastName: e.target.value
-                    })} required />
+                      <Input 
+                        placeholder="Objet de votre message" 
+                        value={formData.subject} 
+                        onChange={(e) => setFormData({
+                          ...formData,
+                          subject: e.target.value
+                        })} 
+                      />
                     </div>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Email *
-                    </label>
-                    <Input type="email" placeholder="votre@email.com" value={formData.email} onChange={e => setFormData({
-                    ...formData,
-                    email: e.target.value
-                  })} required />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Sujet
-                    </label>
-                    <Input placeholder="Objet de votre message" value={formData.subject} onChange={e => setFormData({
-                    ...formData,
-                    subject: e.target.value
-                  })} />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Message *
-                    </label>
-                    <Textarea placeholder="Décrivez votre demande..." rows={6} value={formData.message} onChange={e => setFormData({
-                    ...formData,
-                    message: e.target.value
-                  })} required />
-                  </div>
-                  
-                  <Button type="submit" className="w-full bg-gradient-primary" disabled={isSubmitting}>
-                    <Send className="w-4 h-4 mr-2" />
-                    {isSubmitting ? "Envoi en cours..." : "Envoyer le message"}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Message *
+                      </label>
+                      <Textarea 
+                        placeholder="Décrivez votre demande..." 
+                        rows={6} 
+                        value={formData.message} 
+                        onChange={(e) => setFormData({
+                          ...formData,
+                          message: e.target.value
+                        })} 
+                        required 
+                      />
+                    </div>
+                    
+                    <Button type="submit" className="w-full bg-gradient-primary" disabled={isSubmitting}>
+                      <Send className="w-4 h-4 mr-2" />
+                      {isSubmitting ? "Envoi en cours..." : "Envoyer le message"}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
             </ScrollReveal>
 
             {/* Contact Info */}
-            
           </div>
 
           {/* FAQ Section */}
@@ -211,10 +237,11 @@ const Contact = () => {
                 </Card>
               </ScrollReveal>
             </div>
-            </div>
           </div>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default Contact;
