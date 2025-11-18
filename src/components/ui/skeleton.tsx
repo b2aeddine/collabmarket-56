@@ -7,11 +7,14 @@ function Skeleton({
   return (
     <div
       className={cn(
-        "animate-pulse rounded-md bg-muted relative overflow-hidden",
-        "before:absolute before:inset-0 before:-translate-x-full before:animate-shimmer",
-        "before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent",
+        "animate-pulse-slow rounded-md bg-muted relative overflow-hidden",
         className
       )}
+      style={{
+        background: 'linear-gradient(90deg, hsl(var(--muted)) 25%, hsl(var(--muted)) 50%, hsl(var(--muted)) 75%)',
+        backgroundSize: '200% 100%',
+        animation: 'shimmer 2s linear infinite'
+      }}
       {...props}
     />
   )
