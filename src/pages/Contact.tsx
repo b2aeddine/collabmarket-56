@@ -8,6 +8,8 @@ import Footer from "@/components/Footer";
 import { Mail, Phone, MapPin, Clock, Send } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import ScrollReveal from "@/components/common/ScrollReveal";
+
 const Contact = () => {
   const [formData, setFormData] = useState({
     firstName: "",
@@ -58,21 +60,26 @@ const Contact = () => {
         <div className="max-w-4xl mx-auto">
           {/* Hero Section */}
           <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
-              <span className="text-gray-800">Contactez</span>
-              <br />
-              <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                notre équipe
-              </span>
-            </h1>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
-              Une question ? Un projet ? Notre équipe est là pour vous accompagner dans vos collaborations.
-            </p>
+            <ScrollReveal variant="fade-up" delay={0.1}>
+              <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
+                <span className="text-gray-800">Contactez</span>
+                <br />
+                <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                  notre équipe
+                </span>
+              </h1>
+            </ScrollReveal>
+            <ScrollReveal variant="fade-up" delay={0.2}>
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
+                Une question ? Un projet ? Notre équipe est là pour vous accompagner dans vos collaborations.
+              </p>
+            </ScrollReveal>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
             {/* Contact Form */}
-            <Card className="border-0 shadow-lg">
+            <ScrollReveal variant="fade-left" delay={0.1}>
+              <Card className="border-0 shadow-lg">
               <CardHeader>
                 <CardTitle className="text-2xl font-bold text-gray-800 flex items-center">
                   <Send className="w-6 h-6 mr-2 text-primary" />
@@ -139,6 +146,7 @@ const Contact = () => {
                 </form>
               </CardContent>
             </Card>
+            </ScrollReveal>
 
             {/* Contact Info */}
             
@@ -146,53 +154,63 @@ const Contact = () => {
 
           {/* FAQ Section */}
           <div className="mt-16">
-            <h2 className="text-3xl font-bold text-center mb-8 text-gray-800">
-              Questions fréquentes
-            </h2>
+            <ScrollReveal variant="fade-up" delay={0.1}>
+              <h2 className="text-3xl font-bold text-center mb-8 text-gray-800">
+                Questions fréquentes
+              </h2>
+            </ScrollReveal>
             <div className="grid md:grid-cols-2 gap-6">
-              <Card className="border-0 shadow-lg">
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-3">
-                    Comment devenir influenceur sur Collabmarket ?
-                  </h3>
-                  <p className="text-gray-600 text-sm">
-                    Il suffit de créer un compte gratuit, compléter votre profil et ajouter vos réseaux sociaux.
-                  </p>
-                </CardContent>
-              </Card>
+              <ScrollReveal variant="fade-up" delay={0.1}>
+                <Card className="border-0 shadow-lg">
+                  <CardContent className="p-6">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                      Comment devenir influenceur sur Collabmarket ?
+                    </h3>
+                    <p className="text-gray-600 text-sm">
+                      Il suffit de créer un compte gratuit, compléter votre profil et ajouter vos réseaux sociaux.
+                    </p>
+                  </CardContent>
+                </Card>
+              </ScrollReveal>
 
-              <Card className="border-0 shadow-lg">
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-3">
-                    Quels sont les frais de commission ?
-                  </h3>
-                  <p className="text-gray-600 text-sm">
-                    Nous prélevons une commission de 5% sur chaque transaction réussie.
-                  </p>
-                </CardContent>
-              </Card>
+              <ScrollReveal variant="fade-up" delay={0.2}>
+                <Card className="border-0 shadow-lg">
+                  <CardContent className="p-6">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                      Quels sont les frais de commission ?
+                    </h3>
+                    <p className="text-gray-600 text-sm">
+                      Nous prélevons une commission de 5% sur chaque transaction réussie.
+                    </p>
+                  </CardContent>
+                </Card>
+              </ScrollReveal>
 
-              <Card className="border-0 shadow-lg">
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-3">
-                    Comment sont traités les paiements ?
-                  </h3>
-                  <p className="text-gray-600 text-sm">
-                    Les paiements sont sécurisés et versés après validation du travail effectué.
-                  </p>
-                </CardContent>
-              </Card>
+              <ScrollReveal variant="fade-up" delay={0.3}>
+                <Card className="border-0 shadow-lg">
+                  <CardContent className="p-6">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                      Comment sont traités les paiements ?
+                    </h3>
+                    <p className="text-gray-600 text-sm">
+                      Les paiements sont sécurisés et versés après validation du travail effectué.
+                    </p>
+                  </CardContent>
+                </Card>
+              </ScrollReveal>
 
-              <Card className="border-0 shadow-lg">
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-3">
-                    Puis-je annuler une collaboration ?
-                  </h3>
-                  <p className="text-gray-600 text-sm">
-                    Oui, selon nos conditions d'utilisation, vous pouvez annuler avant le début de la prestation.
-                  </p>
-                </CardContent>
-              </Card>
+              <ScrollReveal variant="fade-up" delay={0.4}>
+                <Card className="border-0 shadow-lg">
+                  <CardContent className="p-6">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                      Puis-je annuler une collaboration ?
+                    </h3>
+                    <p className="text-gray-600 text-sm">
+                      Oui, selon nos conditions d'utilisation, vous pouvez annuler avant le début de la prestation.
+                    </p>
+                  </CardContent>
+                </Card>
+              </ScrollReveal>
             </div>
           </div>
         </div>
