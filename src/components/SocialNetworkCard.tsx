@@ -149,7 +149,7 @@ const SocialNetworkCard = ({
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-3 sm:p-4 lg:p-5 space-y-3 sm:space-y-4">
+    <div className="bg-white rounded-xl border border-gray-200 p-3 sm:p-4 lg:p-5 space-y-3 sm:space-y-4 transition-all duration-300 hover:shadow-lg hover:scale-[1.02] hover:-translate-y-1 animate-fade-in">
       {/* Header avec logo et statut */}
       <div className="flex items-start sm:items-center justify-between gap-2">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">

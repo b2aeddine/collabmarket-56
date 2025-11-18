@@ -41,8 +41,8 @@ const Header = () => {
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-pink-500 to-orange-500 rounded-lg flex items-center justify-center">
+          <Link to="/" className="flex items-center space-x-2 transition-all duration-200 hover:scale-105 active:scale-95">
+            <div className="w-8 h-8 bg-gradient-to-r from-pink-500 to-orange-500 rounded-lg flex items-center justify-center transition-transform duration-200 hover:rotate-12">
               <Heart className="text-white w-5 h-5 fill-current" />
             </div>
             <span className="text-xl font-bold bg-gradient-to-r from-pink-500 to-orange-500 bg-clip-text text-transparent">
