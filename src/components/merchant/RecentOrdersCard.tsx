@@ -64,15 +64,8 @@ const RecentOrdersCard = ({ orders, isLoading }: RecentOrdersCardProps) => {
           ) : orders?.length === 0 ? (
             <div className="text-center py-4 text-gray-500">Aucune commande pour le moment</div>
           ) : (
-            orders?.slice(0, 3).map((order, index) => (
-              <div 
-                key={order.id} 
-                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-all duration-200 hover:scale-[1.01] hover:shadow-md animate-fade-in"
-                style={{
-                  animationDelay: `${index * 50}ms`,
-                  animationFillMode: 'both'
-                }}
-              >
+            orders?.slice(0, 3).map((order) => (
+              <div key={order.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                 <div className="flex items-center space-x-3 flex-1">
                   <Avatar className="w-10 h-10">
                     <AvatarImage src={order.influencer?.avatar_url || undefined} />

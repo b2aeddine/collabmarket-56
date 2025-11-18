@@ -44,15 +44,8 @@ const FavoriteInfluencersCard = ({ favorites, isLoading }: FavoriteInfluencersCa
           ) : favorites?.length === 0 ? (
             <div className="text-center py-4 text-gray-500">Aucun favori pour le moment</div>
           ) : (
-            favorites?.slice(0, 3).map((favorite, index) => (
-              <div 
-                key={favorite.id} 
-                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-all duration-200 hover:scale-[1.01] hover:shadow-md animate-fade-in"
-                style={{
-                  animationDelay: `${index * 50}ms`,
-                  animationFillMode: 'both'
-                }}
-              >
+            favorites?.slice(0, 3).map((favorite) => (
+              <div key={favorite.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                 <div className="flex items-center space-x-3 flex-1">
                   <Avatar className="w-10 h-10">
                     <AvatarImage src={favorite.influencer?.avatar_url || undefined} />

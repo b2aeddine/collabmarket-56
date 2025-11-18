@@ -58,7 +58,7 @@ const ProfileCard = ({ profile, user, onSaveProfile }: ProfileCardProps) => {
 
   return (
     <>
-      <Card className="shadow-xl border-0 transition-all duration-300 ease-in-out hover:shadow-2xl">
+      <Card className="shadow-xl border-0">
         <CardContent className="p-6">
         <div className="text-center mb-6">
           <div className="relative inline-block">
