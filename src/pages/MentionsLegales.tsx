@@ -1,7 +1,6 @@
 
 import React from "react";
 import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building2, FileText, Shield } from "lucide-react";
 
@@ -171,8 +170,6 @@ const MentionsLegales = () => {
           </div>
         </div>
       </div>
-
-      <Footer />
     </div>
   );
 };
