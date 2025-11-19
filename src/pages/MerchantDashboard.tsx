@@ -75,15 +75,15 @@ const MerchantDashboard = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-teal-50">
         <Header />
-        <div className="py-8 px-4">
+        <div className="py-6 sm:py-8 px-4">
           <div className="container mx-auto max-w-6xl">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
               <div className="lg:col-span-1">
                 <ProfileSkeleton />
               </div>
-              <div className="lg:col-span-2 space-y-6">
+              <div className="lg:col-span-2 space-y-4 sm:space-y-6">
                 <StatsSkeleton />
-                <div className="grid grid-cols-1 gap-6">
+                <div className="grid grid-cols-1 gap-4 sm:gap-6">
                   <RecentOrdersCard orders={[]} isLoading={true} />
                   <FavoriteInfluencersCard favorites={[]} isLoading={true} />
                 </div>
@@ -99,12 +99,12 @@ const MerchantDashboard = () => {
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-teal-50">
       <Header />
       
-      <div className="py-8 px-4">
+      <div className="py-6 sm:py-8 px-4">
         <div className="container mx-auto max-w-6xl">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
             {/* Profile Sidebar */}
             <div className="lg:col-span-1">
-              <div className="sticky top-24 space-y-6">
+              <div className="lg:sticky lg:top-24 space-y-4 sm:space-y-6">
                 <ProfileCard 
                   profile={profile} 
                   user={user} 
@@ -114,12 +114,12 @@ const MerchantDashboard = () => {
             </div>
 
             {/* Main Content */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="lg:col-span-2 space-y-4 sm:space-y-6">
               <PaymentStatusAlert />
               
               <StatsGrid stats={stats} />
 
-              <div className="grid grid-cols-1 gap-6">
+              <div className="grid grid-cols-1 gap-4 sm:gap-6">
                 <RecentOrdersCard 
                   orders={orders} 
                   isLoading={ordersLoading} 

@@ -164,21 +164,21 @@ const OrderPage = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-teal-50">
         <Header />
-        <div className="py-8 px-4">
+        <div className="py-6 sm:py-8 px-4">
           <div className="container mx-auto max-w-6xl">
-            <div className="flex flex-col justify-center items-center min-h-[400px] space-y-6">
-              <div className="text-center max-w-md">
-                <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-                <h2 className="text-2xl font-bold text-red-600 mb-3">Erreur de chargement</h2>
-                <p className="text-gray-600 mb-6">{error}</p>
-                <div className="space-y-3">
-                  <Button onClick={() => window.location.reload()} className="w-full">
+            <div className="flex flex-col justify-center items-center min-h-[300px] sm:min-h-[400px] space-y-4 sm:space-y-6">
+              <div className="text-center max-w-md px-4">
+                <AlertCircle className="w-12 h-12 sm:w-16 sm:h-16 text-red-500 mx-auto mb-3 sm:mb-4" />
+                <h2 className="text-xl sm:text-2xl font-bold text-red-600 mb-2 sm:mb-3">Erreur de chargement</h2>
+                <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">{error}</p>
+                <div className="space-y-2 sm:space-y-3">
+                  <Button onClick={() => window.location.reload()} className="w-full text-sm sm:text-base">
                     Recharger la page
                   </Button>
                   <Button 
                     variant="outline" 
                     onClick={() => window.history.back()}
-                    className="w-full"
+                    className="w-full text-sm sm:text-base"
                   >
                     Retour à la page précédente
                   </Button>
@@ -196,23 +196,23 @@ const OrderPage = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-teal-50">
         <Header />
-        <div className="py-8 px-4">
+        <div className="py-6 sm:py-8 px-4">
           <div className="container mx-auto max-w-6xl">
-            <div className="flex flex-col justify-center items-center min-h-[400px] space-y-6">
-              <div className="text-center max-w-md">
-                <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-                <h2 className="text-2xl font-bold text-red-600 mb-3">Données manquantes</h2>
-                <p className="text-gray-600 mb-6">
+            <div className="flex flex-col justify-center items-center min-h-[300px] sm:min-h-[400px] space-y-4 sm:space-y-6">
+              <div className="text-center max-w-md px-4">
+                <AlertCircle className="w-12 h-12 sm:w-16 sm:h-16 text-red-500 mx-auto mb-3 sm:mb-4" />
+                <h2 className="text-xl sm:text-2xl font-bold text-red-600 mb-2 sm:mb-3">Données manquantes</h2>
+                <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">
                   Impossible de récupérer les informations de la commande.
                 </p>
-                <div className="space-y-3">
-                  <Button onClick={() => window.location.reload()} className="w-full">
+                <div className="space-y-2 sm:space-y-3">
+                  <Button onClick={() => window.location.reload()} className="w-full text-sm sm:text-base">
                     Recharger la page
                   </Button>
                   <Button 
                     variant="outline" 
                     onClick={() => window.history.back()}
-                    className="w-full"
+                    className="w-full text-sm sm:text-base"
                   >
                     Retour à la page précédente
                   </Button>
@@ -232,24 +232,26 @@ const OrderPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-teal-50">
       <Header />
       
-      <div className="py-8 px-4">
+      <div className="py-6 sm:py-8 px-4">
         <div className="container mx-auto max-w-6xl">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-1">
-              <OrderSummary 
-                offer={offer}
-                influencer={influencer}
-                pricingData={pricingData}
-              />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+            <div className="lg:col-span-1 order-2 lg:order-1">
+              <div className="lg:sticky lg:top-24">
+                <OrderSummary 
+                  offer={offer}
+                  influencer={influencer}
+                  pricingData={pricingData}
+                />
+              </div>
             </div>
 
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-2 order-1 lg:order-2">
               <Card className="shadow-xl border-0 animate-fade-in">
-                <CardHeader>
-                  <CardTitle className="text-2xl">Commander une collaboration</CardTitle>
+                <CardHeader className="p-4 sm:p-6">
+                  <CardTitle className="text-xl sm:text-2xl">Commander une collaboration</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleSubmit} className="space-y-6">
+                <CardContent className="p-4 sm:p-6">
+                  <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
                     <BrandInfoSection
                       brandName={orderData.brandName}
                       productName={orderData.productName}
@@ -269,35 +271,36 @@ const OrderPage = () => {
                       onPaymentMethodChange={handlePaymentMethodChange}
                     />
 
-                    <div className="space-y-4">
+                    <div className="space-y-3 sm:space-y-4">
                       <div className="flex items-start space-x-2">
                         <Checkbox
                           id="acceptTerms"
                           checked={orderData.acceptTerms}
                           onCheckedChange={handleCheckboxChange}
                         />
-                        <Label htmlFor="acceptTerms" className="text-sm leading-relaxed">
+                        <Label htmlFor="acceptTerms" className="text-xs sm:text-sm leading-relaxed">
                           J'accepte les conditions générales d'utilisation et la politique de confidentialité
                         </Label>
                       </div>
                     </div>
 
-                    <div className="pt-6">
+                    <div className="pt-4 sm:pt-6">
                       <Button
                         type="submit"
                         disabled={!orderData.acceptTerms || isSubmitting}
-                        className="w-full bg-gradient-primary text-lg py-6 text-white"
+                        className="w-full bg-gradient-primary text-base sm:text-lg py-5 sm:py-6 text-white"
                       >
                         {isSubmitting ? (
                           <>
                             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Redirection vers le paiement...
+                            <span className="hidden sm:inline">Redirection vers le paiement...</span>
+                            <span className="sm:hidden">Redirection...</span>
                           </>
                         ) : (
                           `Payer maintenant - ${pricingData.finalTotal}€`
                         )}
                       </Button>
-                      <p className="text-center text-sm text-gray-500 mt-2">
+                      <p className="text-center text-xs sm:text-sm text-gray-500 mt-2">
                         L'influenceur devra accepter votre commande avant que le paiement soit capturé
                       </p>
                     </div>

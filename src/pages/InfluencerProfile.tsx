@@ -219,88 +219,86 @@ const InfluencerProfile = () => {
   return <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-teal-50">
       <Header />
       
-      <div className="py-4 sm:py-8 px-4">
+      <div className="py-4 sm:py-6 md:py-8 px-4">
         <div className="container mx-auto max-w-6xl">
           {/* Bouton retour */}
-          <ScrollReveal variant="fade-right" delay={0.1}>
-            <div className="mb-4">
-              <Button onClick={() => navigate('/catalog')} variant="outline" className="flex items-center gap-2">
-                <ArrowLeft className="w-4 h-4" />
-                Retour au catalogue
-              </Button>
-            </div>
-          </ScrollReveal>
+          <div className="mb-4 sm:mb-6">
+            <Button onClick={() => navigate('/catalog')} variant="outline" className="flex items-center gap-2 text-sm sm:text-base">
+              <ArrowLeft className="w-4 h-4" />
+              <span className="hidden xs:inline">Retour au catalogue</span>
+              <span className="xs:hidden">Retour</span>
+            </Button>
+          </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             {/* Profile Info Sidebar */}
             <div className="lg:col-span-1">
-              <div className="sticky top-20 lg:top-24">
-                <ScrollReveal variant="fade-right" delay={0.2}>
-                  <Card className="shadow-xl border-0">
+              <div className="lg:sticky lg:top-20 lg:top-24">
+                <Card className="shadow-xl border-0">
                   <CardContent className="p-4 sm:p-6">
-                    <div className="text-center mb-6">
-                      <Avatar className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-4">
+                    <div className="text-center mb-4 sm:mb-6">
+                      <Avatar className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-3 sm:mb-4">
                         <AvatarImage src={influencer.avatar} alt={influencer.fullName} />
-                        <AvatarFallback className="text-xl sm:text-2xl">
+                        <AvatarFallback className="text-lg sm:text-xl md:text-2xl">
                           {influencer.fullName.split(' ').map(n => n[0]).join('')}
                         </AvatarFallback>
                       </Avatar>
                       
-                      <h1 className="text-xl sm:text-2xl font-bold mb-1">{influencer.username}</h1>
-                      <p className="text-gray-600 mb-2">{influencer.fullName}</p>
-                      <div className="flex items-center justify-center text-sm text-gray-500 mb-4">
-                        <MapPin className="w-4 h-4 mr-1" />
+                      <h1 className="text-lg sm:text-xl md:text-2xl font-bold mb-1">{influencer.username}</h1>
+                      <p className="text-sm sm:text-base text-gray-600 mb-2">{influencer.fullName}</p>
+                      <div className="flex items-center justify-center text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4">
+                        <MapPin className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                         {influencer.city}
                       </div>
                       
-                      <Badge className="mb-4">{influencer.category}</Badge>
+                      <Badge className="mb-3 sm:mb-4 text-xs sm:text-sm">{influencer.category}</Badge>
                     </div>
 
-                    <div className="space-y-4 mb-6">
+                    <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
                       <div className="flex justify-between items-center">
-                        <span className="text-gray-600">Vues du profil</span>
+                        <span className="text-xs sm:text-sm text-gray-600">Vues du profil</span>
                         <div className="flex items-center">
-                          <Eye className="w-4 h-4 mr-1 text-primary" />
-                          <span className="font-semibold">{influencer.profileViews.toLocaleString()}</span>
+                          <Eye className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-primary" />
+                          <span className="text-sm sm:text-base font-semibold">{influencer.profileViews.toLocaleString()}</span>
                         </div>
                       </div>
                       
                       <div className="flex justify-between items-center">
-                        <span className="text-gray-600">Abonnés</span>
+                        <span className="text-xs sm:text-sm text-gray-600">Abonnés</span>
                         <div className="flex items-center">
-                          <Users className="w-4 h-4 mr-1 text-primary" />
-                          <span className="font-semibold">{influencer.followers.toLocaleString()}</span>
+                          <Users className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-primary" />
+                          <span className="text-sm sm:text-base font-semibold">{influencer.followers.toLocaleString()}</span>
                         </div>
                       </div>
                       
                       <div className="flex justify-between items-center">
-                        <span className="text-gray-600">Engagement</span>
+                        <span className="text-xs sm:text-sm text-gray-600">Engagement</span>
                         <div className="flex items-center">
-                          <Heart className="w-4 h-4 mr-1 text-red-500" />
-                          <span className="font-semibold">{influencer.engagement}%</span>
+                          <Heart className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-red-500" />
+                          <span className="text-sm sm:text-base font-semibold">{influencer.engagement}%</span>
                         </div>
                       </div>
                       
                       <div className="flex justify-between items-center">
-                        <span className="text-gray-600">Note</span>
+                        <span className="text-xs sm:text-sm text-gray-600">Note</span>
                         <div className="flex items-center">
-                          <Star className="w-4 h-4 mr-1 text-yellow-500 fill-current" />
-                          <span className="font-semibold">
+                          <Star className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-yellow-500 fill-current" />
+                          <span className="text-xs sm:text-sm font-semibold">
                             {influencer.rating > 0 ? `${influencer.rating} (${influencer.reviewCount} avis)` : 'Pas encore d\'avis'}
                           </span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="mb-6">
-                      <h3 className="font-semibold mb-2">Bio</h3>
-                      <p className="text-gray-600 text-sm leading-relaxed">{influencer.bio}</p>
+                    <div className="mb-4 sm:mb-6">
+                      <h3 className="text-sm sm:text-base font-semibold mb-2">Bio</h3>
+                      <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">{influencer.bio}</p>
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="space-y-3">
-                      <Button onClick={() => setIsMessagingOpen(true)} variant="outline" className="w-full">
-                        <MessageCircle className="w-4 h-4 mr-2" />
+                    <div className="space-y-2 sm:space-y-3">
+                      <Button onClick={() => setIsMessagingOpen(true)} variant="outline" className="w-full text-sm sm:text-base">
+                        <MessageCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                         Contacter
                       </Button>
                     </div>
@@ -311,36 +309,32 @@ const InfluencerProfile = () => {
             </div>
 
             {/* Main Content */}
-            <div className="lg:col-span-2 space-y-6 sm:space-y-8">
+            <div className="lg:col-span-2 space-y-4 sm:space-y-6 md:space-y-8">
               {/* Services */}
-              <ScrollReveal variant="fade-left" delay={0.1}>
-                <Card className="shadow-xl border-0 animate-fade-in">
-                  <CardContent className="p-4 sm:p-6">
-                    <div className="flex justify-between items-center mb-6">
-                      <h2 className="text-xl sm:text-2xl font-bold">Mes prestations</h2>
-                      {influencer.services.length > 3 && <Button variant="outline" size="sm" onClick={() => setShowAllServices(true)}>
-                          Voir tout
-                        </Button>}
-                    </div>
-                    <ServicesCarousel services={influencer.services} influencerId={id} getPlatformLogo={getPlatformLogo} getPlatformFromTitle={getPlatformFromTitle} />
-                  </CardContent>
-                </Card>
-              </ScrollReveal>
+              <Card className="shadow-xl border-0 animate-fade-in">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 sm:mb-6">
+                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold">Mes prestations</h2>
+                    {influencer.services.length > 3 && <Button variant="outline" size="sm" onClick={() => setShowAllServices(true)} className="text-xs sm:text-sm w-full sm:w-auto">
+                        Voir tout
+                      </Button>}
+                  </div>
+                  <ServicesCarousel services={influencer.services} influencerId={id} getPlatformLogo={getPlatformLogo} getPlatformFromTitle={getPlatformFromTitle} />
+                </CardContent>
+              </Card>
 
               {/* Social Networks */}
-              <ScrollReveal variant="fade-left" delay={0.2}>
-                <Card className="shadow-xl border-0 animate-fade-in">
-                  <CardContent className="p-4 sm:p-6">
-                    <div className="flex justify-between items-center mb-4">
-                      <h2 className="text-xl sm:text-2xl font-bold">Réseaux sociaux</h2>
-                      {influencer.socialNetworks.length > 1 && <Button variant="outline" size="sm" onClick={() => setShowAllNetworks(true)}>
-                          Voir tout
-                        </Button>}
-                    </div>
-                    <SocialNetworksCarousel networks={influencer.socialNetworks} />
-                  </CardContent>
-                </Card>
-              </ScrollReveal>
+              <Card className="shadow-xl border-0 animate-fade-in">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
+                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold">Réseaux sociaux</h2>
+                    {influencer.socialNetworks.length > 1 && <Button variant="outline" size="sm" onClick={() => setShowAllNetworks(true)} className="text-xs sm:text-sm w-full sm:w-auto">
+                        Voir tout
+                      </Button>}
+                  </div>
+                  <SocialNetworksCarousel networks={influencer.socialNetworks} />
+                </CardContent>
+              </Card>
 
               {/* Reviews Section */}
               <ScrollReveal variant="fade-up" delay={0.3}>
