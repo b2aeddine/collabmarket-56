@@ -94,13 +94,13 @@ const InfluencerCatalog = () => {
   return <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-teal-50 flex flex-col">
       <Header />
       
-      <div className="container mx-auto px-4 py-8 flex-1">
-        <div className="flex justify-between items-start mb-6">
-          <div>
-            <h1 className="text-4xl font-bold mb-2 text-gradient">
+      <div className="container mx-auto px-4 py-6 sm:py-8 flex-1">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-6 sm:mb-8">
+          <div className="mb-4 sm:mb-0">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 text-gradient">
               Catalogue des Influenceurs
             </h1>
-            <p className="text-xl text-gray-600">
+            <p className="text-base sm:text-lg md:text-xl text-gray-600">
               Trouvez le partenaire idéal pour votre prochaine campagne
             </p>
           </div>
@@ -111,24 +111,24 @@ const InfluencerCatalog = () => {
         <CatalogFilters searchTerm={searchTerm} selectedNiche={selectedNiche} selectedBudget={selectedBudget} selectedFollowers={selectedFollowers} onSearchChange={handleSearchChange} onNicheChange={handleNicheChange} onBudgetChange={handleBudgetChange} onFollowersChange={handleFollowersChange} />
 
         {/* Results */}
-        <div className="mb-6">
-          <p className="text-gray-600">
+        <div className="mb-4 sm:mb-6">
+          <p className="text-sm sm:text-base text-gray-600">
             {filteredInfluencers.length} influenceur{filteredInfluencers.length > 1 ? 's' : ''} trouvé{filteredInfluencers.length > 1 ? 's' : ''}
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {filteredInfluencers.map(influencer => <InfluencerCard key={influencer.id} influencer={influencer} />)}
         </div>
 
-        {filteredInfluencers.length === 0 && !isLoading && <div className="text-center py-12">
+        {filteredInfluencers.length === 0 && !isLoading && <div className="text-center py-8 sm:py-12 px-4">
             <div className="text-gray-400 mb-4">
-              <Search className="w-16 h-16 mx-auto" />
+              <Search className="w-12 h-12 sm:w-16 sm:h-16 mx-auto" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-600 mb-2">
               Aucun influenceur trouvé
             </h3>
-            <p className="text-gray-500">
+            <p className="text-sm sm:text-base text-gray-500">
               {transformedInfluencers.length === 0 ? "Aucun influenceur n'est encore enregistré dans la base de données." : "Essayez d'ajuster vos filtres de recherche"}
             </p>
           </div>}

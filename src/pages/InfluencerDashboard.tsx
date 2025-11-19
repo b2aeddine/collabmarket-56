@@ -363,14 +363,14 @@ const InfluencerDashboard = () => {
       <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-teal-50">
         <Header />
         
-        <div className="py-8 px-4">
+        <div className="py-6 sm:py-8 px-4">
           <div className="container mx-auto max-w-6xl">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
               {/* Profile Sidebar */}
               <div className="lg:col-span-1">
-                <div className="sticky top-24 space-y-6">
+                <div className="lg:sticky lg:top-24 space-y-4 sm:space-y-6">
                   <Card className="shadow-xl border-0">
-                    <CardContent className="p-6">
+                    <CardContent className="p-4 sm:p-6">
                       <div className="text-center mb-6">
                         <div className="relative inline-block">
                           <Avatar className="w-24 h-24 mx-auto mb-4">
