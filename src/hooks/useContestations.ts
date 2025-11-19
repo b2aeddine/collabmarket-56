@@ -24,9 +24,10 @@ export const useContestations = (adminView = false) => {
         `)
         .order('created_at', { ascending: false });
       
+      // SECURITY: Use PostgREST filter syntax safely
       // Si ce n'est pas la vue admin, filtrer par utilisateur actuel
       if (!adminView) {
-        query = query.or(`influencer_id.eq.${user.id},merchant_id.eq.${user.id}`);
+        query = query.or(`influencer_id.eq.${user.id},merchant_id.eq.${user.id}`, { foreignTable: undefined });
       }
 
       const { data, error } = await query;
@@ -57,6 +58,7 @@ export const useCreateContestation = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
+      // SECURITY: Verify that the user can only contest their own orders
       // Récupérer les infos de la commande
       const { data: order, error: orderError } = await supabase
         .from('orders')
@@ -65,6 +67,14 @@ export const useCreateContestation = () => {
         .single();
 
       if (orderError) throw orderError;
+      if (!order) {
+        throw new Error('Order not found');
+      }
+
+      // Check if user is the influencer or merchant of this order
+      if (order.influencer_id !== user.id && order.merchant_id !== user.id) {
+        throw new Error('Unauthorized: You can only contest your own orders');
+      }
 
       // Créer la contestation
       const { data, error } = await supabase
@@ -129,6 +139,18 @@ export const useUpdateContestationStatus = () => {
     }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
+
+      // SECURITY: Verify that only admins can update contestation status
+      // Get user profile to check role
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      if (!profile || profile.role !== 'admin') {
+        throw new Error('Unauthorized: Only admins can update contestation status');
+      }
 
       // Mettre à jour la contestation
       const { data, error } = await supabase

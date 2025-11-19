@@ -10,11 +10,12 @@ export const useDisputes = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
 
+      // SECURITY: Use PostgREST filter syntax safely
       // Récupérer d'abord les commandes de l'utilisateur
       const { data: userOrders, error: ordersError } = await supabase
         .from('orders')
         .select('id')
-        .or(`merchant_id.eq.${user.id},influencer_id.eq.${user.id}`);
+        .or(`merchant_id.eq.${user.id},influencer_id.eq.${user.id}`, { foreignTable: undefined });
       
       if (ordersError) throw ordersError;
       

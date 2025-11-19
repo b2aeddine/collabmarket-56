@@ -11,6 +11,7 @@ import { Heart, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { validateEmail } from "@/utils/validation";
 
 const Login = () => {
   const { signIn, user, loading } = useAuth();
@@ -79,7 +80,7 @@ const Login = () => {
 
     if (!formData.email.trim()) {
       newErrors.email = "L'email est requis";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+    } else if (!validateEmail(formData.email)) {
       newErrors.email = "L'email n'est pas valide";
     }
 

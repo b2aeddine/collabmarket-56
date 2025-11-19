@@ -2,8 +2,9 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import { User, HandHeart, Building2, Target, Zap, BarChart3, Star, Users } from "lucide-react";
+import ScrollReveal from "@/components/common/ScrollReveal";
+
 const Index = () => {
   return <div className="min-h-screen bg-white flex flex-col">
       <Header />
@@ -83,7 +84,7 @@ Collaborations</span>
                 Trouvez les parfaits ambassadeurs
               </p>
             </div>
-          </div>
+          </ScrollReveal>
         </div>
       </section>
 
@@ -166,8 +167,6 @@ Collaborations</span>
           </div>
         </div>
       </section>
-
-      <Footer />
     </div>;
 };
 export default Index;

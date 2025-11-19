@@ -1371,50 +1371,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      auto_cancel_expired_orders: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      auto_cancel_payment_authorized_orders: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      auto_cancel_pending_orders: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      auto_confirm_completed_orders: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      auto_handle_expired_orders: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      can_contest_order: {
-        Args: { order_id: string }
-        Returns: boolean
-      }
-      create_admin_account: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      create_initial_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      auto_cancel_expired_orders: { Args: never; Returns: undefined }
+      auto_cancel_payment_authorized_orders: { Args: never; Returns: undefined }
+      auto_cancel_pending_orders: { Args: never; Returns: undefined }
+      auto_confirm_completed_orders: { Args: never; Returns: undefined }
+      auto_handle_expired_orders: { Args: never; Returns: undefined }
+      can_contest_order: { Args: { order_id: string }; Returns: boolean }
+      create_admin_account: { Args: never; Returns: undefined }
+      create_initial_admin: { Args: never; Returns: undefined }
       enable_contestation_for_delivered_orders: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: undefined
       }
-      get_available_balance: {
-        Args: { user_id: string }
-        Returns: number
-      }
-      get_current_user_role: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      get_available_balance: { Args: { user_id: string }; Returns: number }
+      get_current_user_role: { Args: never; Returns: string }
       get_influencer_available_balance: {
         Args: { user_id: string }
         Returns: number
@@ -1461,14 +1431,8 @@ export type Database = {
           role: string
         }[]
       }
-      is_admin: {
-        Args: { user_id?: string }
-        Returns: boolean
-      }
-      is_current_user_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      is_admin: { Args: { user_id?: string }; Returns: boolean }
+      is_current_user_admin: { Args: never; Returns: boolean }
       sync_social_analytics: {
         Args: { account_id: string }
         Returns: undefined

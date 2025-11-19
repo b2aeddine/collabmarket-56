@@ -16,6 +16,7 @@ import { InputField, SelectField } from "@/components/forms";
 import { TextareaField } from "@/components/forms/TextareaField";
 import { RoleSelector } from "@/components/signup/RoleSelector";
 import { StepIndicator } from "@/components/signup/StepIndicator";
+import { validateEmail, validatePassword, validateSIRET } from "@/utils/validation";
 
 const SignUp = () => {
   const [searchParams] = useSearchParams();
@@ -104,14 +105,17 @@ const SignUp = () => {
     if (step === 1) {
       if (!formData.email.trim()) {
         newErrors.email = "L'email est requis";
-      } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      } else if (!validateEmail(formData.email)) {
         newErrors.email = "L'email n'est pas valide";
       }
 
       if (!formData.password.trim()) {
         newErrors.password = "Le mot de passe est requis";
-      } else if (formData.password.length < 6) {
-        newErrors.password = "Le mot de passe doit contenir au moins 6 caractères";
+      } else {
+        const passwordValidation = validatePassword(formData.password, 8);
+        if (!passwordValidation.isValid) {
+          newErrors.password = passwordValidation.errors[0] || "Le mot de passe n'est pas valide";
+        }
       }
     }
 
@@ -142,11 +146,13 @@ const SignUp = () => {
         }
         if (!formData.businessEmail.trim()) {
           newErrors.businessEmail = "L'email professionnel est requis";
-        } else if (!/\S+@\S+\.\S+/.test(formData.businessEmail)) {
+        } else if (!validateEmail(formData.businessEmail)) {
           newErrors.businessEmail = "L'email professionnel n'est pas valide";
         }
         if (!formData.siret.trim()) {
           newErrors.siret = "Le SIRET est requis";
+        } else if (!validateSIRET(formData.siret)) {
+          newErrors.siret = "Le SIRET n'est pas valide";
         }
       }
     }

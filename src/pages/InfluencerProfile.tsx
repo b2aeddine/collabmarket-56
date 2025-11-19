@@ -17,6 +17,7 @@ import { InfluencerProfileSkeleton } from "@/components/common/InfluencerProfile
 import { ServicesCarousel } from "@/components/common/ServicesCarousel";
 import { SocialNetworksCarousel } from "@/components/common/SocialNetworksCarousel";
 import snapchatLogo from "@/assets/snapchat-logo.png";
+import ScrollReveal from "@/components/common/ScrollReveal";
 const InfluencerProfile = () => {
   const {
     id
@@ -303,6 +304,7 @@ const InfluencerProfile = () => {
                     </div>
                   </CardContent>
                 </Card>
+                </ScrollReveal>
               </div>
             </div>
 
@@ -335,12 +337,16 @@ const InfluencerProfile = () => {
               </Card>
 
               {/* Reviews Section */}
-              <ReviewsSection influencerId={validProfile.id} />
+              <ScrollReveal variant="fade-up" delay={0.3}>
+                <ReviewsSection influencerId={validProfile.id} />
+              </ScrollReveal>
 
               {/* Gallery */}
-              <Card className="shadow-xl border-0 animate-fade-in">
-                
-              </Card>
+              <ScrollReveal variant="zoom-in" delay={0.4}>
+                <Card className="shadow-xl border-0 animate-fade-in">
+                  
+                </Card>
+              </ScrollReveal>
             </div>
           </div>
         </div>

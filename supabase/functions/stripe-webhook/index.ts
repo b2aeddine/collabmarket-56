@@ -1,13 +1,12 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { getCorsHeaders } from "../_shared/cors.ts";
 
 serve(async (req) => {
+  const origin = req.headers.get('origin');
+  const corsHeaders = getCorsHeaders(origin);
+  
   console.log("🚀 Webhook called - method:", req.method, "url:", req.url);
   
   if (req.method === "OPTIONS") {
@@ -64,10 +63,10 @@ serve(async (req) => {
         console.log("💰 Payment succeeded for session:", session.id);
         console.log("📋 Session metadata:", session.metadata);
 
-        // Trouver la commande correspondante
+        // Trouver la commande correspondante (optimized: only select needed fields)
         const { data: existingOrder, error: findError } = await supabase
           .from("orders")
-          .select("*")
+          .select("id, status, stripe_session_id, influencer_id, merchant_id, total_amount")
           .eq("stripe_session_id", session.id)
           .single();
 

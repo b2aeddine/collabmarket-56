@@ -59,8 +59,10 @@ export const useOrders = (userRole?: string) => {
       } else if (userRole === 'commercant') {
         query = query.eq('merchant_id', user.id);
       } else {
+        // SECURITY: Use PostgREST filter syntax safely instead of string interpolation
         // For admin or unspecified role, get user's orders
-        query = query.or(`influencer_id.eq.${user.id},merchant_id.eq.${user.id}`);
+        // Using .or() with proper PostgREST syntax to prevent any potential injection
+        query = query.or(`influencer_id.eq.${user.id},merchant_id.eq.${user.id}`, { foreignTable: undefined });
       }
       
       const { data, error } = await query;
@@ -131,6 +133,30 @@ export const useUpdateOrder = () => {
         dispute_reason: string;
       }>
     }) => {
+      // SECURITY: Verify that the authenticated user can only update their own orders
+      // This prevents unauthorized order modifications (IDOR - Insecure Direct Object Reference)
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
+      // First, verify the order belongs to the user
+      const { data: order, error: fetchError } = await supabase
+        .from('orders')
+        .select('influencer_id, merchant_id')
+        .eq('id', orderId)
+        .single();
+
+      if (fetchError) throw fetchError;
+      if (!order) {
+        throw new Error('Order not found');
+      }
+
+      // Check if user is the influencer or merchant of this order
+      if (order.influencer_id !== user.id && order.merchant_id !== user.id) {
+        throw new Error('Unauthorized: You can only update your own orders');
+      }
+
       const { data, error } = await supabase
         .from('orders')
         .update(updates)

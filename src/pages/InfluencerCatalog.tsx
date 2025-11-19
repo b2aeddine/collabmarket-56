@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
+import { motion } from "framer-motion";
 import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import CatalogFilters from "@/components/catalog/CatalogFilters";
 import InfluencerCard from "@/components/catalog/InfluencerCard";
 import { Search, RefreshCw } from "lucide-react";
@@ -9,6 +9,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { CatalogSkeleton } from "@/components/common/CatalogSkeleton";
 import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
+import ScrollReveal from "@/components/common/ScrollReveal";
 const InfluencerCatalog = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedNiche, setSelectedNiche] = useState("all");
@@ -82,14 +83,10 @@ const InfluencerCatalog = () => {
             Erreur lors du chargement des influenceurs. Veuillez réessayer.
           </div>
         </div>
-        <Footer />
       </div>;
   }
   if (isLoading) {
-    return <>
-        <CatalogSkeleton />
-        <Footer />
-      </>;
+    return <CatalogSkeleton />;
   }
   return <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-teal-50 flex flex-col">
       <Header />
@@ -104,11 +101,12 @@ const InfluencerCatalog = () => {
               Trouvez le partenaire idéal pour votre prochaine campagne
             </p>
           </div>
-          
-        </div>
+        </ScrollReveal>
 
         {/* Filters */}
-        <CatalogFilters searchTerm={searchTerm} selectedNiche={selectedNiche} selectedBudget={selectedBudget} selectedFollowers={selectedFollowers} onSearchChange={handleSearchChange} onNicheChange={handleNicheChange} onBudgetChange={handleBudgetChange} onFollowersChange={handleFollowersChange} />
+        <ScrollReveal variant="fade-up" delay={0.2}>
+          <CatalogFilters searchTerm={searchTerm} selectedNiche={selectedNiche} selectedBudget={selectedBudget} selectedFollowers={selectedFollowers} onSearchChange={handleSearchChange} onNicheChange={handleNicheChange} onBudgetChange={handleBudgetChange} onFollowersChange={handleFollowersChange} />
+        </ScrollReveal>
 
         {/* Results */}
         <div className="mb-4 sm:mb-6">
@@ -130,11 +128,9 @@ const InfluencerCatalog = () => {
             </h3>
             <p className="text-sm sm:text-base text-gray-500">
               {transformedInfluencers.length === 0 ? "Aucun influenceur n'est encore enregistré dans la base de données." : "Essayez d'ajuster vos filtres de recherche"}
-            </p>
-          </div>}
+             </p>
+           </div>}
       </div>
-      
-      <Footer />
     </div>;
 };
 export default InfluencerCatalog;

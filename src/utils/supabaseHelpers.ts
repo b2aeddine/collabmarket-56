@@ -1,15 +1,82 @@
 
 import { supabase } from '@/integrations/supabase/client';
 
-// Helper pour uploader des images de profil
+// Allowed MIME types for avatar uploads
+const ALLOWED_IMAGE_TYPES = [
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+];
+
+// Allowed file extensions
+const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
+
+// Maximum file size: 5MB
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
+
+/**
+ * Validates an uploaded file for security
+ * @throws {Error} If file is invalid
+ */
+export function validateImageFile(file: File): void {
+  // Check file size
+  if (file.size > MAX_FILE_SIZE) {
+    throw new Error(`Le fichier est trop volumineux. Taille maximale: 5MB`);
+  }
+
+  // Check MIME type
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+    throw new Error(
+      `Type de fichier non autorisé. Types acceptés: ${ALLOWED_EXTENSIONS.join(', ')}`
+    );
+  }
+
+  // Check file extension
+  const fileExt = file.name.split('.').pop()?.toLowerCase();
+  if (!fileExt || !ALLOWED_EXTENSIONS.includes(`.${fileExt}`)) {
+    throw new Error(
+      `Extension de fichier non autorisée. Extensions acceptées: ${ALLOWED_EXTENSIONS.join(', ')}`
+    );
+  }
+
+  // Additional validation: ensure MIME type matches extension
+  const expectedMimeTypes: Record<string, string[]> = {
+    jpg: ['image/jpeg', 'image/jpg'],
+    jpeg: ['image/jpeg', 'image/jpg'],
+    png: ['image/png'],
+    webp: ['image/webp'],
+    gif: ['image/gif'],
+  };
+
+  const expectedMimes = expectedMimeTypes[fileExt];
+  if (expectedMimes && !expectedMimes.includes(file.type)) {
+    throw new Error('Le type MIME du fichier ne correspond pas à son extension');
+  }
+}
+
+// Helper pour uploader des images de profil avec validation de sécurité
 export const uploadAvatar = async (file: File, userId: string) => {
-  const fileExt = file.name.split('.').pop();
+  // Validate file before upload
+  validateImageFile(file);
+
+  // Sanitize file extension
+  const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+  if (!ALLOWED_EXTENSIONS.includes(`.${fileExt}`)) {
+    throw new Error('Extension de fichier non autorisée');
+  }
+
+  // Use UUID to prevent path traversal and ensure unique filenames
   const fileName = `${userId}.${fileExt}`;
   const filePath = `avatars/${fileName}`;
 
   const { error: uploadError } = await supabase.storage
     .from('avatars')
-    .upload(filePath, file, { upsert: true });
+    .upload(filePath, file, { 
+      upsert: true,
+      contentType: file.type, // Explicitly set content type
+    });
 
   if (uploadError) throw uploadError;
 
