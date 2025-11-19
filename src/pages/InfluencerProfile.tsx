@@ -234,7 +234,8 @@ const InfluencerProfile = () => {
             {/* Profile Info Sidebar */}
             <div className="lg:col-span-1">
               <div className="lg:sticky lg:top-20 lg:top-24">
-                <Card className="shadow-xl border-0">
+                <ScrollReveal variant="fade-right" delay={0.1}>
+                  <Card className="shadow-xl border-0">
                   <CardContent className="p-4 sm:p-6">
                     <div className="text-center mb-4 sm:mb-6">
                       <Avatar className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-3 sm:mb-4">
@@ -311,30 +312,34 @@ const InfluencerProfile = () => {
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-4 sm:space-y-6 md:space-y-8">
               {/* Services */}
-              <Card className="shadow-xl border-0 animate-fade-in">
-                <CardContent className="p-4 sm:p-6">
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 sm:mb-6">
-                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold">Mes prestations</h2>
-                    {influencer.services.length > 3 && <Button variant="outline" size="sm" onClick={() => setShowAllServices(true)} className="text-xs sm:text-sm w-full sm:w-auto">
-                        Voir tout
-                      </Button>}
-                  </div>
-                  <ServicesCarousel services={influencer.services} influencerId={id} getPlatformLogo={getPlatformLogo} getPlatformFromTitle={getPlatformFromTitle} />
-                </CardContent>
-              </Card>
+              <ScrollReveal variant="fade-up" delay={0.2}>
+                <Card className="shadow-xl border-0 animate-fade-in">
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 sm:mb-6">
+                      <h2 className="text-lg sm:text-xl md:text-2xl font-bold">Mes prestations</h2>
+                      {influencer.services.length > 3 && <Button variant="outline" size="sm" onClick={() => setShowAllServices(true)} className="text-xs sm:text-sm w-full sm:w-auto">
+                          Voir tout
+                        </Button>}
+                    </div>
+                    <ServicesCarousel services={influencer.services} influencerId={id} getPlatformLogo={getPlatformLogo} getPlatformFromTitle={getPlatformFromTitle} />
+                  </CardContent>
+                </Card>
+              </ScrollReveal>
 
               {/* Social Networks */}
-              <Card className="shadow-xl border-0 animate-fade-in">
-                <CardContent className="p-4 sm:p-6">
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
-                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold">Réseaux sociaux</h2>
-                    {influencer.socialNetworks.length > 1 && <Button variant="outline" size="sm" onClick={() => setShowAllNetworks(true)} className="text-xs sm:text-sm w-full sm:w-auto">
-                        Voir tout
-                      </Button>}
-                  </div>
-                  <SocialNetworksCarousel networks={influencer.socialNetworks} />
-                </CardContent>
-              </Card>
+              <ScrollReveal variant="fade-up" delay={0.25}>
+                <Card className="shadow-xl border-0 animate-fade-in">
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
+                      <h2 className="text-lg sm:text-xl md:text-2xl font-bold">Réseaux sociaux</h2>
+                      {influencer.socialNetworks.length > 1 && <Button variant="outline" size="sm" onClick={() => setShowAllNetworks(true)} className="text-xs sm:text-sm w-full sm:w-auto">
+                          Voir tout
+                        </Button>}
+                    </div>
+                    <SocialNetworksCarousel networks={influencer.socialNetworks} />
+                  </CardContent>
+                </Card>
+              </ScrollReveal>
 
               {/* Reviews Section */}
               <ScrollReveal variant="fade-up" delay={0.3}>
