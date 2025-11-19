@@ -92,14 +92,16 @@ const InfluencerCatalog = () => {
       <Header />
       
       <div className="container mx-auto px-4 py-6 sm:py-8 flex-1">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-6 sm:mb-8">
-          <div className="mb-4 sm:mb-0">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 text-gradient">
-              Catalogue des Influenceurs
-            </h1>
-            <p className="text-base sm:text-lg md:text-xl text-gray-600">
-              Trouvez le partenaire idéal pour votre prochaine campagne
-            </p>
+        <ScrollReveal variant="fade-down" delay={0.1}>
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-6 sm:mb-8">
+            <div className="mb-4 sm:mb-0">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 text-gradient">
+                Catalogue des Influenceurs
+              </h1>
+              <p className="text-base sm:text-lg md:text-xl text-gray-600">
+                Trouvez le partenaire idéal pour votre prochaine campagne
+              </p>
+            </div>
           </div>
         </ScrollReveal>
 

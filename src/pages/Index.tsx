@@ -44,9 +44,10 @@ Collaborations</span>
       {/* Features Cards */}
       <section className="py-8 sm:py-12 md:py-16 px-4">
         <div className="container mx-auto max-w-md">
-          <div className="bg-gradient-to-br from-pink-100 via-orange-100 to-teal-100 rounded-2xl sm:rounded-3xl p-6 sm:p-8 mb-8">
-            
-            {/* Influenceurs */}
+          <ScrollReveal variant="fade-up" delay={0.1}>
+            <div className="bg-gradient-to-br from-pink-100 via-orange-100 to-teal-100 rounded-2xl sm:rounded-3xl p-6 sm:p-8 mb-8">
+              
+              {/* Influenceurs */}
             <div className="text-center mb-10 sm:mb-12">
               <div className="w-16 h-16 sm:w-20 sm:h-20 bg-primary rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
                 <User className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
@@ -83,6 +84,7 @@ Collaborations</span>
               <p className="text-sm sm:text-base text-gray-600 leading-relaxed px-2">
                 Trouvez les parfaits ambassadeurs
               </p>
+            </div>
             </div>
           </ScrollReveal>
         </div>
