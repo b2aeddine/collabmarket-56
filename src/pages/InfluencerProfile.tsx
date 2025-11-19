@@ -225,8 +225,8 @@ const InfluencerProfile = () => {
           <div className="mb-4 sm:mb-6">
             <Button onClick={() => navigate('/catalog')} variant="outline" className="flex items-center gap-2 text-sm sm:text-base">
               <ArrowLeft className="w-4 h-4" />
-              <span className="hidden xs:inline">Retour au catalogue</span>
-              <span className="xs:hidden">Retour</span>
+              <span className="hidden sm:inline">Retour au catalogue</span>
+              <span className="sm:hidden">Retour</span>
             </Button>
           </div>
 
