@@ -5,9 +5,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import SocialNetworkCard from "@/components/SocialNetworkCard";
 import ReviewsSection from "@/components/ReviewsSection";
+import AllServicesModal from "@/components/AllServicesModal";
+import AllSocialNetworksModal from "@/components/AllSocialNetworksModal";
 import { Users, Heart, Star, MapPin, Eye, ExternalLink } from "lucide-react";
 import { InfluencerProfileSkeleton } from "@/components/common/InfluencerProfileSkeleton";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
@@ -19,6 +22,8 @@ const PublicInfluencerProfile = () => {
   const [profile, setProfile] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showAllServices, setShowAllServices] = useState(false);
+  const [showAllNetworks, setShowAllNetworks] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -349,7 +354,16 @@ const PublicInfluencerProfile = () => {
               {influencer.services.length > 0 && (
                 <Card className="shadow-xl border-0 animate-fade-in">
                   <CardContent className="p-6">
-                    <h2 className="text-2xl font-bold mb-6">Prestations disponibles</h2>
+                    <div className="flex justify-between items-center mb-6">
+                      <h2 className="text-2xl font-bold">Mes prestations</h2>
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowAllServices(true)}
+                        className="text-sm"
+                      >
+                        Voir tout
+                      </Button>
+                    </div>
                     <ServicesCarousel 
                       services={influencer.services}
                       showOrderButton={false}
@@ -364,7 +378,16 @@ const PublicInfluencerProfile = () => {
               {influencer.socialNetworks.length > 0 && (
                 <Card className="shadow-xl border-0 animate-fade-in">
                   <CardContent className="p-6">
-                    <h2 className="text-2xl font-bold mb-4">Réseaux sociaux</h2>
+                    <div className="flex justify-between items-center mb-4">
+                      <h2 className="text-2xl font-bold">Réseaux sociaux</h2>
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowAllNetworks(true)}
+                        className="text-sm"
+                      >
+                        Voir tout
+                      </Button>
+                    </div>
                     <SocialNetworksCarousel 
                       networks={influencer.socialNetworks}
                     />
@@ -378,6 +401,21 @@ const PublicInfluencerProfile = () => {
           </div>
         </div>
       </div>
+
+      {/* Modals */}
+      <AllServicesModal
+        isOpen={showAllServices}
+        onClose={() => setShowAllServices(false)}
+        services={influencer.services}
+        getPlatformLogo={getPlatformLogo}
+        getPlatformFromTitle={getPlatformFromTitle}
+      />
+
+      <AllSocialNetworksModal
+        isOpen={showAllNetworks}
+        onClose={() => setShowAllNetworks(false)}
+        networks={influencer.socialNetworks}
+      />
     </div>
   );
 };
