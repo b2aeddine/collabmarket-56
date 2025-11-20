@@ -25,7 +25,7 @@ const Header = memo(() => {
     try {
       await signOut();
     } catch (error) {
-      console.error('Error signing out:', error);
+      // Error is logged by auth context
     }
   }, [signOut]);
   

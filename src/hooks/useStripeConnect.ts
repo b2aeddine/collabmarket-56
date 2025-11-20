@@ -35,16 +35,12 @@ export const useStripeConnect = () => {
     },
     onSuccess: (data) => {
       if (data?.onboardingUrl) {
-        console.log('Redirecting to Stripe onboarding:', data.onboardingUrl);
-        // Redirection immédiate vers Stripe (même page)
-        window.location.href = data.onboardingUrl;
+      window.location.href = data.onboardingUrl;
       } else {
-        console.error('No onboarding URL received:', data);
         toast.error('Aucune URL de configuration reçue');
       }
     },
     onError: (error: any) => {
-      console.error('Error creating onboarding session:', error);
       const message = error?.message || error?.name || 'Erreur inconnue';
       const serverErr = error?.error || error?.context?.error || error?.context?.response || null;
       const step = error?.context?.step || error?.step;
@@ -75,7 +71,6 @@ export const useStripeConnect = () => {
       refetchAccountStatus();
     },
     onError: (error: any) => {
-      console.error('Error updating bank account:', error);
       toast.error('Erreur lors de la mise à jour des informations bancaires');
     },
   });

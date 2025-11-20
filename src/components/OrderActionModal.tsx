@@ -45,7 +45,6 @@ const OrderActionModal = ({ order, isOpen, onClose, userRole }: OrderActionModal
       onClose();
     },
     onError: (error) => {
-      console.error('Error capturing payment:', error);
       toast.error('Erreur lors de la capture du paiement');
     },
   });
@@ -65,7 +64,6 @@ const OrderActionModal = ({ order, isOpen, onClose, userRole }: OrderActionModal
       onClose();
     },
     onError: (error) => {
-      console.error('Error canceling payment:', error);
       toast.error('Erreur lors de l\'annulation du paiement');
     },
   });
@@ -228,13 +226,7 @@ const OrderActionModal = ({ order, isOpen, onClose, userRole }: OrderActionModal
   const canContest = userRole === 'influenceur' && order.status === 'delivered' && canContestOrder(order);
   const canMerchantContest = userRole === 'commercant' && order.status === 'delivered';
 
-  // Debug logs
-  console.log('OrderActionModal Debug:', {
-    userRole,
-    orderStatus: order.status,
-    canMerchantContest,
-    canConfirmCompletion
-  });
+  // Debug logs removed for performance
 
   if (!isOpen) return null;
 

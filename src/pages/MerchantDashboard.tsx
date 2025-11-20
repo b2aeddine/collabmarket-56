@@ -1,5 +1,5 @@
 
-import { useMemo } from "react";
+import { useMemo, useCallback, memo } from "react";
 import Header from "@/components/Header";
 import ProfileCard from "@/components/merchant/ProfileCard";
 import StatsGrid from "@/components/merchant/StatsGrid";
@@ -14,14 +14,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { useOrders } from "@/hooks/useOrders";
 import { useFavorites } from "@/hooks/useFavorites";
 
-const MerchantDashboard = () => {
+const MerchantDashboard = memo(() => {
   const { toast } = useToast();
   const { profile, user, loading: authLoading, refetchUser, updateProfile } = useAuth();
   const unreadCount = useUnreadMessagesCount();
   const { orders, isLoading: ordersLoading } = useOrders('commercant');
   const { favorites, isLoading: favoritesLoading } = useFavorites();
 
-  const handleSaveProfile = async (updatedUser: any) => {
+  const handleSaveProfile = useCallback(async (updatedUser: any) => {
     try {
       const updateData = {
         first_name: updatedUser.firstName,
@@ -51,14 +51,13 @@ const MerchantDashboard = () => {
         description: "Vos informations ont été enregistrées avec succès.",
       });
     } catch (error) {
-      console.error("Error updating profile:", error);
       toast({
         title: "Erreur",
         description: "Erreur lors de la mise à jour du profil",
         variant: "destructive"
       });
     }
-  };
+  }, [updateProfile, refetchUser, toast]);
 
   // Memoize stats calculation to avoid recalculation on every render
   const stats = useMemo(() => ({
@@ -135,6 +134,8 @@ const MerchantDashboard = () => {
       </div>
     </div>
   );
-};
+});
+
+MerchantDashboard.displayName = 'MerchantDashboard';
 
 export default MerchantDashboard;
