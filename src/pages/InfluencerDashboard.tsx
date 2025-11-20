@@ -71,13 +71,26 @@ const InfluencerDashboard = () => {
   const deleteSocialLinkMutation = useDeleteSocialLink();
 
   // Memoize stats to prevent unnecessary recalculations
-  const stats = useMemo(() => ({
-    views: user?.profile_views || 0,
-    orders: orders?.filter(order => order.influencer_id === user?.id).length || 0,
-    revenue: revenues?.reduce((sum, revenue) => sum + Number(revenue.net_amount || 0), 0) || 0,
-    engagement: 4.2,
-    newMessages: unreadMessagesCount,
-  }), [user?.profile_views, user?.id, orders, revenues, unreadMessagesCount]);
+  const stats = useMemo(() => {
+    if (!user?.id) return {
+      views: 0,
+      orders: 0,
+      revenue: 0,
+      engagement: 0,
+      newMessages: 0,
+    };
+
+    // No need to filter orders again - useOrders already filters by influencer_id
+    const totalRevenue = revenues?.reduce((sum, revenue) => sum + Number(revenue.net_amount || 0), 0) || 0;
+
+    return {
+      views: user.profile_views || 0,
+      orders: orders?.length || 0,
+      revenue: totalRevenue,
+      engagement: 4.2,
+      newMessages: unreadMessagesCount,
+    };
+  }, [user, orders, revenues, unreadMessagesCount]);
 
   const [profileViews, setProfileViews] = useState(user?.profile_views || 0);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);

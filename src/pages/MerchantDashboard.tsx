@@ -60,14 +60,31 @@ const MerchantDashboard = memo(() => {
   }, [updateProfile, refetchUser, toast]);
 
   // Memoize stats calculation to avoid recalculation on every render
-  const stats = useMemo(() => ({
-    totalOrders: orders?.length || 0,
-    activeOrders: orders?.filter(order => ['en_cours', 'delivered', 'payment_authorized'].includes(order.status)).length || 0,
-    completedOrders: orders?.filter(order => ['completed', 'terminée'].includes(order.status)).length || 0,
-    totalSpent: orders?.filter(order => ['completed', 'terminée'].includes(order.status)).reduce((sum, order) => sum + Number(order.total_amount), 0) || 0,
-    favoriteInfluencers: favorites?.length || 0,
-    newMessages: unreadCount,
-  }), [orders, favorites, unreadCount]);
+  const stats = useMemo(() => {
+    if (!orders) return {
+      totalOrders: 0,
+      activeOrders: 0,
+      completedOrders: 0,
+      totalSpent: 0,
+      favoriteInfluencers: 0,
+      newMessages: 0,
+    };
+
+    const completedOrders = orders.filter(order => 
+      ['completed', 'terminée'].includes(order.status)
+    );
+
+    return {
+      totalOrders: orders.length,
+      activeOrders: orders.filter(order => 
+        ['en_cours', 'delivered', 'payment_authorized', 'en_attente_confirmation_influenceur'].includes(order.status)
+      ).length,
+      completedOrders: completedOrders.length,
+      totalSpent: completedOrders.reduce((sum, order) => sum + Number(order.total_amount || 0), 0),
+      favoriteInfluencers: favorites?.length || 0,
+      newMessages: unreadCount,
+    };
+  }, [orders, favorites, unreadCount]);
 
   // Show loading state while user data is being fetched
   if (authLoading || !profile) {
