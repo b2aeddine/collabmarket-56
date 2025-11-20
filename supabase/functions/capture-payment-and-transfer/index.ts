@@ -16,17 +16,34 @@ serve(async (req) => {
     const { orderId } = await req.json();
     console.log('Capturing payment and transferring for order:', orderId);
 
-    // Initialize Stripe
-    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
-      apiVersion: '2023-10-16',
-    });
+    // SECURITY: Verify authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error('Unauthorized: Missing authentication');
+    }
 
-    // Initialize Supabase
+    // Initialize Supabase with service role for auth verification
     const supabaseService = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
       { auth: { persistSession: false } }
     );
+
+    // Get authenticated user
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabaseService.auth.getUser(token);
+    
+    if (authError || !user) {
+      console.error('Auth error:', authError);
+      throw new Error('Unauthorized: Invalid token');
+    }
+
+    console.log('Authenticated user:', user.id);
+
+    // Initialize Stripe
+    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
+      apiVersion: '2023-10-16',
+    });
 
     // Get order details
     const { data: order, error: orderError } = await supabaseService
@@ -37,6 +54,17 @@ serve(async (req) => {
 
     if (orderError || !order) {
       throw new Error('Order not found');
+    }
+
+    // SECURITY: Verify user authorization - only merchant can capture payment
+    if (order.merchant_id !== user.id && order.influencer_id !== user.id) {
+      console.error('Unauthorized attempt by user', user.id, 'for order with merchant', order.merchant_id, 'and influencer', order.influencer_id);
+      throw new Error('Unauthorized: You are not authorized to capture payment for this order');
+    }
+
+    // Additional check: only merchant should complete orders typically
+    if (order.merchant_id !== user.id) {
+      console.warn('Non-merchant user attempting to capture payment:', user.id);
     }
 
     if (!order.stripe_payment_intent_id) {

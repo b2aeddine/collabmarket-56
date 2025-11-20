@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.5";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -7,12 +8,13 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-interface ContactFormRequest {
-  name: string;
-  email: string;
-  subject?: string;
-  message: string;
-}
+// Input validation schema
+const contactFormSchema = z.object({
+  name: z.string().trim().min(1, "Name is required").max(100, "Name too long"),
+  email: z.string().trim().email("Invalid email").max(255, "Email too long"),
+  subject: z.string().trim().max(200, "Subject too long").optional(),
+  message: z.string().trim().min(10, "Message too short").max(2000, "Message too long")
+});
 
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
@@ -21,12 +23,23 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { name, email, subject, message }: ContactFormRequest = await req.json();
+    const body = await req.json();
 
-    // Validation
-    if (!name || !email || !message) {
-      throw new Error("Nom, email et message sont requis");
+    // Validate input with Zod
+    const validationResult = contactFormSchema.safeParse(body);
+    if (!validationResult.success) {
+      const errors = validationResult.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
+      console.error("Validation errors:", errors);
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: `Validation failed: ${errors}` 
+      }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
     }
+
+    const { name, email, subject, message } = validationResult.data;
 
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
