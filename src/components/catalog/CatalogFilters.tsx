@@ -9,13 +9,16 @@ interface CatalogFiltersProps {
   selectedNiche: string;
   selectedBudget: string;
   selectedFollowers: string;
+  selectedCity: string;
   onSearchChange: (value: string) => void;
   onNicheChange: (value: string) => void;
   onBudgetChange: (value: string) => void;
   onFollowersChange: (value: string) => void;
+  onCityChange: (value: string) => void;
 }
 
 const niches = ["Lifestyle", "Tech", "Food", "Fitness", "Travel", "Beauty", "Gaming", "Fashion", "Music", "Art"];
+const cities = ["Paris", "Lyon", "Marseille", "Toulouse", "Nice", "Nantes", "Strasbourg", "Bordeaux", "Lille", "Rennes", "Montpellier", "Grenoble"];
 
 // Memoized filters component to prevent re-renders on parent changes
 const CatalogFilters = memo(({
@@ -23,10 +26,12 @@ const CatalogFilters = memo(({
   selectedNiche,
   selectedBudget,
   selectedFollowers,
+  selectedCity,
   onSearchChange,
   onNicheChange,
   onBudgetChange,
   onFollowersChange,
+  onCityChange,
 }: CatalogFiltersProps) => {
   return (
     <Card className="border-0 shadow-lg mb-8">
@@ -36,7 +41,7 @@ const CatalogFilters = memo(({
           <h3 className="text-lg font-semibold">Filtres de recherche</h3>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
@@ -80,6 +85,18 @@ const CatalogFilters = memo(({
               <SelectItem value="0-30k">0 - 30k</SelectItem>
               <SelectItem value="30k-50k">30k - 50k</SelectItem>
               <SelectItem value="50k+">50k+</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={selectedCity} onValueChange={onCityChange}>
+            <SelectTrigger>
+              <SelectValue placeholder="Toutes les villes" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Toutes les villes</SelectItem>
+              {cities.map((city) => (
+                <SelectItem key={city} value={city}>{city}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

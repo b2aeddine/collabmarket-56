@@ -14,6 +14,7 @@ const InfluencerCatalog = () => {
   const [selectedNiche, setSelectedNiche] = useState("all");
   const [selectedBudget, setSelectedBudget] = useState("all");
   const [selectedFollowers, setSelectedFollowers] = useState("all");
+  const [selectedCity, setSelectedCity] = useState("all");
 
   // Debounce search term for better performance
   const debouncedSearchTerm = useDebounce(searchTerm, 400);
@@ -65,15 +66,17 @@ const InfluencerCatalog = () => {
       const matchesNiche = selectedNiche === "all" || influencer.niche === selectedNiche;
       const matchesBudget = selectedBudget === "all" || selectedBudget === "0-100" && influencer.minPrice <= 100 || selectedBudget === "100-200" && influencer.minPrice > 100 && influencer.minPrice <= 200 || selectedBudget === "200+" && influencer.minPrice > 200;
       const matchesFollowers = selectedFollowers === "all" || selectedFollowers === "0-30k" && influencer.followers <= 30000 || selectedFollowers === "30k-50k" && influencer.followers > 30000 && influencer.followers <= 50000 || selectedFollowers === "50k+" && influencer.followers > 50000;
-      return matchesSearch && matchesNiche && matchesBudget && matchesFollowers;
+      const matchesCity = selectedCity === "all" || influencer.location.toLowerCase().includes(selectedCity.toLowerCase());
+      return matchesSearch && matchesNiche && matchesBudget && matchesFollowers && matchesCity;
     });
-  }, [transformedInfluencers, debouncedSearchTerm, selectedNiche, selectedBudget, selectedFollowers]);
+  }, [transformedInfluencers, debouncedSearchTerm, selectedNiche, selectedBudget, selectedFollowers, selectedCity]);
 
   // Memoized callbacks to prevent child re-renders
   const handleSearchChange = useCallback((value: string) => setSearchTerm(value), []);
   const handleNicheChange = useCallback((value: string) => setSelectedNiche(value), []);
   const handleBudgetChange = useCallback((value: string) => setSelectedBudget(value), []);
   const handleFollowersChange = useCallback((value: string) => setSelectedFollowers(value), []);
+  const handleCityChange = useCallback((value: string) => setSelectedCity(value), []);
   if (error) {
     console.error('Error loading influencers:', error);
     return <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-teal-50 flex flex-col">
@@ -104,7 +107,18 @@ const InfluencerCatalog = () => {
         </div>
 
         {/* Filters */}
-        <CatalogFilters searchTerm={searchTerm} selectedNiche={selectedNiche} selectedBudget={selectedBudget} selectedFollowers={selectedFollowers} onSearchChange={handleSearchChange} onNicheChange={handleNicheChange} onBudgetChange={handleBudgetChange} onFollowersChange={handleFollowersChange} />
+        <CatalogFilters 
+          searchTerm={searchTerm} 
+          selectedNiche={selectedNiche} 
+          selectedBudget={selectedBudget} 
+          selectedFollowers={selectedFollowers} 
+          selectedCity={selectedCity}
+          onSearchChange={handleSearchChange} 
+          onNicheChange={handleNicheChange} 
+          onBudgetChange={handleBudgetChange} 
+          onFollowersChange={handleFollowersChange}
+          onCityChange={handleCityChange}
+        />
 
         {/* Results */}
         <div className="mb-4 sm:mb-6">
