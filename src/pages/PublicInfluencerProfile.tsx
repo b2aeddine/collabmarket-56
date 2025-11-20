@@ -43,7 +43,12 @@ const PublicInfluencerProfile = () => {
           social_links(*),
           offers(*),
           profile_categories(
-            categories(*)
+            category_id,
+            categories(
+              id,
+              name,
+              slug
+            )
           )
         `)
         .eq('custom_username', username)
@@ -187,7 +192,7 @@ const PublicInfluencerProfile = () => {
     fullName: `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Utilisateur',
     city: profile.city || "France",
     avatar: profile.avatar_url || "/placeholder.svg",
-    categories: profile.profile_categories?.map(pc => pc.categories?.name).filter(Boolean) || ["Lifestyle"],
+    categories: profile.profile_categories?.map(pc => pc.categories?.name).filter((name): name is string => Boolean(name)) || ["Lifestyle"],
     bio: profile.bio || "Passionné de création de contenu.",
     followers: profile.social_links?.reduce((sum, link) => sum + (link.followers || 0), 0) || 0,
     engagement: profile.social_links?.length > 0 
@@ -248,7 +253,11 @@ const PublicInfluencerProfile = () => {
                       
                       <div className="flex flex-wrap gap-2 justify-center mb-4">
                         {influencer.categories.map((category, index) => (
-                          <Badge key={index} variant={index === 0 ? "default" : "secondary"}>
+                          <Badge 
+                            key={index} 
+                            className={index === 0 ? "bg-gradient-primary text-white" : ""}
+                            variant={index === 0 ? "default" : "secondary"}
+                          >
                             {category}
                           </Badge>
                         ))}
