@@ -13,12 +13,11 @@ export const useInfluencerRevenues = () => {
         user_id: user.user.id
       });
       
-      if (error) {
-        console.error('Error getting balance:', error);
-        throw error;
-      }
+      if (error) throw error;
       return Number(data) || 0;
     },
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
+    refetchOnWindowFocus: false,
   });
 
   const { data: revenues, isLoading: isLoadingRevenues, refetch: refetchRevenues } = useQuery({
@@ -46,12 +45,11 @@ export const useInfluencerRevenues = () => {
         .eq('influencer_id', user.user.id)
         .order('created_at', { ascending: false });
       
-      if (error) {
-        console.error('Error getting revenues:', error);
-        throw error;
-      }
+      if (error) throw error;
       return data || [];
     },
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
+    refetchOnWindowFocus: false,
   });
 
   const { data: withdrawalRequests, isLoading: isLoadingWithdrawals } = useQuery({
@@ -73,12 +71,11 @@ export const useInfluencerRevenues = () => {
         .eq('influencer_id', user.user.id)
         .order('created_at', { ascending: false });
       
-      if (error) {
-        console.error('Error getting withdrawals:', error);
-        throw error;
-      }
+      if (error) throw error;
       return data || [];
     },
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
+    refetchOnWindowFocus: false,
   });
   
   // Auto-generate missing revenues if empty once
@@ -91,7 +88,7 @@ export const useInfluencerRevenues = () => {
         await refetchBalance();
         await refetchRevenues();
       } catch (e) {
-        console.error('Auto generation failed', e);
+        // Silent fail - this is not critical
       }
     };
   
