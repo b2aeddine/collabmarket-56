@@ -1,5 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
-import { motion } from "framer-motion";
+import { useState, useMemo, useCallback, memo } from "react";
 import Header from "@/components/Header";
 import CatalogFilters from "@/components/catalog/CatalogFilters";
 import InfluencerCard from "@/components/catalog/InfluencerCard";
@@ -9,7 +8,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { CatalogSkeleton } from "@/components/common/CatalogSkeleton";
 import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
-import ScrollReveal from "@/components/common/ScrollReveal";
+
 const InfluencerCatalog = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedNiche, setSelectedNiche] = useState("all");
@@ -17,7 +16,7 @@ const InfluencerCatalog = () => {
   const [selectedFollowers, setSelectedFollowers] = useState("all");
 
   // Debounce search term for better performance
-  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+  const debouncedSearchTerm = useDebounce(searchTerm, 400);
   const queryClient = useQueryClient();
   const {
     influencers,
@@ -93,23 +92,19 @@ const InfluencerCatalog = () => {
       <Header />
       
       <div className="container mx-auto px-4 py-6 sm:py-8 flex-1">
-        <ScrollReveal variant="fade-down" delay={0.1}>
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-6 sm:mb-8">
-            <div className="mb-4 sm:mb-0">
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 text-gradient">
-                Catalogue des Influenceurs
-              </h1>
-              <p className="text-base sm:text-lg md:text-xl text-gray-600">
-                Trouvez le partenaire idéal pour votre prochaine campagne
-              </p>
-            </div>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-6 sm:mb-8">
+          <div className="mb-4 sm:mb-0">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 text-gradient">
+              Catalogue des Influenceurs
+            </h1>
+            <p className="text-base sm:text-lg md:text-xl text-gray-600">
+              Trouvez le partenaire idéal pour votre prochaine campagne
+            </p>
           </div>
-        </ScrollReveal>
+        </div>
 
         {/* Filters */}
-        <ScrollReveal variant="fade-up" delay={0.2}>
-          <CatalogFilters searchTerm={searchTerm} selectedNiche={selectedNiche} selectedBudget={selectedBudget} selectedFollowers={selectedFollowers} onSearchChange={handleSearchChange} onNicheChange={handleNicheChange} onBudgetChange={handleBudgetChange} onFollowersChange={handleFollowersChange} />
-        </ScrollReveal>
+        <CatalogFilters searchTerm={searchTerm} selectedNiche={selectedNiche} selectedBudget={selectedBudget} selectedFollowers={selectedFollowers} onSearchChange={handleSearchChange} onNicheChange={handleNicheChange} onBudgetChange={handleBudgetChange} onFollowersChange={handleFollowersChange} />
 
         {/* Results */}
         <div className="mb-4 sm:mb-6">

@@ -1,6 +1,6 @@
-// Composant réutilisable pour révéler les éléments au scroll
+// Composant réutilisable pour révéler les éléments au scroll - Optimisé pour performance
 import { motion } from 'framer-motion';
-import { ReactNode } from 'react';
+import { ReactNode, memo } from 'react';
 import { useScrollAnimation, AnimationVariant } from '@/hooks/useScrollAnimation';
 
 interface ScrollRevealProps {
@@ -13,13 +13,13 @@ interface ScrollRevealProps {
   once?: boolean;
 }
 
-export const ScrollReveal = ({
+export const ScrollReveal = memo(({
   children,
   variant = 'fade-up',
   delay = 0,
-  duration = 0.5,
+  duration = 0.4,
   className = '',
-  threshold = 0.1,
+  threshold = 0.15,
   once = true
 }: ScrollRevealProps) => {
   const animation = useScrollAnimation({ variant, delay, duration, threshold, once });
@@ -31,11 +31,14 @@ export const ScrollReveal = ({
       animate={animation.animate}
       transition={animation.transition}
       className={className}
+      style={{ willChange: 'transform, opacity' }}
     >
       {children}
     </motion.div>
   );
-};
+});
+
+ScrollReveal.displayName = 'ScrollReveal';
 
 export default ScrollReveal;
 

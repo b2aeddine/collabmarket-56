@@ -23,37 +23,37 @@ interface UseScrollAnimationOptions {
 export const useScrollAnimation = ({
   variant = 'fade-up',
   delay = 0,
-  duration = 0.5,
-  threshold = 0.1,
+  duration = 0.4,
+  threshold = 0.15,
   once = true
 }: UseScrollAnimationOptions = {}) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { 
     once,
     amount: threshold,
-    margin: '0px 0px -100px 0px' // Déclenche un peu avant que l'élément soit visible
+    margin: '0px 0px -50px 0px' // Optimisé pour performance
   });
 
   const getInitialStyles = () => {
     switch (variant) {
       case 'fade-up':
-        return { opacity: 0, y: 30 };
-      case 'fade-down':
-        return { opacity: 0, y: -30 };
-      case 'fade-left':
-        return { opacity: 0, x: 30 };
-      case 'fade-right':
-        return { opacity: 0, x: -30 };
-      case 'scale-in':
-        return { opacity: 0, scale: 0.9 };
-      case 'slide-up':
-        return { opacity: 0, y: 50 };
-      case 'slide-down':
-        return { opacity: 0, y: -50 };
-      case 'zoom-in':
-        return { opacity: 0, scale: 0.8 };
-      default:
         return { opacity: 0, y: 20 };
+      case 'fade-down':
+        return { opacity: 0, y: -20 };
+      case 'fade-left':
+        return { opacity: 0, x: 20 };
+      case 'fade-right':
+        return { opacity: 0, x: -20 };
+      case 'scale-in':
+        return { opacity: 0, scale: 0.95 };
+      case 'slide-up':
+        return { opacity: 0, y: 30 };
+      case 'slide-down':
+        return { opacity: 0, y: -30 };
+      case 'zoom-in':
+        return { opacity: 0, scale: 0.9 };
+      default:
+        return { opacity: 0, y: 15 };
     }
   };
 
@@ -68,7 +68,7 @@ export const useScrollAnimation = ({
     transition: {
       duration,
       delay,
-      ease: [0.25, 0.1, 0.25, 1] // ease-out-cubic
+      ease: [0.4, 0, 0.2, 1] // Optimisé pour performance
     }
   };
 };
