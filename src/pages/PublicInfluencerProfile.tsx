@@ -25,7 +25,8 @@ const PublicInfluencerProfile = () => {
       if (!username) return;
 
       try {
-      const { data, error } = await supabase
+      // Récupérer d'abord le profil
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select(`
           id,
@@ -41,34 +42,60 @@ const PublicInfluencerProfile = () => {
           is_verified,
           role,
           social_links(*),
-          offers(*),
-          profile_categories(
-            category_id,
-            categories(
-              id,
-              name,
-              slug
-            )
-          )
+          offers(*)
         `)
         .eq('custom_username', username)
         .eq('is_profile_public', true)
-        .single();
+        .maybeSingle();
 
-        if (error) {
+        console.log('🔍 Profile data fetched:', profileData);
+
+        if (profileError) {
+          console.error('❌ Error fetching profile:', profileError);
           setError('Profil non trouvé ou privé');
           return;
         }
 
-        setProfile(data);
+        if (!profileData) {
+          setError('Profil non trouvé');
+          return;
+        }
+
+        // Récupérer les catégories séparément
+        const { data: categoriesData, error: categoriesError } = await supabase
+          .from('profile_categories')
+          .select(`
+            category_id,
+            categories (
+              id,
+              name,
+              slug
+            )
+          `)
+          .eq('profile_id', profileData.id);
+
+        console.log('📊 Categories data:', categoriesData);
+
+        if (categoriesError) {
+          console.error('❌ Error fetching categories:', categoriesError);
+        }
+
+        // Combiner les données
+        const combinedData = {
+          ...profileData,
+          profile_categories: categoriesData || []
+        };
+
+        console.log('✅ Combined data:', combinedData);
+        setProfile(combinedData);
         
         // Incrémenter le compteur de partages
         await supabase
           .from('profiles')
           .update({ 
-            profile_share_count: (data.profile_share_count || 0) + 1 
+            profile_share_count: (profileData.profile_share_count || 0) + 1 
           })
-          .eq('id', data.id);
+          .eq('id', profileData.id);
 
       } catch (err) {
         console.error('Erreur:', err);
@@ -185,14 +212,31 @@ const PublicInfluencerProfile = () => {
   };
 
   // Transformer les données pour l'affichage
-  console.log('Profile categories data:', profile.profile_categories);
+  console.log('🔄 Transforming profile categories:', profile.profile_categories);
+  
+  // S'assurer que profile_categories est bien un tableau
+  const categoriesArray = Array.isArray(profile.profile_categories) 
+    ? profile.profile_categories 
+    : [];
+  
+  console.log('📦 Categories array:', categoriesArray);
+  
+  const categoriesNames = categoriesArray
+    .map(pc => {
+      console.log('🏷️ Processing category:', pc);
+      return pc?.categories?.name;
+    })
+    .filter((name): name is string => Boolean(name));
+  
+  console.log('✅ Final categories names:', categoriesNames);
+  
   const influencer = {
     id: profile.id,
     username: `@${profile.custom_username}`,
     fullName: `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Utilisateur',
     city: profile.city || "France",
     avatar: profile.avatar_url || "/placeholder.svg",
-    categories: profile.profile_categories?.map(pc => pc.categories?.name).filter((name): name is string => Boolean(name)) || ["Lifestyle"],
+    categories: categoriesNames.length > 0 ? categoriesNames : ["Lifestyle"],
     bio: profile.bio || "Passionné de création de contenu.",
     followers: profile.social_links?.reduce((sum, link) => sum + (link.followers || 0), 0) || 0,
     engagement: profile.social_links?.length > 0 
