@@ -118,7 +118,8 @@
   }
   
   .hover-scale {
-    @apply transition-transform duration-200 hover:scale-105;
+    @apply transition-transform duration-200 hover:scale-[1.02];
+    will-change: transform;
   }
 
   /* Enhanced responsive container utilities */
