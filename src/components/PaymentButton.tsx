@@ -1,3 +1,4 @@
+import { useState, useCallback, memo } from "react";
 import { Button } from "@/components/ui/button";
 import { CreditCard, Loader2 } from "lucide-react";
 import { useStripePayment } from "@/hooks/useStripePayment";
@@ -13,12 +14,10 @@ interface PaymentButtonProps {
   className?: string;
 }
 
-const PaymentButton = ({ orderId, amount, influencerId, description, disabled, className }: PaymentButtonProps) => {
+const PaymentButton = memo(({ orderId, amount, influencerId, description, disabled, className }: PaymentButtonProps) => {
   const stripePayment = useStripePayment();
 
-  const handlePayment = async () => {
-    console.log('Initiating payment for order:', orderId, 'amount:', amount);
-    
+  const handlePayment = useCallback(async () => {
     try {
       // Marquer la commande comme "pending_payment" avant de rediriger vers Stripe
       const { error: updateError } = await supabase
@@ -30,7 +29,6 @@ const PaymentButton = ({ orderId, amount, influencerId, description, disabled, c
         .eq('id', orderId);
 
       if (updateError) {
-        console.error('Error updating order status:', updateError);
         toast.error("Erreur lors de la préparation du paiement");
         return;
       }
@@ -44,10 +42,9 @@ const PaymentButton = ({ orderId, amount, influencerId, description, disabled, c
         cancelUrl: `${window.location.origin}/payment-cancel?order_id=${orderId}`,
       });
     } catch (error) {
-      console.error('Payment initiation error:', error);
       toast.error("Erreur lors de l'initialisation du paiement");
     }
-  };
+  }, [orderId, amount, description, stripePayment]);
 
   return (
     <Button
@@ -63,6 +60,8 @@ const PaymentButton = ({ orderId, amount, influencerId, description, disabled, c
       {stripePayment.isPending ? 'Redirection...' : 'Payer avec Stripe'}
     </Button>
   );
-};
+});
+
+PaymentButton.displayName = 'PaymentButton';
 
 export default PaymentButton;

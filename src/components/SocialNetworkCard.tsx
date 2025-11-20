@@ -131,7 +131,6 @@ const SocialNetworkCard = ({
         url = 'https://' + url;
       }
       
-      console.log('Opening URL:', url, 'from original:', profile_url);
       window.open(url, '_blank', 'noopener,noreferrer');
     }
   };

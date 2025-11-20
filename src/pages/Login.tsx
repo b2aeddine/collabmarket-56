@@ -23,14 +23,11 @@ const Login = () => {
     password: "",
   });
 
-  // Redirection immédiate si l'utilisateur est connecté
+  // Immediate redirect if user is logged in
   useEffect(() => {
-    console.log('Login useEffect - user:', user, 'loading:', loading);
-    
     if (user && !loading) {
-      console.log('User detected in Login page, redirecting...', user.role);
       
-      // Rediriger vers le dashboard selon le rôle
+      // Redirect to dashboard based on role
       const redirectTo = user.role === 'admin' 
         ? '/admin/dashboard'
         : user.role === 'influenceur'
@@ -39,14 +36,12 @@ const Login = () => {
         ? '/merchant-dashboard'
         : '/';
       
-      console.log('Redirecting to:', redirectTo);
       navigate(redirectTo, { replace: true });
     }
   }, [user, loading, navigate]);
 
-  // Si l'utilisateur est déjà connecté, ne pas afficher la page (la redirection sera gérée par useEffect)
+  // Don't show login form if user is already logged in
   if (user && !loading) {
-    console.log('User already logged in, not showing login form');
     return (
       <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-teal-50 flex items-center justify-center">
         <div className="text-center">
