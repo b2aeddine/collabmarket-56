@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Users, TrendingUp, Star } from "lucide-react";
+import { Users, TrendingUp, Star, BadgeCheck } from "lucide-react";
 import { useReviews } from "@/hooks/useReviews";
 
 interface InfluencerCardProps {
@@ -19,6 +19,7 @@ interface InfluencerCardProps {
     minPrice: number;
     avatar: string;
     location: string;
+    isVerified?: boolean;
   };
 }
 
@@ -41,7 +42,12 @@ const InfluencerCard = memo(({ influencer }: InfluencerCardProps) => {
             loading="lazy" // Lazy load images for better performance
           />
           <div className="flex-1 min-w-0">
-            <h3 className="text-lg font-bold text-gray-800 truncate">{influencer.name}</h3>
+            <div className="flex items-center gap-1">
+              <h3 className="text-lg font-bold text-gray-800 truncate">{influencer.name}</h3>
+              {influencer.isVerified && (
+                <BadgeCheck className="w-5 h-5 text-primary flex-shrink-0" />
+              )}
+            </div>
             <p className="text-gray-600 text-sm truncate">{influencer.fullName}</p>
             <p className="text-gray-500 text-xs truncate">{influencer.location}</p>
             

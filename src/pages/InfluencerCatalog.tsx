@@ -53,7 +53,8 @@ const InfluencerCatalog = () => {
         minPrice: minPrice,
         avatar: influencer.avatar_url || "/placeholder.svg",
         location: influencer.city || "France",
-        profileViews: influencer.profile_views || 0
+        profileViews: influencer.profile_views || 0,
+        isVerified: influencer.is_verified || false
       };
     });
   }, [influencers]);
