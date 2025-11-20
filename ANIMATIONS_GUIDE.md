@@ -2,7 +2,22 @@
 
 ## 📋 Vue d'ensemble
 
-Ce guide documente toutes les micro-interactions et animations ajoutées au projet CollabMarket pour améliorer l'expérience utilisateur.
+Ce guide documente toutes les micro-interactions et animations optimisées du projet CollabMarket pour une expérience utilisateur fluide et performante.
+
+---
+
+## 🎯 Principes d'optimisation
+
+### Performance
+- **GPU-friendly** : Toutes les animations utilisent `transform` et `opacity`
+- **Durées harmonisées** : Entre 150ms et 220ms pour la cohérence
+- **Easing optimisé** : `cubic-bezier(0.4, 0, 0.2, 1)` pour la fluidité
+- **will-change** : Utilisé sur les composants interactifs pour optimiser le rendu
+
+### Cohérence
+- Échelles réduites (1.01-1.02) pour des animations subtiles et professionnelles
+- Délais courts pour éviter les latences perçues
+- Transitions uniformes sur tous les composants
 
 ---
 
@@ -11,10 +26,11 @@ Ce guide documente toutes les micro-interactions et animations ajoutées au proj
 ### 1. **Boutons** (`src/components/ui/button.tsx`)
 
 **Animations:**
-- **Hover:** `scale(1.05)`, `translate-y(-0.5)`, `shadow-lg`
-- **Active:** `scale(0.95)` pour le feedback de clic
-- **Focus:** Ring amélioré avec transition
-- **Durée:** 200ms
+- **Hover:** `scale(1.02)`, `translate-y(-1px)`, `shadow-lg`
+- **Active:** `scale(0.97)` pour le feedback de clic
+- **Focus:** Ring avec transition fluide
+- **Durée:** 180ms avec `cubic-bezier(0.4, 0, 0.2, 1)`
+- **Performance:** `will-change-transform` pour optimisation GPU
 
 **Variantes:**
 - Chaque variant a sa propre couleur d'ombre au hover
@@ -33,9 +49,10 @@ Ce guide documente toutes les micro-interactions et animations ajoutées au proj
 ### 2. **Cartes** (`src/components/ui/card.tsx`)
 
 **Animations:**
-- **Hover:** `scale(1.02)`, `translate-y(-1)`, `shadow-lg`
+- **Hover:** `scale(1.01)`, `translate-y(-0.5)`, `shadow-lg`
 - **Mount:** `animate-fade-in` (fade-in au chargement)
-- **Durée:** 300ms
+- **Durée:** 200ms avec `ease-out`
+- **Performance:** `will-change-transform`
 
 **Composants affectés:**
 - `InfluencerCard`
@@ -53,38 +70,19 @@ Ce guide documente toutes les micro-interactions et animations ajoutées au proj
 
 ---
 
-### 3. **Listes avec Staggered Animation** (`src/pages/InfluencerCatalog.tsx`)
+### 3. **Accordéons et Animations d'ouverture**
 
 **Animation:**
-- Utilise **Framer Motion** pour les animations staggered
-- Chaque item apparaît avec un délai de 50ms
-- Effet: `fade-in` + `slide-up`
+- Utilise des animations optimisées avec `opacity` + `height`
+- Durée : 180ms
+- Easing : `cubic-bezier(0.4, 0, 0.2, 1)`
 
-**Composant réutilisable:**
-```tsx
-import { AnimatedList } from "@/components/common/AnimatedList";
-
-<AnimatedList delay={0.05}>
-  {items.map(item => <Item key={item.id} />)}
-</AnimatedList>
-```
-
-**Implémentation actuelle:**
-```tsx
-{filteredInfluencers.map((influencer, index) => (
-  <motion.div
-    key={influencer.id}
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{
-      duration: 0.3,
-      delay: index * 0.05,
-      ease: "easeOut"
-    }}
-  >
-    <InfluencerCard influencer={influencer} />
-  </motion.div>
-))}
+**Keyframes:**
+```typescript
+'accordion-down': {
+  from: { height: '0', opacity: '0' },
+  to: { height: 'var(--radix-accordion-content-height)', opacity: '1' }
+}
 ```
 
 ---
@@ -92,12 +90,12 @@ import { AnimatedList } from "@/components/common/AnimatedList";
 ### 4. **Loaders et Skeletons**
 
 #### Skeleton (`src/components/ui/skeleton.tsx`)
-- **Animation:** `shimmer` avec gradient
-- **Durée:** 2s (infinite)
-- Effet de brillance qui traverse le skeleton
+- **Animation:** `shimmer` avec gradient optimisé
+- **Durée:** 1.8s (infinite)
+- Effet de brillance fluide avec `ease-in-out`
 
 #### LoadingSpinner (`src/components/common/LoadingSpinner.tsx`)
-- **Animation:** `spin-slow` (2s par rotation)
+- **Animation:** `spin-slow` (1.8s par rotation)
 - Tailles: `sm`, `md`, `lg`
 
 **Utilisation:**
@@ -107,29 +105,28 @@ import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 <LoadingSpinner size="md" />
 ```
 
-#### CatalogSkeleton
-- **Animation:** `pulse-slow` pour les cartes de chargement
-
 ---
 
 ### 5. **Notifications et Alertes**
 
 #### Toasts (`src/components/ui/sonner.tsx`)
-- **Apparition:** `slide-in-top` depuis le haut
+- **Apparition:** `slide-in-top` (12px de translation)
 - **Position:** `top-right`
-- **Boutons:** Scale au hover/active
+- **Boutons:** Scale 1.02 au hover, 0.97 au click
+- **Durée:** 180ms avec `ease-out`
 
 #### Alertes (`src/components/ui/alert.tsx`)
 - **Apparition:** `slide-in-top`
 - **Hover:** `shadow-md`
+- **Durée:** 200ms
 
 ---
 
 ### 6. **Formulaires** (`src/components/ui/input.tsx`, `textarea.tsx`)
 
 **Animations:**
-- **Focus:** `scale(1.01)`, `shadow-md`, bordure renforcée
-- **Durée:** 200ms
+- **Focus:** `shadow-md`, bordure renforcée (sans scale pour éviter les déplacements)
+- **Durée:** 180ms avec `ease-out`
 - Transition douce pour le feedback visuel
 
 **Exemple:**
@@ -140,12 +137,21 @@ import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 
 ---
 
-### 7. **Header et Navigation** (`src/components/Header.tsx`)
+### 7. **Onglets** (`src/components/ui/tabs.tsx`)
 
 **Animations:**
-- **Logo:** `scale(1.05)` au hover, `scale(0.95)` au clic
-- **Icône logo:** `rotate(12deg)` au hover
-- **Liens:** Héritent des animations des boutons
+- **TabsTrigger:** Hover avec `bg-muted/50`, transition 180ms
+- **TabsContent:** Apparition avec `animate-fade-in`
+- Transitions fluides entre les onglets
+
+---
+
+### 8. **Sheets/Drawers** (`src/components/ui/sheet.tsx`)
+
+**Animations:**
+- **Ouverture/Fermeture:** 200ms avec `ease-out`
+- **Overlay:** Fade optimisé
+- Transitions cohérentes pour tous les côtés (top, bottom, left, right)
 
 ---
 
@@ -155,32 +161,47 @@ Toutes les animations sont définies dans `tailwind.config.ts`:
 
 ```typescript
 keyframes: {
-  'fade-in': { /* ... */ },
-  'fade-in-up': { /* ... */ },
-  'slide-in-top': { /* ... */ },
-  'slide-in-bottom': { /* ... */ },
-  'scale-in': { /* ... */ },
-  'spin-slow': { /* ... */ },
-  'pulse-slow': { /* ... */ },
-  'shimmer': { /* ... */ }
+  'fade-in': {
+    '0%': { opacity: '0', transform: 'translateY(8px)' },
+    '100%': { opacity: '1', transform: 'translateY(0)' }
+  },
+  'scale-in': {
+    '0%': { transform: 'scale(0.96)', opacity: '0' },
+    '100%': { transform: 'scale(1)', opacity: '1' }
+  },
+  'slide-in-top': {
+    '0%': { opacity: '0', transform: 'translateY(-12px)' },
+    '100%': { opacity: '1', transform: 'translateY(0)' }
+  },
+  'shimmer': {
+    '0%': { backgroundPosition: '-200% 0' },
+    '100%': { backgroundPosition: '200% 0' }
+  }
+}
+
+animation: {
+  'fade-in': 'fade-in 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+  'scale-in': 'scale-in 0.18s cubic-bezier(0.4, 0, 0.2, 1)',
+  'slide-in-top': 'slide-in-top 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+  'shimmer': 'shimmer 1.8s ease-in-out infinite'
 }
 ```
 
 **Classes disponibles:**
-- `animate-fade-in`
-- `animate-fade-in-up`
-- `animate-slide-in-top`
-- `animate-slide-in-bottom`
-- `animate-scale-in`
-- `animate-spin-slow`
-- `animate-pulse-slow`
-- `animate-shimmer`
+- `animate-fade-in` (200ms)
+- `animate-fade-in-up` (200ms)
+- `animate-slide-in-top` (200ms)
+- `animate-slide-in-bottom` (200ms)
+- `animate-scale-in` (180ms)
+- `animate-spin-slow` (1.8s)
+- `animate-pulse-slow` (2.2s)
+- `animate-shimmer` (1.8s)
 
 ---
 
 ## 📦 Dépendances
 
-- **framer-motion:** `^11.0.0` - Pour les animations complexes (listes staggered)
+- **framer-motion:** `^11.0.0` - Pour les animations complexes (scroll reveals)
 - **tailwindcss-animate:** `^1.0.7` - Animations de base Tailwind
 
 ---
@@ -191,36 +212,25 @@ keyframes: {
 
 **1. Animation simple (Tailwind):**
 ```tsx
-<div className="animate-fade-in hover:scale-105 transition-all duration-300">
+<div className="animate-fade-in hover-scale">
   Contenu
 </div>
 ```
 
-**2. Animation staggered (Framer Motion):**
-```tsx
-import { motion } from "framer-motion";
-
-{items.map((item, index) => (
-  <motion.div
-    key={item.id}
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{
-      duration: 0.3,
-      delay: index * 0.05,
-      ease: "easeOut"
-    }}
-  >
-    {item.content}
-  </motion.div>
-))}
-```
-
-**3. Animation de carte:**
+**2. Animation de carte:**
 ```tsx
 <Card className="animate-fade-in">
   {/* Le hover est automatique via le composant Card */}
 </Card>
+```
+
+**3. Animation au scroll:**
+```tsx
+import ScrollReveal from "@/components/common/ScrollReveal";
+
+<ScrollReveal variant="fade-up" delay={0.1}>
+  <div>Contenu</div>
+</ScrollReveal>
 ```
 
 ---
@@ -228,29 +238,32 @@ import { motion } from "framer-motion";
 ## ⚡ Performance
 
 - Toutes les animations utilisent `transform` et `opacity` (GPU-accelerated)
-- Durées courtes (200-300ms) pour rester réactives
+- Durées courtes (150-220ms) pour rester réactives
+- `will-change-transform` sur les composants interactifs
 - Pas d'animations lourdes ou distrayantes
-- `will-change` géré automatiquement par le navigateur
+- Optimisé pour mobile avec des animations légères
 
 ---
 
 ## 🎯 Bonnes pratiques
 
-1. **Durées:** 200-300ms pour les micro-interactions
-2. **Easing:** `ease-out` pour les entrées, `ease-in` pour les sorties
-3. **Délais:** 50ms entre items pour les listes staggered
-4. **Scale:** Maximum 1.05 pour le hover (subtile)
-5. **Accessibilité:** Respecte `prefers-reduced-motion` (à implémenter)
+1. **Durées:** 150-220ms pour les micro-interactions
+2. **Easing:** `cubic-bezier(0.4, 0, 0.2, 1)` pour la fluidité
+3. **Délais:** 50-100ms entre items pour les listes
+4. **Scale:** Maximum 1.02 pour le hover (subtile et professionnelle)
+5. **Translation:** Maximum 1px vertical pour éviter les "sauts"
+6. **Accessibilité:** Respecte `prefers-reduced-motion`
 
 ---
 
-## 📝 Notes
+## 📝 Notes techniques
 
 - Les animations sont **non-blocking** et n'affectent pas les performances
 - Compatible avec tous les navigateurs modernes
+- `will-change` géré intelligemment pour éviter la surconsommation de ressources
 - Les animations peuvent être désactivées via CSS si nécessaire
 
 ---
 
-**Dernière mise à jour:** 20 janvier 2025
+**Dernière mise à jour:** 20 janvier 2025 - Optimisation complète des animations
 

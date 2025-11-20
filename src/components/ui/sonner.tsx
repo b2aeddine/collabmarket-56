@@ -17,9 +17,9 @@ const Toaster = ({ ...props }: ToasterProps) => {
             "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg animate-slide-in-top",
           description: "group-[.toast]:text-muted-foreground",
           actionButton:
-            "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground group-[.toast]:transition-all group-[.toast]:duration-200 group-[.toast]:hover:scale-105 group-[.toast]:active:scale-95",
+            "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground group-[.toast]:transition-all group-[.toast]:duration-[180ms] group-[.toast]:ease-out group-[.toast]:hover:scale-[1.02] group-[.toast]:active:scale-[0.97]",
           cancelButton:
-            "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground group-[.toast]:transition-all group-[.toast]:duration-200 group-[.toast]:hover:scale-105 group-[.toast]:active:scale-95",
+            "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground group-[.toast]:transition-all group-[.toast]:duration-[180ms] group-[.toast]:ease-out group-[.toast]:hover:scale-[1.02] group-[.toast]:active:scale-[0.97]",
         },
       }}
       {...props}
