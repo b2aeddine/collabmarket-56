@@ -25,19 +25,30 @@ const PublicInfluencerProfile = () => {
       if (!username) return;
 
       try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select(`
-            *,
-            social_links(*),
-            offers(*),
-            profile_categories(
-              categories(*)
-            )
-          `)
-          .eq('custom_username', username)
-          .eq('is_profile_public', true)
-          .single();
+      const { data, error } = await supabase
+        .from('profiles')
+        .select(`
+          id,
+          first_name,
+          last_name,
+          avatar_url,
+          bio,
+          city,
+          profile_views,
+          profile_share_count,
+          created_at,
+          custom_username,
+          is_verified,
+          role,
+          social_links(*),
+          offers(*),
+          profile_categories(
+            categories(*)
+          )
+        `)
+        .eq('custom_username', username)
+        .eq('is_profile_public', true)
+        .single();
 
         if (error) {
           setError('Profil non trouvé ou privé');
