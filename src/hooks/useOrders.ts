@@ -33,7 +33,7 @@ export const useOrders = (userRole?: string) => {
           influencer_id,
           merchant_id,
           offer_id,
-          offers!inner(
+          offers!left(
             id,
             title,
             description,
