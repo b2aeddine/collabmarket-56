@@ -61,26 +61,45 @@ const MerchantDashboard = memo(() => {
 
   // Memoize stats calculation to avoid recalculation on every render
   const stats = useMemo(() => {
-    if (!orders) return {
-      totalOrders: 0,
-      activeOrders: 0,
-      completedOrders: 0,
-      totalSpent: 0,
-      favoriteInfluencers: 0,
-      newMessages: 0,
-    };
+    if (!orders || orders.length === 0) {
+      return {
+        totalOrders: 0,
+        activeOrders: 0,
+        completedOrders: 0,
+        totalSpent: 0,
+        favoriteInfluencers: 0,
+        newMessages: 0,
+      };
+    }
 
+    // Filtrer les commandes terminées (statuts français et anglais)
     const completedOrders = orders.filter(order => 
-      ['completed', 'terminée'].includes(order.status)
+      ['completed', 'terminée', 'terminee'].includes(order.status.toLowerCase())
     );
+
+    // Calculer le total dépensé pour toutes les commandes payées
+    const paidOrders = orders.filter(order => 
+      !['annulée', 'annulee', 'cancelled', 'refusée_par_influenceur', 'pending'].includes(order.status.toLowerCase())
+    );
+
+    console.log('📊 Merchant Stats Calculation:', {
+      totalOrders: orders.length,
+      completedOrders: completedOrders.length,
+      paidOrders: paidOrders.length,
+      totalSpent: paidOrders.reduce((sum, order) => {
+        const amount = Number(order.total_amount || 0);
+        console.log(`Order ${order.id}: status=${order.status}, amount=${amount}`);
+        return sum + amount;
+      }, 0)
+    });
 
     return {
       totalOrders: orders.length,
       activeOrders: orders.filter(order => 
-        ['en_cours', 'delivered', 'payment_authorized', 'en_attente_confirmation_influenceur'].includes(order.status)
+        ['en_cours', 'delivered', 'payment_authorized', 'en_attente_confirmation_influenceur', 'en_contestation'].includes(order.status.toLowerCase())
       ).length,
       completedOrders: completedOrders.length,
-      totalSpent: completedOrders.reduce((sum, order) => sum + Number(order.total_amount || 0), 0),
+      totalSpent: paidOrders.reduce((sum, order) => sum + Number(order.total_amount || 0), 0),
       favoriteInfluencers: favorites?.length || 0,
       newMessages: unreadCount,
     };
