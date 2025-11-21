@@ -254,7 +254,17 @@ const InfluencerProfile = () => {
                         {influencer.city}
                       </div>
                       
-                      <Badge className="mb-3 sm:mb-4 text-xs sm:text-sm">{influencer.category}</Badge>
+                      <div className="flex flex-wrap gap-2 justify-center mb-3 sm:mb-4">
+                        {validProfile.profile_categories?.map((pc: any, index: number) => (
+                          <Badge 
+                            key={pc.category_id} 
+                            className={index === 0 ? "bg-gradient-primary text-white text-xs sm:text-sm" : "text-xs sm:text-sm"}
+                            variant={index === 0 ? "default" : "secondary"}
+                          >
+                            {pc.categories?.name}
+                          </Badge>
+                        )) || <Badge className="text-xs sm:text-sm">{influencer.category}</Badge>}
+                      </div>
                     </div>
 
                     <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
@@ -317,9 +327,9 @@ const InfluencerProfile = () => {
               <ScrollReveal variant="fade-up" delay={0.2}>
                 <Card className="shadow-xl border-0 animate-fade-in">
                   <CardContent className="p-4 sm:p-6">
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 sm:mb-6">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 sm:mb-6">
                       <h2 className="text-lg sm:text-xl md:text-2xl font-bold">Mes prestations</h2>
-                      {influencer.services.length > 3 && <Button variant="outline" size="sm" onClick={() => setShowAllServices(true)} className="text-xs sm:text-sm w-full sm:w-auto">
+                      {influencer.services.length > 0 && <Button variant="outline" size="sm" onClick={() => setShowAllServices(true)} className="text-xs sm:text-sm w-full sm:w-auto">
                           Voir tout
                         </Button>}
                     </div>
@@ -334,7 +344,7 @@ const InfluencerProfile = () => {
                   <CardContent className="p-4 sm:p-6">
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
                       <h2 className="text-lg sm:text-xl md:text-2xl font-bold">Réseaux sociaux</h2>
-                      {influencer.socialNetworks.length > 1 && <Button variant="outline" size="sm" onClick={() => setShowAllNetworks(true)} className="text-xs sm:text-sm w-full sm:w-auto">
+                      {influencer.socialNetworks.length > 0 && <Button variant="outline" size="sm" onClick={() => setShowAllNetworks(true)} className="text-xs sm:text-sm w-full sm:w-auto">
                           Voir tout
                         </Button>}
                     </div>
