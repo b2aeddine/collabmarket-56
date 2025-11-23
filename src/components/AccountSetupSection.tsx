@@ -198,16 +198,16 @@ const AccountSetupSection = () => {
   const isStripeConnectComplete = stripeConnectStatus.status === 'complete';
   const bothValidated = isIdentityVerified && isStripeConnectComplete;
 
-  // Si les deux sont validés depuis plus de 24h, ne pas afficher la section
-  if (bothValidated && user?.created_at) {
-    const createdAt = new Date(user.created_at);
-    const now = new Date();
-    const timeDiff = now.getTime() - createdAt.getTime();
-    const hoursDiff = timeDiff / (1000 * 3600);
-    
-    if (hoursDiff > 24) {
-      return null;
-    }
+  // Attendre que les données soient complètement chargées avant d'afficher la section
+  // Évite le flash pendant le chargement initial
+  if (isLoadingStatus || !user || stripeConnectStatus.status === 'loading') {
+    return null; // Ne rien afficher pendant le chargement
+  }
+
+  // Si les deux sont complètement validés, ne plus afficher la section
+  // L'utilisateur a terminé la configuration, pas besoin d'afficher quoi que ce soit
+  if (bothValidated) {
+    return null;
   }
 
   // Si les deux ne sont pas encore validés, afficher la section
@@ -430,22 +430,8 @@ const AccountSetupSection = () => {
     );
   }
 
-  // Si les deux sont validés mais depuis moins de 24h, afficher un message de confirmation
-  return (
-    <Card className="border-0 shadow-lg bg-green-50 rounded-xl mb-6">
-      <CardContent className="p-6">
-        <div className="flex items-center gap-3 text-green-800">
-          <CheckCircle className="w-6 h-6" />
-          <div>
-            <h3 className="text-lg font-semibold">Configuration terminée !</h3>
-            <p className="text-sm text-green-700">
-              Votre compte est maintenant entièrement configuré et prêt à recevoir des paiements.
-            </p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
+  // Si aucune condition n'est remplie, ne rien afficher
+  return null;
 };
 
 export default AccountSetupSection;
