@@ -9,6 +9,7 @@ import Header from "@/components/Header";
 import WithdrawalModal from "@/components/WithdrawalModal";
 import BankAccountModal from "@/components/BankAccountModal";
 import EditStripeAccountModal from "@/components/EditStripeAccountModal";
+import { RevenueSystemAlert } from "@/components/RevenueSystemAlert";
 import { useAuth } from "@/hooks/useAuth";
 import { useInfluencerRevenues } from "@/hooks/useInfluencerRevenues";
 import { useBankAccounts } from "@/hooks/useBankAccounts";
@@ -88,6 +89,11 @@ const RevenueManagement = () => {
             <p className="text-gray-600 text-sm sm:text-base">
               Gérez vos revenus et effectuez vos retraits
             </p>
+          </div>
+
+          {/* Alerte système de revenus */}
+          <div className="mb-6">
+            <RevenueSystemAlert />
           </div>
 
           {/* Statistiques principales */}

@@ -59,7 +59,6 @@ const MerchantDashboard = memo(() => {
     }
   }, [updateProfile, refetchUser, toast]);
 
-  // Memoize stats calculation to avoid recalculation on every render
   const stats = useMemo(() => {
     if (!orders || orders.length === 0) {
       return {
@@ -72,34 +71,34 @@ const MerchantDashboard = memo(() => {
       };
     }
 
-    // Filtrer les commandes terminées (statuts français et anglais)
+    // Filter completed orders
     const completedOrders = orders.filter(order => 
       ['completed', 'terminée', 'terminee'].includes(order.status.toLowerCase())
     );
 
-    // Calculer le total dépensé pour toutes les commandes payées
-    const paidOrders = orders.filter(order => 
+    // Calculate total spent ONLY for orders with CAPTURED payments (real Stripe payments)
+    const capturedOrders = orders.filter(order => 
+      order.payment_captured === true && 
+      order.stripe_payment_intent_id &&
       !['annulée', 'annulee', 'cancelled', 'refusée_par_influenceur', 'pending'].includes(order.status.toLowerCase())
     );
 
-    console.log('📊 Merchant Stats Calculation:', {
+    const totalSpent = capturedOrders.reduce((sum, order) => sum + Number(order.total_amount || 0), 0);
+
+    console.log('📊 Merchant Stats (REAL payments only):', {
       totalOrders: orders.length,
       completedOrders: completedOrders.length,
-      paidOrders: paidOrders.length,
-      totalSpent: paidOrders.reduce((sum, order) => {
-        const amount = Number(order.total_amount || 0);
-        console.log(`Order ${order.id}: status=${order.status}, amount=${amount}`);
-        return sum + amount;
-      }, 0)
+      capturedOrders: capturedOrders.length,
+      totalSpent: totalSpent.toFixed(2)
     });
 
     return {
       totalOrders: orders.length,
       activeOrders: orders.filter(order => 
-        ['en_cours', 'delivered', 'payment_authorized', 'en_attente_confirmation_influenceur', 'en_contestation'].includes(order.status.toLowerCase())
+        ['en_cours', 'delivered', 'payment_authorized', 'paid', 'en_attente_confirmation_influenceur', 'en_contestation'].includes(order.status.toLowerCase())
       ).length,
       completedOrders: completedOrders.length,
-      totalSpent: paidOrders.reduce((sum, order) => sum + Number(order.total_amount || 0), 0),
+      totalSpent,
       favoriteInfluencers: favorites?.length || 0,
       newMessages: unreadCount,
     };

@@ -33,6 +33,9 @@ export const useOrders = (userRole?: string) => {
           influencer_id,
           merchant_id,
           offer_id,
+          payment_captured,
+          stripe_payment_intent_id,
+          stripe_session_id,
           offers!left(
             id,
             title,
