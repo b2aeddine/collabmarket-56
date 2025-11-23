@@ -60,18 +60,45 @@ export const useStripeConnect = () => {
       accountHolder: string;
       country?: string;
     }) => {
+      console.log('Updating bank account via Stripe Connect...');
+      
       const { data, error } = await supabase.functions.invoke('update-stripe-account-details', {
         body: { bankAccount }
       });
-      if (error) throw error;
+
+      if (error) {
+        console.error('Error from edge function:', error);
+        throw error;
+      }
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Échec de la mise à jour du compte bancaire');
+      }
+      
       return data;
     },
-    onSuccess: () => {
-      toast.success('Informations bancaires mises à jour avec succès !');
-      refetchAccountStatus();
+    onSuccess: (data) => {
+      console.log('Bank account updated successfully:', data);
+      toast.success('✅ Compte bancaire mis à jour', {
+        description: `Se termine par ${data.last4} - ${data.bankName || 'Compte configuré'}`,
+        duration: 4000
+      });
+      
+      // Rafraîchir le statut après un court délai
+      setTimeout(() => {
+        refetchAccountStatus();
+      }, 1000);
     },
     onError: (error: any) => {
-      toast.error('Erreur lors de la mise à jour des informations bancaires');
+      console.error('Bank account update error:', error);
+      
+      const errorData = error.message ? JSON.parse(error.message) : error;
+      const errorMessage = errorData?.error || error.message || 'Erreur inconnue';
+      
+      toast.error('❌ Erreur lors de la mise à jour', {
+        description: errorMessage,
+        duration: 6000
+      });
     },
   });
 
