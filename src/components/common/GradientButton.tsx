@@ -28,7 +28,7 @@ export const GradientButton = ({
       disabled={disabled}
       asChild={asChild}
       className={cn(
-        "bg-gradient-to-r from-pink-500 via-purple-500 to-teal-500 hover:from-pink-600 hover:via-purple-600 hover:to-teal-600 text-white border-0",
+        "bg-gradient-to-r from-pink-500 to-orange-500 hover:opacity-90 text-white border-0",
         className
       )}
       {...props}
