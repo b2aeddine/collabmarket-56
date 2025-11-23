@@ -10,8 +10,8 @@ export const createPaymentSchema = z.object({
   amount: z.number().positive("Amount must be positive").max(100000, "Amount too large"),
   brandName: z.string().min(1, "Brand name required").max(200),
   productName: z.string().min(1, "Product name required").max(200),
-  brief: z.string().max(2000).optional(),
-  deadline: z.string().datetime().optional().or(z.string().length(0)),
+  brief: z.string().min(1, "Brief required").max(2000),
+  deadline: z.string().optional(),
   specialInstructions: z.string().max(2000).optional(),
 });
 

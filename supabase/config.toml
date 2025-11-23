@@ -1,1 +1,89 @@
 project_id = "vklayzyhocjpicnblwfx"
+
+# Edge Functions Configuration
+[functions]
+enabled = true
+
+# Payment Functions
+[functions.create-payment-with-connect]
+verify_jwt = true
+
+[functions.capture-payment-and-transfer]
+verify_jwt = true
+
+[functions.create-stripe-session]
+verify_jwt = true
+
+[functions.capture-payment]
+verify_jwt = true
+
+[functions.complete-order-payment]
+verify_jwt = true
+
+[functions.complete-order-and-pay]
+verify_jwt = true
+
+# Stripe Connect Functions
+[functions.create-stripe-connect-account]
+verify_jwt = true
+
+[functions.create-stripe-connect-onboarding]
+verify_jwt = true
+
+[functions.check-stripe-account-status]
+verify_jwt = true
+
+[functions.update-stripe-account-details]
+verify_jwt = true
+
+# Stripe Identity Functions
+[functions.create-stripe-identity]
+verify_jwt = true
+
+[functions.check-stripe-identity-status]
+verify_jwt = true
+
+# Withdrawal Functions
+[functions.process-withdrawal]
+verify_jwt = true
+
+[functions.create-stripe-payout]
+verify_jwt = true
+
+[functions.check-withdrawal-status]
+verify_jwt = true
+
+# Order Management Functions
+[functions.cancel-payment]
+verify_jwt = true
+
+[functions.cancel-order-and-refund]
+verify_jwt = true
+
+[functions.auto-handle-orders]
+verify_jwt = false
+
+[functions.recover-payments]
+verify_jwt = false
+
+[functions.generate-missing-revenues]
+verify_jwt = false
+
+# Webhook Functions (public endpoints)
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.stripe-withdrawal-webhook]
+verify_jwt = false
+
+# Notification Functions
+[functions.notify-order-events]
+verify_jwt = false
+
+# Contact Form Function
+[functions.handle-contact-form]
+verify_jwt = false
+
+# Authorization Function (legacy)
+[functions.create-payment-authorization]
+verify_jwt = true

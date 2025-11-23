@@ -8,7 +8,10 @@ serve(async (req) => {
   const origin = req.headers.get('origin');
   const corsHeaders = getCorsHeaders(origin);
   
+  console.log('🚀 create-payment-with-connect called from origin:', origin);
+  
   if (req.method === 'OPTIONS') {
+    console.log('✅ CORS preflight request - returning headers');
     return new Response(null, { headers: corsHeaders });
   }
 
@@ -25,7 +28,7 @@ serve(async (req) => {
       specialInstructions
     } = await validateRequest(req, createPaymentSchema);
 
-    console.log('Creating payment with Stripe Connect:', { influencerId, offerId, amount });
+    console.log('✅ Request validated:', { influencerId, offerId, amount, brandName, productName });
 
     // Initialize Stripe
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
