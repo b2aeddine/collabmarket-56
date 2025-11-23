@@ -16,6 +16,7 @@ import { InfluencerProfileSkeleton } from "@/components/common/InfluencerProfile
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { ServicesCarousel } from "@/components/common/ServicesCarousel";
 import { SocialNetworksCarousel } from "@/components/common/SocialNetworksCarousel";
+import { PortfolioSection } from "@/components/PortfolioSection";
 
 const PublicInfluencerProfile = () => {
   const { username } = useParams();
@@ -394,6 +395,14 @@ const PublicInfluencerProfile = () => {
                   </CardContent>
                 </Card>
               )}
+
+              {/* Portfolio Section */}
+              <Card className="shadow-xl border-0 animate-fade-in">
+                <CardContent className="p-6">
+                  <h2 className="text-2xl font-bold mb-6">Portfolio</h2>
+                  <PortfolioSection influencerId={profile.id} />
+                </CardContent>
+              </Card>
 
               {/* Reviews Section */}
               <ReviewsSection influencerId={profile.id} />

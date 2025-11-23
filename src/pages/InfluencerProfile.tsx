@@ -16,6 +16,7 @@ import { useReviews } from "@/hooks/useReviews";
 import { InfluencerProfileSkeleton } from "@/components/common/InfluencerProfileSkeleton";
 import { ServicesCarousel } from "@/components/common/ServicesCarousel";
 import { SocialNetworksCarousel } from "@/components/common/SocialNetworksCarousel";
+import { PortfolioSection } from "@/components/PortfolioSection";
 
 import ScrollReveal from "@/components/common/ScrollReveal";
 const InfluencerProfile = () => {
@@ -358,10 +359,13 @@ const InfluencerProfile = () => {
                 <ReviewsSection influencerId={validProfile.id} />
               </ScrollReveal>
 
-              {/* Gallery */}
+              {/* Portfolio */}
               <ScrollReveal variant="zoom-in" delay={0.4}>
                 <Card className="shadow-xl border-0 animate-fade-in">
-                  
+                  <CardContent className="p-4 sm:p-6">
+                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-4">Portfolio</h2>
+                    <PortfolioSection influencerId={validProfile.id} />
+                  </CardContent>
                 </Card>
               </ScrollReveal>
             </div>

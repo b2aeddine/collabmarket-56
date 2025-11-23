@@ -34,6 +34,7 @@ import { useStripeConnect } from "@/hooks/useStripeConnect";
 import { SocialNetworksCarousel } from "@/components/common/SocialNetworksCarousel";
 import { OffersCarousel } from "@/components/common/OffersCarousel";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
+import { PortfolioManagement } from "@/components/PortfolioManagement";
 
 const InfluencerDashboard = () => {
   const { user, updateProfile, refetchUser, loading: authLoading } = useAuth();
@@ -560,7 +561,7 @@ const InfluencerDashboard = () => {
                 </Card>
 
                 {/* Social Networks Section */}
-                <Card className="border-0 shadow-lg">
+                <Card className="border-0 shadow-lg mb-6 sm:mb-8">
                   <CardHeader className="pb-3 sm:pb-6">
                     <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
                       <CardTitle className="text-lg sm:text-xl">Mes réseaux sociaux</CardTitle>
@@ -586,6 +587,9 @@ const InfluencerDashboard = () => {
                     )}
                   </CardContent>
                 </Card>
+
+                {/* Portfolio Section */}
+                {user && <PortfolioManagement userId={user.id} />}
               </div>
             </div>
           </div>
