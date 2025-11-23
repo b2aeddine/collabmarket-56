@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { GradientButton } from "@/components/common/GradientButton";
 import { usePortfolio } from "@/hooks/usePortfolio";
 import { AddPortfolioModal } from "./AddPortfolioModal";
-import { Plus, Trash2, Image as ImageIcon } from "lucide-react";
+import { Plus, Trash2, Image as ImageIcon, ExternalLink } from "lucide-react";
 import { OptimizedImage } from "@/components/common/OptimizedImage";
 import {
   AlertDialog,
@@ -30,6 +30,16 @@ export const PortfolioManagement = ({ userId }: PortfolioManagementProps) => {
     if (deleteId) {
       await deleteItem.mutateAsync(deleteId);
       setDeleteId(null);
+    }
+  };
+
+  const handleVisitLink = (url: string) => {
+    if (url) {
+      let normalizedUrl = url.trim();
+      if (!normalizedUrl.match(/^https?:\/\//)) {
+        normalizedUrl = 'https://' + normalizedUrl;
+      }
+      window.open(normalizedUrl, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -85,11 +95,29 @@ export const PortfolioManagement = ({ userId }: PortfolioManagementProps) => {
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
-                  {item.title && (
-                    <p className="mt-2 text-sm font-medium line-clamp-1">
-                      {item.title}
-                    </p>
-                  )}
+                  <div className="mt-2 space-y-2">
+                    {item.title && (
+                      <p className="text-sm font-medium line-clamp-1">
+                        {item.title}
+                      </p>
+                    )}
+                    {item.description && (
+                      <p className="text-xs text-muted-foreground line-clamp-2">
+                        {item.description}
+                      </p>
+                    )}
+                    {item.link_url && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleVisitLink(item.link_url!)}
+                        className="w-full text-orange-500 border-orange-200 hover:bg-orange-50 text-xs"
+                      >
+                        <ExternalLink className="w-3 h-3 mr-2" />
+                        Voir le projet
+                      </Button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
