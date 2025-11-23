@@ -30,11 +30,13 @@ export const useInfluencerRevenues = () => {
         .from('influencer_revenues')
         .select(`
           *,
-          orders (
+          orders!inner (
             id,
             total_amount,
             created_at,
             merchant_id,
+            payment_captured,
+            stripe_payment_intent_id,
             profiles!orders_merchant_id_fkey (
               first_name,
               last_name,
@@ -46,7 +48,16 @@ export const useInfluencerRevenues = () => {
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data || [];
+      
+      // Filter out revenues for orders without captured payments
+      const validRevenues = (data || []).filter(revenue => {
+        const order = revenue.orders as any;
+        return order?.payment_captured === true && order?.stripe_payment_intent_id;
+      });
+      
+      console.log(`📊 Total revenues: ${data?.length}, Valid (captured): ${validRevenues.length}`);
+      
+      return validRevenues;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes cache
     refetchOnWindowFocus: false,
@@ -78,27 +89,8 @@ export const useInfluencerRevenues = () => {
     refetchOnWindowFocus: false,
   });
   
-  // Auto-generate missing revenues if empty once
-  const generationAttempted = useRef(false);
-  useEffect(() => {
-    const run = async () => {
-      try {
-        generationAttempted.current = true;
-        await supabase.functions.invoke('generate-missing-revenues', { body: {} });
-        await refetchBalance();
-        await refetchRevenues();
-      } catch (e) {
-        // Silent fail - this is not critical
-      }
-    };
-  
-    if (!isLoadingBalance && !isLoadingRevenues && !generationAttempted.current) {
-      const bal = Number(balance || 0);
-      if (bal === 0 && (!revenues || revenues.length === 0)) {
-        run();
-      }
-    }
-  }, [isLoadingBalance, isLoadingRevenues, balance, revenues, refetchBalance, refetchRevenues]);
+  // REMOVED: Auto-generation of fake revenues
+  // Revenues should only be created when payments are actually captured via Stripe
   
   return {
     balance,
