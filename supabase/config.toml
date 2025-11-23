@@ -90,6 +90,10 @@ verify_jwt = false
 [functions.handle-contact-form]
 verify_jwt = false
 
+# Search Function
+[functions.search-influencers]
+verify_jwt = false
+
 # Authorization Function (legacy)
 [functions.create-payment-authorization]
 verify_jwt = true

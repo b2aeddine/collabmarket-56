@@ -1059,6 +1059,80 @@ export type Database = {
           },
         ]
       }
+      search_analytics: {
+        Row: {
+          avg_search_time: number | null
+          conversion_rate: number | null
+          created_at: string | null
+          date: string
+          id: string
+          top_filters: string[] | null
+          top_search_terms: string[] | null
+          total_searches: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          avg_search_time?: number | null
+          conversion_rate?: number | null
+          created_at?: string | null
+          date: string
+          id?: string
+          top_filters?: string[] | null
+          top_search_terms?: string[] | null
+          total_searches?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          avg_search_time?: number | null
+          conversion_rate?: number | null
+          created_at?: string | null
+          date?: string
+          id?: string
+          top_filters?: string[] | null
+          top_search_terms?: string[] | null
+          total_searches?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      search_history: {
+        Row: {
+          clicked_profile_id: string | null
+          created_at: string | null
+          filters: Json | null
+          id: string
+          result_count: number | null
+          search_term: string
+          user_id: string | null
+        }
+        Insert: {
+          clicked_profile_id?: string | null
+          created_at?: string | null
+          filters?: Json | null
+          id?: string
+          result_count?: number | null
+          search_term: string
+          user_id?: string | null
+        }
+        Update: {
+          clicked_profile_id?: string | null
+          created_at?: string | null
+          filters?: Json | null
+          id?: string
+          result_count?: number | null
+          search_term?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "search_history_clicked_profile_id_fkey"
+            columns: ["clicked_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       social_accounts: {
         Row: {
           access_token: string | null
