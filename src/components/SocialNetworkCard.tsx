@@ -185,7 +185,7 @@ const SocialNetworkCard = ({
         </Button>
         
         {(onUpdateNetwork || onDelete) && (
-          <div className="flex gap-2">
+          <div className="flex gap-1 sm:gap-2">
             {onUpdateNetwork && id && user_id && created_at && (
               <EditSocialNetworkModal
                 network={{
@@ -208,9 +208,10 @@ const SocialNetworkCard = ({
                 variant="outline"
                 size="sm"
                 onClick={onDelete}
-                className="text-red-500 border-red-200 hover:bg-red-50 text-xs sm:text-sm min-h-[32px] sm:min-h-[36px]"
+                className="flex-1 text-red-600 border-red-200 hover:bg-red-50 text-xs sm:text-sm min-h-[32px] sm:min-h-[36px]"
               >
-                <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1" />
+                <span className="hidden xs:inline">Suppr.</span>
               </Button>
             )}
           </div>
