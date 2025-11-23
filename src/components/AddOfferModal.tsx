@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { GradientButton } from "@/components/common/GradientButton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -58,10 +59,10 @@ const AddOfferModal = ({ onAddOffer }: AddOfferModalProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-gradient-to-r from-pink-500 to-orange-500 hover:opacity-90">
+        <GradientButton className="w-full sm:w-auto">
           <Plus className="w-4 h-4 mr-2" />
           Ajouter une offre
-        </Button>
+        </GradientButton>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
