@@ -35,17 +35,19 @@ export const PortfolioManagement = ({ userId }: PortfolioManagementProps) => {
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Portfolio</CardTitle>
-            <GradientButton onClick={() => setIsAddModalOpen(true)} className="h-9 px-3">
-              <Plus className="h-4 w-4 mr-2" />
-              Ajouter un projet
-            </GradientButton>
+      <Card className="border-0 shadow-lg">
+        <CardHeader className="pb-3 sm:pb-6">
+          <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+            <CardTitle className="text-lg sm:text-xl">Portfolio</CardTitle>
+            <div className="w-full sm:w-auto">
+              <GradientButton onClick={() => setIsAddModalOpen(true)} className="w-full sm:w-auto">
+                <Plus className="h-4 w-4 mr-2" />
+                Ajouter un projet
+              </GradientButton>
+            </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-0">
           {isLoading ? (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {[1, 2, 3].map((i) => (
