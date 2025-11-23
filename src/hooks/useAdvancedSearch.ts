@@ -54,6 +54,7 @@ export const useAdvancedSearch = (initialFilters: SearchFilters = {}) => {
   const [error, setError] = useState<string | null>(null);
 
   const debouncedSearchTerm = useDebounce(filters.searchTerm || '', 400);
+  const debouncedCity = useDebounce(filters.city || '', 400);
 
   const search = useCallback(async (searchFilters: SearchFilters) => {
     setIsLoading(true);
@@ -90,10 +91,11 @@ export const useAdvancedSearch = (initialFilters: SearchFilters = {}) => {
     const searchFilters = {
       ...filters,
       searchTerm: debouncedSearchTerm,
+      city: debouncedCity,
     };
     search(searchFilters);
-  }, [debouncedSearchTerm, filters.niche, filters.minBudget, filters.maxBudget, 
-      filters.minFollowers, filters.maxFollowers, filters.city, filters.minEngagement,
+  }, [debouncedSearchTerm, debouncedCity, filters.niche, filters.minBudget, filters.maxBudget, 
+      filters.minFollowers, filters.maxFollowers, filters.minEngagement,
       filters.platforms, filters.isVerified, filters.sortBy, filters.page, search]);
 
   const updateFilters = useCallback((newFilters: Partial<SearchFilters>) => {
