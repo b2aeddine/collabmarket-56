@@ -68,7 +68,7 @@ serve(async (req) => {
           price,
           is_active
         ),
-        reviews (
+        reviews!reviews_influencer_id_fkey (
           rating
         )
       `)

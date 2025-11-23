@@ -94,7 +94,7 @@ export const useAdvancedSearch = (initialFilters: SearchFilters = {}) => {
     search(searchFilters);
   }, [debouncedSearchTerm, filters.niche, filters.minBudget, filters.maxBudget, 
       filters.minFollowers, filters.maxFollowers, filters.city, filters.minEngagement,
-      filters.platforms, filters.isVerified, filters.sortBy, filters.page]);
+      filters.platforms, filters.isVerified, filters.sortBy, filters.page, search]);
 
   const updateFilters = useCallback((newFilters: Partial<SearchFilters>) => {
     setFilters(prev => ({ ...prev, ...newFilters, page: 1 })); // Reset to page 1 on filter change
