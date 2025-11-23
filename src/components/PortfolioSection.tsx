@@ -1,5 +1,6 @@
 import { usePortfolio } from "@/hooks/usePortfolio";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { ExternalLink, Image as ImageIcon } from "lucide-react";
 import { OptimizedImage } from "@/components/common/OptimizedImage";
 
@@ -30,44 +31,51 @@ export const PortfolioSection = ({ influencerId }: PortfolioSectionProps) => {
     );
   }
 
+  const handleVisitLink = (url: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (url) {
+      let normalizedUrl = url.trim();
+      if (!normalizedUrl.match(/^https?:\/\//)) {
+        normalizedUrl = 'https://' + normalizedUrl;
+      }
+      window.open(normalizedUrl, '_blank', 'noopener,noreferrer');
+    }
+  };
+
   return (
     <div className="grid grid-cols-2 gap-4">
       {portfolioItems.map((item) => (
-        <Card
-          key={item.id}
-          className="group overflow-hidden hover:shadow-lg transition-all cursor-pointer"
-          onClick={() => {
-            if (item.link_url) {
-              window.open(item.link_url, "_blank");
-            }
-          }}
-        >
+        <Card key={item.id} className="overflow-hidden">
           <div className="relative aspect-square">
             <OptimizedImage
               src={item.image_url}
               alt={item.title || "Portfolio item"}
               className="w-full h-full object-cover"
             />
+          </div>
+          <div className="p-3 space-y-2">
+            {item.title && (
+              <h4 className="font-semibold text-sm line-clamp-1">
+                {item.title}
+              </h4>
+            )}
+            {item.description && (
+              <p className="text-xs text-muted-foreground line-clamp-2">
+                {item.description}
+              </p>
+            )}
             {item.link_url && (
-              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <ExternalLink className="h-8 w-8 text-white" />
-              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={(e) => handleVisitLink(item.link_url!, e)}
+                className="w-full text-orange-500 border-orange-200 hover:bg-orange-50 text-xs"
+              >
+                <ExternalLink className="w-3 h-3 mr-2" />
+                Voir le projet
+              </Button>
             )}
           </div>
-          {(item.title || item.description) && (
-            <div className="p-3">
-              {item.title && (
-                <h4 className="font-semibold text-sm mb-1 line-clamp-1">
-                  {item.title}
-                </h4>
-              )}
-              {item.description && (
-                <p className="text-xs text-muted-foreground line-clamp-2">
-                  {item.description}
-                </p>
-              )}
-            </div>
-          )}
         </Card>
       ))}
     </div>
