@@ -62,39 +62,74 @@ serve(async (req) => {
         const session = event.data.object as Stripe.Checkout.Session;
         console.log("💰 Payment succeeded for session:", session.id);
         console.log("📋 Session metadata:", session.metadata);
+        console.log("📋 Payment intent:", session.payment_intent);
 
-        // Trouver la commande correspondante (optimized: only select needed fields)
-        const { data: existingOrder, error: findError } = await supabase
+        // Récupérer le PaymentIntent pour avoir toutes les metadata
+        const paymentIntent = await stripe.paymentIntents.retrieve(
+          session.payment_intent as string
+        );
+        
+        console.log("💳 PaymentIntent metadata:", paymentIntent.metadata);
+
+        // Vérifier si la commande existe déjà (pour éviter les doublons)
+        const { data: existingOrder } = await supabase
           .from("orders")
-          .select("id, status, stripe_session_id, influencer_id, merchant_id, total_amount")
+          .select("id, status")
           .eq("stripe_session_id", session.id)
-          .single();
+          .maybeSingle();
 
-        if (findError) {
-          console.error("❌ Error finding order:", findError);
-          throw findError;
-        }
+        if (existingOrder) {
+          console.log("⚠️ Order already exists:", existingOrder.id, "- Updating status");
+          
+          // Mettre à jour le statut uniquement
+          const { error: updateError } = await supabase
+            .from("orders")
+            .update({ 
+              status: "paid",
+              webhook_received_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            })
+            .eq("stripe_session_id", session.id);
 
-        if (!existingOrder) {
-          console.error("⚠️ No order found for session:", session.id);
-          throw new Error(`No order found for session ${session.id}`);
-        }
+          if (updateError) {
+            console.error("❌ Error updating order status:", updateError);
+            throw updateError;
+          }
+        } else {
+          console.log("✨ Creating new order from webhook metadata");
+          
+          // Créer la commande avec les metadata du PaymentIntent
+          const metadata = paymentIntent.metadata;
+          const influencerAmount = parseFloat(metadata.influencer_amount || '0') / 100;
+          const totalAmount = parseFloat(metadata.total_amount || '0');
+          const netAmount = parseFloat(metadata.net_amount || influencerAmount.toString());
+          
+          const specialInstructions = `Marque: ${metadata.brand_name || ''}\nProduit: ${metadata.product_name || ''}\nBrief: ${metadata.brief || ''}`;
+          
+          const { error: insertError } = await supabase
+            .from("orders")
+            .insert({
+              merchant_id: metadata.merchant_id,
+              influencer_id: metadata.influencer_id,
+              offer_id: metadata.offer_id,
+              total_amount: totalAmount,
+              net_amount: netAmount,
+              commission_rate: parseFloat(metadata.commission_rate || '10'),
+              status: "paid",
+              stripe_session_id: session.id,
+              stripe_payment_intent_id: paymentIntent.id,
+              special_instructions: specialInstructions,
+              delivery_date: metadata.deadline ? new Date(metadata.deadline).toISOString() : null,
+              webhook_received_at: new Date().toISOString(),
+              created_at: new Date().toISOString(),
+            });
 
-        console.log("🔍 Found order:", existingOrder.id, "Current status:", existingOrder.status);
-
-        // Mettre à jour le statut de la commande à 'paid'
-        const { error: updateError } = await supabase
-          .from("orders")
-          .update({ 
-            status: "paid",
-            webhook_received_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          })
-          .eq("stripe_session_id", session.id);
-
-        if (updateError) {
-          console.error("❌ Error updating order status:", updateError);
-          throw updateError;
+          if (insertError) {
+            console.error("❌ Error creating order:", insertError);
+            throw insertError;
+          }
+          
+          console.log("✅ Order created successfully from webhook");
         }
 
         // Marquer le log comme traité
@@ -102,12 +137,11 @@ serve(async (req) => {
           .from("payment_logs")
           .update({ 
             processed: true,
-            order_id: existingOrder.id 
           })
           .eq("stripe_session_id", session.id)
           .eq("event_type", event.type);
 
-        console.log("✅ Order status updated to paid for session:", session.id);
+        console.log("✅ Order processed for session:", session.id);
         break;
       }
 
@@ -115,19 +149,29 @@ serve(async (req) => {
         const session = event.data.object as Stripe.Checkout.Session;
         console.log("⏰ Payment session expired:", session.id);
 
-        // Mettre à jour le statut de la commande à 'cancelled'
-        const { error: updateError } = await supabase
+        // Vérifier si une commande existe pour cette session
+        const { data: existingOrder } = await supabase
           .from("orders")
-          .update({ 
-            status: "cancelled",
-            webhook_received_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          })
-          .eq("stripe_session_id", session.id);
+          .select("id, status")
+          .eq("stripe_session_id", session.id)
+          .maybeSingle();
 
-        if (updateError) {
-          console.error("❌ Error updating order status:", updateError);
-          throw updateError;
+        if (existingOrder && existingOrder.status === 'pending') {
+          // Supprimer les commandes pending expirées pour garder une base propre
+          console.log("🗑️ Deleting expired pending order:", existingOrder.id);
+          
+          const { error: deleteError } = await supabase
+            .from("orders")
+            .delete()
+            .eq("id", existingOrder.id);
+
+          if (deleteError) {
+            console.error("❌ Error deleting expired order:", deleteError);
+          } else {
+            console.log("✅ Expired order deleted successfully");
+          }
+        } else {
+          console.log("ℹ️ No pending order found for expired session");
         }
 
         // Marquer le log comme traité
@@ -137,7 +181,7 @@ serve(async (req) => {
           .eq("stripe_session_id", session.id)
           .eq("event_type", event.type);
 
-        console.log("✅ Order status updated to cancelled for session:", session.id);
+        console.log("✅ Expired session processed:", session.id);
         break;
       }
 
