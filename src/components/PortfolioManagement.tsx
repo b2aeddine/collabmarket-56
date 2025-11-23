@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { GradientButton } from "@/components/common/GradientButton";
 import { usePortfolio } from "@/hooks/usePortfolio";
 import { AddPortfolioModal } from "./AddPortfolioModal";
-import { Plus, Trash2, Image as ImageIcon, ExternalLink } from "lucide-react";
-import { OptimizedImage } from "@/components/common/OptimizedImage";
+import PortfolioCard from "./PortfolioCard";
+import { Plus, Image as ImageIcon } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,6 +15,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface PortfolioManagementProps {
   userId: string;
@@ -33,13 +34,24 @@ export const PortfolioManagement = ({ userId }: PortfolioManagementProps) => {
     }
   };
 
-  const handleVisitLink = (url: string) => {
-    if (url) {
-      let normalizedUrl = url.trim();
-      if (!normalizedUrl.match(/^https?:\/\//)) {
-        normalizedUrl = 'https://' + normalizedUrl;
-      }
-      window.open(normalizedUrl, '_blank', 'noopener,noreferrer');
+  const handleUpdate = async (updatedItem: any) => {
+    try {
+      const { error } = await supabase
+        .from('portfolio_items')
+        .update({
+          title: updatedItem.title,
+          description: updatedItem.description,
+          link_url: updatedItem.link_url,
+        })
+        .eq('id', updatedItem.id);
+
+      if (error) throw error;
+
+      toast.success("Projet mis à jour avec succès");
+      // Le cache sera automatiquement rafraîchi par React Query
+    } catch (error) {
+      console.error('Error updating portfolio item:', error);
+      toast.error("Erreur lors de la mise à jour du projet");
     }
   };
 
@@ -79,46 +91,18 @@ export const PortfolioManagement = ({ userId }: PortfolioManagementProps) => {
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {portfolioItems.map((item) => (
-                <div key={item.id} className="group relative">
-                  <div className="aspect-square rounded-lg overflow-hidden border">
-                    <OptimizedImage
-                      src={item.image_url}
-                      alt={item.title || "Portfolio item"}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <Button
-                    variant="destructive"
-                    size="icon"
-                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={() => setDeleteId(item.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                  <div className="mt-2 space-y-2">
-                    {item.title && (
-                      <p className="text-sm font-medium line-clamp-1">
-                        {item.title}
-                      </p>
-                    )}
-                    {item.description && (
-                      <p className="text-xs text-muted-foreground line-clamp-2">
-                        {item.description}
-                      </p>
-                    )}
-                    {item.link_url && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleVisitLink(item.link_url!)}
-                        className="w-full text-orange-500 border-orange-200 hover:bg-orange-50 text-xs"
-                      >
-                        <ExternalLink className="w-3 h-3 mr-2" />
-                        Voir le projet
-                      </Button>
-                    )}
-                  </div>
-                </div>
+                <PortfolioCard
+                  key={item.id}
+                  id={item.id}
+                  title={item.title}
+                  description={item.description}
+                  image_url={item.image_url}
+                  link_url={item.link_url}
+                  influencer_id={item.influencer_id}
+                  created_at={item.created_at}
+                  onDelete={() => setDeleteId(item.id)}
+                  onUpdate={handleUpdate}
+                />
               ))}
             </div>
           )}
