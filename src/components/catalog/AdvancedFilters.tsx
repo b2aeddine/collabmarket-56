@@ -19,7 +19,6 @@ interface AdvancedFiltersProps {
 }
 
 const niches = ["Lifestyle", "Tech", "Food", "Fitness", "Travel", "Beauty", "Gaming", "Fashion", "Music", "Art"];
-const cities = ["Paris", "Lyon", "Marseille", "Toulouse", "Nice", "Nantes", "Strasbourg", "Bordeaux", "Lille", "Rennes"];
 const platforms = ["Instagram", "TikTok", "YouTube", "Twitter", "Facebook", "Snapchat"];
 
 const AdvancedFilters = memo(({
@@ -239,19 +238,14 @@ const AdvancedFilters = memo(({
                   <div>
                     <label className="text-sm font-medium mb-2 block flex items-center gap-2">
                       <MapPin className="w-4 h-4" />
-                      Ville
+                      Ville ou Code Postal
                     </label>
-                    <Select value={filters.city || 'all'} onValueChange={(value) => onFiltersChange({ city: value === 'all' ? undefined : value })}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Toutes les villes" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Toutes les villes</SelectItem>
-                        {cities.map((city) => (
-                          <SelectItem key={city} value={city}>{city}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Input
+                      type="text"
+                      placeholder="Ex: Paris, Lyon, 75001..."
+                      value={filters.city || ''}
+                      onChange={(e) => onFiltersChange({ city: e.target.value || undefined })}
+                    />
                   </div>
 
                   {/* Engagement Rate */}
