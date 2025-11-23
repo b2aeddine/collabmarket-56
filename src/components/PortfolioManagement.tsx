@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { GradientButton } from "@/components/common/GradientButton";
 import { usePortfolio } from "@/hooks/usePortfolio";
 import { AddPortfolioModal } from "./AddPortfolioModal";
 import { Plus, Trash2, Image as ImageIcon } from "lucide-react";
@@ -38,10 +39,10 @@ export const PortfolioManagement = ({ userId }: PortfolioManagementProps) => {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Portfolio</CardTitle>
-            <Button onClick={() => setIsAddModalOpen(true)} size="sm">
+            <GradientButton onClick={() => setIsAddModalOpen(true)} className="h-9 px-3">
               <Plus className="h-4 w-4 mr-2" />
               Ajouter un projet
-            </Button>
+            </GradientButton>
           </div>
         </CardHeader>
         <CardContent>
@@ -57,11 +58,11 @@ export const PortfolioManagement = ({ userId }: PortfolioManagementProps) => {
           ) : portfolioItems.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <ImageIcon className="mx-auto h-12 w-12 mb-3 opacity-50" />
-              <p className="mb-4">Aucun projet dans votre portfolio</p>
-              <Button onClick={() => setIsAddModalOpen(true)}>
+              <p className="text-lg mb-4">Aucun projet dans votre portfolio</p>
+              <GradientButton onClick={() => setIsAddModalOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Ajouter votre premier projet
-              </Button>
+              </GradientButton>
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
