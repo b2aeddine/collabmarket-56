@@ -114,6 +114,37 @@ serve(async (req) => {
       throw new Error('Failed to update order status');
     }
 
+    // Check if revenue already exists (avoid duplicates)
+    const { data: existingRevenue } = await supabaseService
+      .from('influencer_revenues')
+      .select('id')
+      .eq('order_id', orderId)
+      .maybeSingle();
+
+    if (existingRevenue) {
+      console.log('✅ Revenue already exists for order:', orderId);
+    } else {
+      // Create revenue record ONLY if it doesn't exist
+      const { error: revenueError } = await supabaseService
+        .from('influencer_revenues')
+        .insert({
+          influencer_id: order.influencer_id,
+          order_id: orderId,
+          amount: totalAmount / 100, // Convert to euros
+          commission: platformFee / 100,
+          net_amount: influencerAmount / 100,
+          status: 'available',
+          created_at: new Date().toISOString()
+        });
+
+      if (revenueError) {
+        console.error('Error creating revenue record:', revenueError);
+        throw revenueError;
+      }
+      
+      console.log('✅ Revenue created for order:', orderId, 'Net amount:', influencerAmount / 100);
+    }
+
     // Create transfer record
     const { error: transferError } = await supabaseService
       .from('stripe_transfers')
@@ -135,24 +166,7 @@ serve(async (req) => {
       console.error('Error creating transfer record:', transferError);
     }
 
-    // Update influencer revenues
-    const { error: revenueError } = await supabaseService
-      .from('influencer_revenues')
-      .insert({
-        influencer_id: order.influencer_id,
-        order_id: orderId,
-        amount: totalAmount / 100, // Convert to euros
-        commission: platformFee / 100,
-        net_amount: influencerAmount / 100,
-        status: 'available',
-        created_at: new Date().toISOString()
-      });
-
-    if (revenueError) {
-      console.error('Error creating revenue record:', revenueError);
-    }
-
-    console.log('Payment captured and transfer completed for order:', orderId);
+    console.log('✅ Payment captured and transfer completed for order:', orderId);
 
     return new Response(JSON.stringify({ 
       success: true,

@@ -21,18 +21,20 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
-    // Get all completed orders that don't have revenue records
+    // Get all completed orders that have been PAID and CAPTURED via Stripe
     const { data: completedOrders, error: ordersError } = await supabaseService
       .from('orders')
       .select('*')
-      .in('status', ['terminée', 'completed'])
+      .in('status', ['terminée', 'completed', 'en_cours'])
+      .eq('payment_captured', true)
+      .not('stripe_payment_intent_id', 'is', null)
       .order('created_at', { ascending: false });
 
     if (ordersError) {
       throw new Error(`Error fetching orders: ${ordersError.message}`);
     }
 
-    console.log(`Found ${completedOrders?.length || 0} completed orders`);
+    console.log(`Found ${completedOrders?.length || 0} completed orders WITH captured payments`);
 
     if (!completedOrders || completedOrders.length === 0) {
       return new Response(JSON.stringify({ 

@@ -61,22 +61,24 @@ serve(async (req) => {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
         console.log("💰 Payment succeeded for session:", session.id);
-        console.log("📋 Session metadata:", session.metadata);
-        console.log("📋 Payment intent:", session.payment_intent);
+        console.log("📋 Payment status:", session.payment_status);
 
         // Récupérer le PaymentIntent pour avoir toutes les metadata
         const paymentIntent = await stripe.paymentIntents.retrieve(
           session.payment_intent as string
         );
         
+        console.log("💳 PaymentIntent:", paymentIntent.id, "Status:", paymentIntent.status);
         console.log("💳 PaymentIntent metadata:", paymentIntent.metadata);
 
-        // Vérifier si la commande existe déjà (pour éviter les doublons)
+        // Vérifier si la commande existe déjà
         const { data: existingOrder } = await supabase
           .from("orders")
           .select("id, status")
           .eq("stripe_session_id", session.id)
           .maybeSingle();
+
+        let orderId = existingOrder?.id;
 
         if (existingOrder) {
           console.log("⚠️ Order already exists:", existingOrder.id, "- Updating status");
@@ -86,6 +88,7 @@ serve(async (req) => {
             .from("orders")
             .update({ 
               status: "paid",
+              stripe_payment_intent_id: paymentIntent.id,
               webhook_received_at: new Date().toISOString(),
               updated_at: new Date().toISOString()
             })
@@ -100,13 +103,11 @@ serve(async (req) => {
           
           // Créer la commande avec les metadata du PaymentIntent
           const metadata = paymentIntent.metadata;
-          const influencerAmount = parseFloat(metadata.influencer_amount || '0') / 100;
           const totalAmount = parseFloat(metadata.total_amount || '0');
-          const netAmount = parseFloat(metadata.net_amount || influencerAmount.toString());
-          
+          const netAmount = parseFloat(metadata.net_amount || '0');
           const specialInstructions = `Marque: ${metadata.brand_name || ''}\nProduit: ${metadata.product_name || ''}\nBrief: ${metadata.brief || ''}`;
           
-          const { error: insertError } = await supabase
+          const { data: newOrder, error: insertError } = await supabase
             .from("orders")
             .insert({
               merchant_id: metadata.merchant_id,
@@ -122,26 +123,33 @@ serve(async (req) => {
               delivery_date: metadata.deadline ? new Date(metadata.deadline).toISOString() : null,
               webhook_received_at: new Date().toISOString(),
               created_at: new Date().toISOString(),
-            });
+            })
+            .select('id')
+            .single();
 
           if (insertError) {
             console.error("❌ Error creating order:", insertError);
             throw insertError;
           }
           
-          console.log("✅ Order created successfully from webhook");
+          orderId = newOrder.id;
+          console.log("✅ Order created successfully:", orderId);
         }
+
+        // NE PAS créer de revenus ici - ils seront créés uniquement lors de la capture du paiement
+        console.log("ℹ️ Order created/updated but revenue will be created upon payment capture");
 
         // Marquer le log comme traité
         await supabase
           .from("payment_logs")
           .update({ 
             processed: true,
+            order_id: orderId
           })
           .eq("stripe_session_id", session.id)
           .eq("event_type", event.type);
 
-        console.log("✅ Order processed for session:", session.id);
+        console.log("✅ Checkout session processed:", session.id);
         break;
       }
 
@@ -157,7 +165,7 @@ serve(async (req) => {
           .maybeSingle();
 
         if (existingOrder && existingOrder.status === 'pending') {
-          // Supprimer les commandes pending expirées pour garder une base propre
+          // Supprimer les commandes pending expirées
           console.log("🗑️ Deleting expired pending order:", existingOrder.id);
           
           const { error: deleteError } = await supabase
@@ -170,8 +178,6 @@ serve(async (req) => {
           } else {
             console.log("✅ Expired order deleted successfully");
           }
-        } else {
-          console.log("ℹ️ No pending order found for expired session");
         }
 
         // Marquer le log comme traité
@@ -182,6 +188,35 @@ serve(async (req) => {
           .eq("event_type", event.type);
 
         console.log("✅ Expired session processed:", session.id);
+        break;
+      }
+
+      case "payment_intent.succeeded": {
+        const paymentIntent = event.data.object as Stripe.PaymentIntent;
+        console.log("💰 Payment intent succeeded:", paymentIntent.id);
+
+        // Find order by payment intent ID
+        const { data: order } = await supabase
+          .from("orders")
+          .select("id, status, payment_captured")
+          .eq("stripe_payment_intent_id", paymentIntent.id)
+          .maybeSingle();
+
+        if (order && !order.payment_captured) {
+          console.log("✅ Marking order as captured:", order.id);
+          
+          // Update order to mark payment as captured
+          await supabase
+            .from("orders")
+            .update({ 
+              payment_captured: true,
+              payment_captured_at: new Date().toISOString(),
+              status: order.status === 'pending' ? 'en_cours' : order.status,
+              updated_at: new Date().toISOString()
+            })
+            .eq("id", order.id);
+        }
+
         break;
       }
 

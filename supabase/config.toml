@@ -72,6 +72,9 @@ verify_jwt = false
 [functions.cleanup-orphan-orders]
 verify_jwt = false
 
+[functions.sync-revenues-with-stripe]
+verify_jwt = false
+
 # Webhook Functions (public endpoints)
 [functions.stripe-webhook]
 verify_jwt = false
