@@ -1412,6 +1412,12 @@ export type Database = {
       auto_confirm_completed_orders: { Args: never; Returns: undefined }
       auto_handle_expired_orders: { Args: never; Returns: undefined }
       can_contest_order: { Args: { order_id: string }; Returns: boolean }
+      cleanup_invalid_revenues: {
+        Args: never
+        Returns: {
+          deleted_count: number
+        }[]
+      }
       create_admin_account: { Args: never; Returns: undefined }
       create_initial_admin: { Args: never; Returns: undefined }
       enable_contestation_for_delivered_orders: {
@@ -1428,10 +1434,15 @@ export type Database = {
         Args: { user_id: string }
         Returns: number
       }
+      get_influencer_total_earned_verified: {
+        Args: { user_id: string }
+        Returns: number
+      }
       get_influencer_total_withdrawn: {
         Args: { user_id: string }
         Returns: number
       }
+      get_merchant_total_spent: { Args: { user_id: string }; Returns: number }
       get_public_influencers: {
         Args: { limit_count?: number }
         Returns: {
