@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useStripeConnect } from "@/hooks/useStripeConnect";
 import { toast } from "sonner";
+import { CheckCircle2, XCircle, AlertCircle, Landmark } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface EditStripeAccountModalProps {
   isOpen: boolean;
@@ -24,16 +26,66 @@ const EditStripeAccountModal = ({ isOpen, onClose, currentAccount }: EditStripeA
     country: "FR",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [ibanValidation, setIbanValidation] = useState<{
+    isValid: boolean;
+    message: string;
+    type: 'success' | 'error' | 'warning' | 'info';
+  } | null>(null);
 
   useEffect(() => {
     if (currentAccount) {
+      // Afficher l'IBAN complet (pas masqué) pour permettre la modification
+      const fullIban = currentAccount.iban || "";
       setFormData({
-        iban: currentAccount.iban || "",
+        iban: fullIban,
         accountHolder: currentAccount.account_holder || "",
-        country: "FR",
+        country: fullIban.substring(0, 2) || "FR",
       });
     }
   }, [currentAccount]);
+
+  // Validation en temps réel de l'IBAN
+  useEffect(() => {
+    if (!formData.iban) {
+      setIbanValidation(null);
+      return;
+    }
+
+    const cleanedIban = formData.iban.replace(/\s/g, '').toUpperCase();
+    
+    // Validation progressive
+    if (cleanedIban.length < 2) {
+      setIbanValidation({
+        isValid: false,
+        message: 'Entrez le code pays (ex: FR, BE, ES...)',
+        type: 'info'
+      });
+    } else if (!/^[A-Z]{2}/.test(cleanedIban)) {
+      setIbanValidation({
+        isValid: false,
+        message: 'Le code pays doit être 2 lettres (ex: FR)',
+        type: 'error'
+      });
+    } else if (cleanedIban.length < 15) {
+      setIbanValidation({
+        isValid: false,
+        message: `${cleanedIban.length}/15 caractères minimum`,
+        type: 'warning'
+      });
+    } else if (cleanedIban.length > 34) {
+      setIbanValidation({
+        isValid: false,
+        message: 'IBAN trop long (max 34 caractères)',
+        type: 'error'
+      });
+    } else {
+      setIbanValidation({
+        isValid: true,
+        message: `✓ Format IBAN valide (${cleanedIban.substring(0, 2)})`,
+        type: 'success'
+      });
+    }
+  }, [formData.iban]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -122,43 +174,83 @@ const EditStripeAccountModal = ({ isOpen, onClose, currentAccount }: EditStripeA
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Modifier le compte bancaire Stripe</DialogTitle>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader className="space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-br from-pink-500 to-orange-500 rounded-lg">
+              <Landmark className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <DialogTitle className="text-xl">Modifier votre compte bancaire</DialogTitle>
+              <DialogDescription className="text-sm">
+                Mettre à jour vos informations bancaires Stripe Connect
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="iban">IBAN *</Label>
+        <Alert className="bg-amber-50 border-amber-200">
+          <AlertCircle className="h-4 w-4 text-amber-600" />
+          <AlertDescription className="text-sm text-amber-800">
+            <strong>Important :</strong> Ce changement sera immédiatement appliqué sur votre compte Stripe Connect et utilisé pour vos futurs paiements.
+          </AlertDescription>
+        </Alert>
+
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="space-y-2">
+            <Label htmlFor="iban" className="text-sm font-medium flex items-center gap-2">
+              IBAN *
+              {ibanValidation && (
+                <span className={`text-xs flex items-center gap-1 ${
+                  ibanValidation.type === 'success' ? 'text-green-600' :
+                  ibanValidation.type === 'error' ? 'text-red-600' :
+                  ibanValidation.type === 'warning' ? 'text-amber-600' :
+                  'text-blue-600'
+                }`}>
+                  {ibanValidation.type === 'success' && <CheckCircle2 className="w-3 h-3" />}
+                  {ibanValidation.type === 'error' && <XCircle className="w-3 h-3" />}
+                  {ibanValidation.type === 'warning' && <AlertCircle className="w-3 h-3" />}
+                  {ibanValidation.message}
+                </span>
+              )}
+            </Label>
             <Input
               id="iban"
               value={formData.iban}
               onChange={(e) => setFormData({ ...formData, iban: e.target.value.toUpperCase() })}
               placeholder="FR76 XXXX XXXX XXXX XXXX XXXX XXX"
-              className="font-mono"
-              maxLength={34}
+              className={`font-mono text-base ${
+                ibanValidation?.isValid ? 'border-green-500 focus-visible:ring-green-500' :
+                ibanValidation?.type === 'error' ? 'border-red-500 focus-visible:ring-red-500' :
+                ''
+              }`}
+              maxLength={42}
               required
             />
-            <p className="text-xs text-muted-foreground mt-1">
-              Format accepté: Code pays (2 lettres) + numéro de compte (15-32 caractères)
-            </p>
-            <p className="text-xs text-amber-600 mt-1">
-              ⚠️ Ce changement sera immédiatement appliqué sur votre compte Stripe Connect
+            <p className="text-xs text-muted-foreground">
+              Tous les pays européens acceptés (FR, BE, ES, IT, DE, etc.)
             </p>
           </div>
 
-          <div>
-            <Label htmlFor="account_holder">Nom du titulaire *</Label>
+          <div className="space-y-2">
+            <Label htmlFor="account_holder" className="text-sm font-medium">
+              Nom du titulaire du compte *
+            </Label>
             <Input
               id="account_holder"
               value={formData.accountHolder}
               onChange={(e) => setFormData({ ...formData, accountHolder: e.target.value })}
-              placeholder="Prénom Nom"
+              placeholder="Jean Dupont"
+              className="text-base"
+              minLength={3}
               required
             />
+            <p className="text-xs text-muted-foreground">
+              Le nom doit correspondre au titulaire du compte bancaire
+            </p>
           </div>
 
-          <div className="flex gap-2 pt-4">
+          <div className="flex gap-3 pt-2">
             <Button
               type="button"
               variant="outline"
@@ -170,10 +262,17 @@ const EditStripeAccountModal = ({ isOpen, onClose, currentAccount }: EditStripeA
             </Button>
             <Button
               type="submit"
-              className="flex-1 bg-gradient-to-r from-pink-500 to-orange-500 hover:from-pink-600 hover:to-orange-600"
-              disabled={isSubmitting}
+              className="flex-1 bg-gradient-to-r from-pink-500 to-orange-500 hover:from-pink-600 hover:to-orange-600 text-white font-medium"
+              disabled={isSubmitting || (ibanValidation && !ibanValidation.isValid)}
             >
-              {isSubmitting ? "Mise à jour..." : "Mettre à jour"}
+              {isSubmitting ? (
+                <>
+                  <span className="animate-pulse">●</span>
+                  <span className="ml-2">Mise à jour en cours...</span>
+                </>
+              ) : (
+                "Confirmer la modification"
+              )}
             </Button>
           </div>
         </form>
