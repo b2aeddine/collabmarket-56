@@ -16,10 +16,31 @@ serve(async (req) => {
     console.log('Updating Stripe account details...');
     
     const { bankAccount } = await req.json();
-    console.log('Bank account data:', bankAccount);
+    console.log('Bank account data received');
 
+    // Validation des données
     if (!bankAccount || !bankAccount.iban || !bankAccount.accountHolder) {
-      throw new Error('IBAN et nom du titulaire requis');
+      return new Response(JSON.stringify({ 
+        error: 'IBAN et nom du titulaire requis',
+        code: 'MISSING_FIELDS'
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      });
+    }
+
+    // Nettoyer l'IBAN (retirer les espaces)
+    const cleanedIban = bankAccount.iban.replace(/\s/g, '').toUpperCase();
+    
+    // Validation de base de l'IBAN
+    if (cleanedIban.length < 15 || cleanedIban.length > 34) {
+      return new Response(JSON.stringify({ 
+        error: 'Format IBAN invalide. L\'IBAN doit contenir entre 15 et 34 caractères.',
+        code: 'INVALID_IBAN_LENGTH'
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      });
     }
 
     // Initialize Stripe
@@ -57,66 +78,143 @@ serve(async (req) => {
       .single();
 
     if (!stripeAccountData?.stripe_account_id) {
-      throw new Error('Aucun compte Stripe Connect trouvé');
+      return new Response(JSON.stringify({ 
+        error: 'Aucun compte Stripe Connect trouvé. Veuillez d\'abord configurer votre compte.',
+        code: 'NO_STRIPE_ACCOUNT'
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 404,
+      });
     }
 
     const stripeAccountId = stripeAccountData.stripe_account_id;
 
-    // Remove any existing external accounts first
-    const existingAccounts = await stripe.accounts.listExternalAccounts(
-      stripeAccountId,
-      { object: 'bank_account' }
-    );
-
-    for (const account of existingAccounts.data) {
-      await stripe.accounts.deleteExternalAccount(stripeAccountId, account.id);
+    // Vérifier le statut du compte Stripe
+    const stripeAccount = await stripe.accounts.retrieve(stripeAccountId);
+    
+    if (!stripeAccount.charges_enabled) {
+      return new Response(JSON.stringify({ 
+        error: 'Votre compte Stripe n\'est pas encore activé. Veuillez finaliser votre configuration.',
+        code: 'ACCOUNT_NOT_ACTIVE',
+        requiresOnboarding: !stripeAccount.details_submitted
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      });
     }
 
-    // Add new bank account
-    const externalAccount = await stripe.accounts.createExternalAccount(stripeAccountId, {
-      external_account: {
-        object: 'bank_account',
-        country: bankAccount.country || 'FR',
-        currency: 'eur',
-        account_holder_name: bankAccount.accountHolder,
-        account_holder_type: 'individual',
-        ...bankAccount.iban.startsWith('FR') ? {
-          // For French IBAN
-          routing_number: bankAccount.iban.substring(4, 9), // Bank code
-          account_number: bankAccount.iban.substring(9), // Account number
-        } : {
-          // For other IBANs
-          account_number: bankAccount.iban,
-        }
-      }
-    });
+    // Supprimer les comptes bancaires existants
+    try {
+      const existingAccounts = await stripe.accounts.listExternalAccounts(
+        stripeAccountId,
+        { object: 'bank_account', limit: 100 }
+      );
 
-    // Update our database
-    await supabaseService
+      for (const account of existingAccounts.data) {
+        console.log(`Removing existing bank account: ${account.id}`);
+        await stripe.accounts.deleteExternalAccount(stripeAccountId, account.id);
+      }
+    } catch (error) {
+      console.error('Error removing existing accounts:', error);
+      // Continue même si la suppression échoue
+    }
+
+    // Déterminer le pays de l'IBAN
+    const country = cleanedIban.substring(0, 2);
+    
+    // Créer le nouveau compte bancaire externe
+    let externalAccount;
+    try {
+      externalAccount = await stripe.accounts.createExternalAccount(stripeAccountId, {
+        external_account: {
+          object: 'bank_account',
+          country: country,
+          currency: 'eur',
+          account_holder_name: bankAccount.accountHolder,
+          account_holder_type: 'individual',
+          account_number: cleanedIban,
+        }
+      });
+      
+      console.log('External account created successfully:', externalAccount.id);
+    } catch (stripeError: any) {
+      console.error('Stripe error creating external account:', stripeError);
+      
+      // Traduire les erreurs Stripe courantes
+      let errorMessage = 'Erreur lors de l\'ajout du compte bancaire';
+      let errorCode = 'STRIPE_ERROR';
+      
+      if (stripeError.code === 'bank_account_unusable') {
+        errorMessage = 'Ce compte bancaire ne peut pas être utilisé. Veuillez vérifier vos informations.';
+        errorCode = 'BANK_ACCOUNT_UNUSABLE';
+      } else if (stripeError.code === 'bank_account_declined') {
+        errorMessage = 'Ce compte bancaire a été refusé par Stripe. Veuillez contacter votre banque.';
+        errorCode = 'BANK_ACCOUNT_DECLINED';
+      } else if (stripeError.code === 'invalid_bank_account_iban') {
+        errorMessage = 'L\'IBAN fourni n\'est pas valide. Veuillez vérifier le format.';
+        errorCode = 'INVALID_IBAN';
+      } else if (stripeError.code === 'bank_account_exists') {
+        errorMessage = 'Ce compte bancaire est déjà associé à un autre compte Stripe.';
+        errorCode = 'BANK_ACCOUNT_EXISTS';
+      } else if (stripeError.message) {
+        errorMessage = stripeError.message;
+      }
+      
+      return new Response(JSON.stringify({ 
+        error: errorMessage,
+        code: errorCode,
+        stripeCode: stripeError.code
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      });
+    }
+
+    // Mettre à jour la base de données
+    const { error: dbError } = await supabaseService
       .from('stripe_accounts')
       .update({
         external_account_last4: externalAccount.last4,
-        external_account_bank_name: externalAccount.bank_name,
+        external_account_bank_name: externalAccount.bank_name || null,
         updated_at: new Date().toISOString()
       })
       .eq('user_id', user.id);
 
-    console.log('External account created:', externalAccount.id);
+    if (dbError) {
+      console.error('Error updating database:', dbError);
+      // Ne pas bloquer si la mise à jour DB échoue
+    }
+
+    // Mettre à jour aussi le profil
+    await supabaseService
+      .from('profiles')
+      .update({
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', user.id);
+
+    console.log('Bank account updated successfully');
 
     return new Response(JSON.stringify({ 
       success: true,
       externalAccountId: externalAccount.id,
       last4: externalAccount.last4,
-      bankName: externalAccount.bank_name
+      bankName: externalAccount.bank_name || 'Compte bancaire',
+      country: country,
+      message: 'Compte bancaire mis à jour avec succès'
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating Stripe account details:', error);
+    
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message || 'Une erreur est survenue lors de la mise à jour',
+        code: 'INTERNAL_ERROR'
+      }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,

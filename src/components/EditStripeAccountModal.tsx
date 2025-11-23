@@ -39,37 +39,82 @@ const EditStripeAccountModal = ({ isOpen, onClose, currentAccount }: EditStripeA
     e.preventDefault();
     
     if (!formData.iban || !formData.accountHolder) {
-      toast.error("L'IBAN et le nom du titulaire sont obligatoires");
+      toast.error('Veuillez remplir tous les champs obligatoires');
       return;
     }
 
-    // Valider le format IBAN français
-    const ibanRegex = /^FR\d{2}\s?\d{4}\s?\d{4}\s?\d{4}\s?\d{4}\s?\d{4}\s?\d{3}$/;
-    const cleanIban = formData.iban.replace(/\s/g, '');
+    // Nettoyer l'IBAN
+    const cleanedIban = formData.iban.replace(/\s/g, '').toUpperCase();
     
-    if (!ibanRegex.test(cleanIban)) {
-      toast.error("Format IBAN invalide. Utilisez le format FR suivi de 25 chiffres");
+    // Validation de la longueur
+    if (cleanedIban.length < 15 || cleanedIban.length > 34) {
+      toast.error('L\'IBAN doit contenir entre 15 et 34 caractères');
+      return;
+    }
+
+    // Validation du format de base (commence par 2 lettres)
+    if (!/^[A-Z]{2}/.test(cleanedIban)) {
+      toast.error('L\'IBAN doit commencer par le code pays (2 lettres)');
+      return;
+    }
+
+    // Validation du nom du titulaire
+    if (formData.accountHolder.trim().length < 3) {
+      toast.error('Le nom du titulaire doit contenir au moins 3 caractères');
       return;
     }
 
     setIsSubmitting(true);
+    
     try {
       await updateBankDetails({
-        iban: cleanIban,
-        accountHolder: formData.accountHolder,
-        country: formData.country,
+        iban: cleanedIban,
+        accountHolder: formData.accountHolder.trim(),
+        country: cleanedIban.substring(0, 2)
       });
       
-      toast.success("Compte bancaire mis à jour avec succès !");
-      onClose();
+      toast.success('✅ Compte bancaire mis à jour avec succès');
       
-      // Recharger la page pour refléter les changements
+      // Rafraîchir le statut après 1 seconde
       setTimeout(() => {
         window.location.reload();
       }, 1500);
+      
+      onClose();
     } catch (error: any) {
-      console.error("Error updating bank account:", error);
-      toast.error(error?.message || "Erreur lors de la mise à jour du compte bancaire");
+      console.error('Error updating bank account:', error);
+      
+      // Gérer les différents types d'erreurs
+      const errorData = error.response?.data || error;
+      const errorCode = errorData?.code;
+      
+      let errorMessage = 'Erreur lors de la mise à jour du compte bancaire';
+      
+      switch (errorCode) {
+        case 'INVALID_IBAN':
+        case 'INVALID_IBAN_LENGTH':
+          errorMessage = '❌ Format IBAN invalide. Veuillez vérifier votre IBAN.';
+          break;
+        case 'BANK_ACCOUNT_UNUSABLE':
+          errorMessage = '❌ Ce compte bancaire ne peut pas être utilisé avec Stripe.';
+          break;
+        case 'BANK_ACCOUNT_DECLINED':
+          errorMessage = '❌ Compte bancaire refusé. Veuillez contacter votre banque.';
+          break;
+        case 'BANK_ACCOUNT_EXISTS':
+          errorMessage = '❌ Ce compte bancaire est déjà utilisé sur un autre compte.';
+          break;
+        case 'NO_STRIPE_ACCOUNT':
+          errorMessage = '❌ Aucun compte Stripe Connect trouvé. Veuillez d\'abord le configurer.';
+          break;
+        case 'ACCOUNT_NOT_ACTIVE':
+          errorMessage = '⚠️ Votre compte Stripe n\'est pas encore activé. Finalisez d\'abord la configuration.';
+          break;
+        default:
+          errorMessage = errorData?.error || error.message || errorMessage;
+      }
+      
+      toast.error(errorMessage, { duration: 5000 });
     } finally {
       setIsSubmitting(false);
     }
@@ -88,12 +133,17 @@ const EditStripeAccountModal = ({ isOpen, onClose, currentAccount }: EditStripeA
             <Input
               id="iban"
               value={formData.iban}
-              onChange={(e) => setFormData({ ...formData, iban: e.target.value })}
-              placeholder="FR76 1234 5678 9012 3456 7890 123"
+              onChange={(e) => setFormData({ ...formData, iban: e.target.value.toUpperCase() })}
+              placeholder="FR76 XXXX XXXX XXXX XXXX XXXX XXX"
+              className="font-mono"
+              maxLength={34}
               required
             />
-            <p className="text-xs text-gray-500 mt-1">
-              Ce changement sera répercuté sur votre compte Stripe Connect
+            <p className="text-xs text-muted-foreground mt-1">
+              Format accepté: Code pays (2 lettres) + numéro de compte (15-32 caractères)
+            </p>
+            <p className="text-xs text-amber-600 mt-1">
+              ⚠️ Ce changement sera immédiatement appliqué sur votre compte Stripe Connect
             </p>
           </div>
 
