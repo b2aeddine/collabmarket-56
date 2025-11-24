@@ -150,7 +150,7 @@ const OrderContestationManagement = () => {
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <h4 className="font-semibold">#{order.id.slice(0, 8)}</h4>
-                      <p className="text-sm text-gray-600">{order.offers?.title}</p>
+                      <p className="text-sm text-gray-600">{order.offer_title}</p>
                       <p className="text-sm text-gray-500">
                         {order.total_amount}€ - Contestée le {new Date(order.date_contestation).toLocaleDateString()}
                       </p>
@@ -205,7 +205,7 @@ const OrderContestationManagement = () => {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <strong>Service:</strong> {selectedOrder.offers?.title}
+                  <strong>Service:</strong> {selectedOrder.offer_title}
                   <br />
                   <strong>Montant:</strong> {selectedOrder.total_amount}€
                   <br />

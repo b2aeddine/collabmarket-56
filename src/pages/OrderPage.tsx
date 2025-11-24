@@ -63,7 +63,6 @@ const OrderPage = () => {
           .from('offers')
           .select('*')
           .eq('id', offerId)
-          .or('is_deleted.is.null,is_deleted.eq.false') // Exclude soft-deleted offers
           .maybeSingle(),
         supabase
           .from('profiles')

@@ -26,6 +26,9 @@ interface OrderDetailsModalProps {
     requirements?: string;
     merchant_id?: string;
     influencer_id?: string;
+    offer_title?: string;
+    offer_description?: string;
+    offer_delivery_time?: string;
     merchant?: {
       first_name?: string;
       last_name?: string;
@@ -35,10 +38,6 @@ interface OrderDetailsModalProps {
       first_name?: string;
       last_name?: string;
       avatar_url?: string;
-    };
-    offers?: {
-      title?: string;
-      description?: string;
     };
   };
 }
@@ -402,13 +401,13 @@ const OrderDetailsModal = ({ isOpen, onClose, order, userRole = 'commercant' }: 
           <div className="space-y-4">
             <div>
               <h4 className="font-semibold text-gray-800 mb-2">Service demandé</h4>
-              <p className="text-lg">{order.offers?.title || 'Service'}</p>
+              <p className="text-lg">{order.offer_title || 'Service'}</p>
             </div>
 
-            {order.offers?.description && (
+            {order.offer_description && (
               <div>
                 <h4 className="font-semibold text-gray-800 mb-2">Description du service</h4>
-                <p className="text-gray-600">{order.offers.description}</p>
+                <p className="text-gray-600">{order.offer_description}</p>
               </div>
             )}
 

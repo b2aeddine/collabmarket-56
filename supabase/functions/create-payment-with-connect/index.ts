@@ -60,9 +60,8 @@ serve(async (req) => {
     // Get offer and influencer details (optimized: only select needed fields)
     const [offerResponse, influencerResponse] = await Promise.all([
       supabaseService.from('offers')
-        .select('id, title, price, delivery_time, influencer_id')
+        .select('id, title, description, price, delivery_time, influencer_id')
         .eq('id', offerId)
-        .or('is_deleted.is.null,is_deleted.eq.false') // Exclude soft-deleted offers
         .single(),
       supabaseService.from('profiles').select('id, first_name, last_name, email').eq('id', influencerId).single()
     ]);
@@ -70,6 +69,9 @@ serve(async (req) => {
     if (offerResponse.error || influencerResponse.error) {
       throw new Error('Failed to fetch offer or influencer details');
     }
+
+    const offer = offerResponse.data;
+    const influencerProfile = influencerResponse.data;
 
     // Get influencer's Stripe Connect account (optimized: only select needed fields)
     const { data: stripeAccount } = await supabaseService
@@ -166,10 +168,11 @@ serve(async (req) => {
           total_amount: amount.toString(),
           net_amount: (influencerAmount / 100).toString(),
           commission_rate: '10',
-          offer_title: offerResponse.data.title,
-          offer_delivery_time: offerResponse.data.delivery_time || '',
-          influencer_name: `${influencerResponse.data.first_name} ${influencerResponse.data.last_name}`,
-          influencer_email: influencerResponse.data.email,
+          offer_title: offer.title,
+          offer_description: offer.description,
+          offer_delivery_time: offer.delivery_time || '',
+          influencer_name: `${influencerProfile.first_name} ${influencerProfile.last_name}`,
+          influencer_email: influencerProfile.email,
         },
       },
       metadata: {

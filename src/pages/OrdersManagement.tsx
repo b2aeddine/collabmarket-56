@@ -446,7 +446,7 @@ const OrdersManagement = () => {
                             {/* Order Details */}
                             <div className="flex-1 min-w-0">
                               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
-                                <h3 className="text-lg font-semibold text-gray-800">{order.offers?.title || 'Service'}</h3>
+                                <h3 className="text-lg font-semibold text-gray-800">{order.offer_title || 'Service'}</h3>
                                 <div className="flex items-center gap-2">
                                   <Badge className={`${getStatusColor(order.status)} flex items-center gap-1`}>
                                     {getStatusIcon(order.status)}

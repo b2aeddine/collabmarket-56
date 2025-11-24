@@ -567,7 +567,6 @@ export type Database = {
           id: string
           influencer_id: string
           is_active: boolean | null
-          is_deleted: boolean | null
           is_popular: boolean | null
           price: number
           title: string
@@ -580,7 +579,6 @@ export type Database = {
           id?: string
           influencer_id: string
           is_active?: boolean | null
-          is_deleted?: boolean | null
           is_popular?: boolean | null
           price: number
           title: string
@@ -593,7 +591,6 @@ export type Database = {
           id?: string
           influencer_id?: string
           is_active?: boolean | null
-          is_deleted?: boolean | null
           is_popular?: boolean | null
           price?: number
           title?: string
@@ -627,7 +624,11 @@ export type Database = {
           influencer_id: string
           merchant_id: string
           net_amount: number
-          offer_id: string
+          offer_delivery_time: string | null
+          offer_description: string | null
+          offer_id: string | null
+          offer_platform: string | null
+          offer_title: string | null
           payment_captured: boolean | null
           payment_captured_at: string | null
           preuve_influenceur: string | null
@@ -659,7 +660,11 @@ export type Database = {
           influencer_id: string
           merchant_id: string
           net_amount: number
-          offer_id: string
+          offer_delivery_time?: string | null
+          offer_description?: string | null
+          offer_id?: string | null
+          offer_platform?: string | null
+          offer_title?: string | null
           payment_captured?: boolean | null
           payment_captured_at?: string | null
           preuve_influenceur?: string | null
@@ -691,7 +696,11 @@ export type Database = {
           influencer_id?: string
           merchant_id?: string
           net_amount?: number
-          offer_id?: string
+          offer_delivery_time?: string | null
+          offer_description?: string | null
+          offer_id?: string | null
+          offer_platform?: string | null
+          offer_title?: string | null
           payment_captured?: boolean | null
           payment_captured_at?: string | null
           preuve_influenceur?: string | null
