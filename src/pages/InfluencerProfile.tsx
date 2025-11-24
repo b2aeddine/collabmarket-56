@@ -11,6 +11,7 @@ import MessagingModal from "@/components/MessagingModal";
 import ReviewsSection from "@/components/ReviewsSection";
 import AllServicesModal from "@/components/AllServicesModal";
 import AllSocialNetworksModal from "@/components/AllSocialNetworksModal";
+import AllPortfolioModal from "@/components/AllPortfolioModal";
 import { Users, Heart, Star, MapPin, MessageCircle, Eye, ArrowLeft } from "lucide-react";
 import { useProfile, useIncrementProfileViews } from "@/hooks/useProfiles";
 import { useReviews } from "@/hooks/useReviews";
@@ -28,6 +29,7 @@ const InfluencerProfile = () => {
   const [isMessagingOpen, setIsMessagingOpen] = useState(false);
   const [showAllServices, setShowAllServices] = useState(false);
   const [showAllNetworks, setShowAllNetworks] = useState(false);
+  const [showAllPortfolio, setShowAllPortfolio] = useState(false);
   const {
     profile,
     isLoading,
@@ -363,7 +365,10 @@ const InfluencerProfile = () => {
                 <Card className="shadow-xl border-0 animate-fade-in">
                   <CardContent className="p-4 sm:p-6">
                     <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-4">Portfolio</h2>
-                    <PortfolioSection influencerId={validProfile.id} />
+                    <PortfolioSection 
+                      influencerId={validProfile.id}
+                      onViewAll={() => setShowAllPortfolio(true)}
+                    />
                   </CardContent>
                 </Card>
               </ScrollReveal>
@@ -380,6 +385,13 @@ const InfluencerProfile = () => {
 
       {/* All Social Networks Modal */}
       <AllSocialNetworksModal isOpen={showAllNetworks} onClose={() => setShowAllNetworks(false)} networks={influencer.socialNetworks} />
+      
+      {/* All Portfolio Modal */}
+      <AllPortfolioModal
+        open={showAllPortfolio}
+        onOpenChange={setShowAllPortfolio}
+        influencerId={id!}
+      />
     </div>;
 };
 export default InfluencerProfile;
