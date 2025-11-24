@@ -12,6 +12,11 @@ export const useUserProfile = () => {
   const [loading, setLoading] = useState(false);
 
   const loadProfile = useCallback(async (userId: string): Promise<User | null> => {
+    if (!userId) {
+      logger.warn('loadProfile called with empty userId');
+      return null;
+    }
+
     setLoading(true);
     try {
       const { data, error } = await supabase

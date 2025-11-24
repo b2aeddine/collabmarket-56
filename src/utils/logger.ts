@@ -18,6 +18,16 @@ function sanitizeData(data: any): any {
     return data;
   }
 
+  // Handle Error objects specially
+  if (data instanceof Error) {
+    return {
+      name: data.name,
+      message: data.message,
+      stack: data.stack,
+      ...(data.cause && { cause: sanitizeData(data.cause) }),
+    };
+  }
+
   if (typeof data === 'string') {
     // Remove potential secrets (API keys, tokens, etc.)
     return data
