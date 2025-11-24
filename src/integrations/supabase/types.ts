@@ -125,6 +125,24 @@ export type Database = {
         }
         Relationships: []
       }
+      contact_form_rate_limit: {
+        Row: {
+          created_at: string
+          id: string
+          ip_address: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ip_address: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ip_address?: string
+        }
+        Relationships: []
+      }
       contact_messages: {
         Row: {
           admin_notes: string | null
@@ -1544,6 +1562,7 @@ export type Database = {
           deleted_count: number
         }[]
       }
+      cleanup_rate_limit_entries: { Args: never; Returns: undefined }
       create_admin_account: { Args: never; Returns: undefined }
       create_initial_admin: { Args: never; Returns: undefined }
       enable_contestation_for_delivered_orders: {
