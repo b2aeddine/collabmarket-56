@@ -4,7 +4,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { navItems } from "./nav-items";
-import ProtectedRoute from "./components/ProtectedRoute";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentCancel from "./pages/PaymentCancel";
 import Footer from "./components/Footer";
@@ -16,9 +15,10 @@ const queryClient = new QueryClient({
     queries: {
       staleTime: 10 * 60 * 1000, // 10 minutes - data stays fresh longer
       gcTime: 30 * 60 * 1000, // 30 minutes - keep in cache longer
-      retry: (failureCount, error: any) => {
+      retry: (failureCount, error: unknown) => {
         // Don't retry on 4xx errors (client errors)
-        if (error?.status >= 400 && error?.status < 500) return false;
+        const status = (error as { status?: number })?.status;
+        if (status && status >= 400 && status < 500) return false;
         return failureCount < 3;
       },
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // exponential backoff
@@ -28,9 +28,10 @@ const queryClient = new QueryClient({
       networkMode: 'offlineFirst', // work offline with cache
     },
     mutations: {
-      retry: (failureCount, error: any) => {
+      retry: (failureCount, error: unknown) => {
         // Don't retry on validation errors
-        if (error?.status === 400 || error?.status === 422) return false;
+        const status = (error as { status?: number })?.status;
+        if (status === 400 || status === 422) return false;
         return failureCount < 2;
       },
       retryDelay: 1500,

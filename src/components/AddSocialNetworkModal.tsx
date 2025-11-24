@@ -15,7 +15,7 @@ interface AddSocialNetworkModalProps {
   onAddNetwork?: (network: SocialNetwork) => void;
 }
 
-const AddSocialNetworkModal = ({ onAddNetwork }: AddSocialNetworkModalProps) => {
+const AddSocialNetworkModal = ({ onAddNetwork: _onAddNetwork }: AddSocialNetworkModalProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState({
     platform: "" as SocialNetwork['platform'],

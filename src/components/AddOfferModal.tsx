@@ -9,8 +9,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Instagram, Youtube, Twitter } from "lucide-react";
 
+interface Offer {
+  id: string;
+  platform: string;
+  type: string;
+  description: string;
+  price: number;
+  deliveryTime: string;
+  active: boolean;
+}
+
 interface AddOfferModalProps {
-  onAddOffer: (offer: any) => void;
+  onAddOffer: (offer: Offer) => void;
 }
 
 const AddOfferModal = ({ onAddOffer }: AddOfferModalProps) => {

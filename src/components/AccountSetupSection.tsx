@@ -18,10 +18,10 @@ const AccountSetupSection = () => {
     isLoading: stripeConnectLoading, 
     startOnboarding, 
     updateBankDetails, 
-    refetchAccountStatus,
+    refetchAccountStatus: _refetchAccountStatus,
   } = useStripeConnect();
   const { createIdentitySession, isLoading: identityLoading } = useStripeIdentity();
-  const { mutate: checkIdentityStatus, isPending: isCheckingIdentityStatus } = useCheckStripeIdentityStatus();
+  const { mutate: _checkIdentityStatus, isPending: _isCheckingIdentityStatus } = useCheckStripeIdentityStatus();
   const { mutate: checkConnectStatus, isPending: isCheckingConnectStatus } = useCheckStripeConnectStatus();
 
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -72,7 +72,7 @@ const AccountSetupSection = () => {
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [user?.identity_status, refreshUser]);
+  }, [user, refreshUser]);
 
   // Gérer les statuts
   const getIdentityStatus = () => {
@@ -186,9 +186,10 @@ const AccountSetupSection = () => {
         }
       });
       
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erreur lors de l\'actualisation du statut';
       console.error('❌ Refresh status error:', error);
-      toast.error(error.message || 'Erreur lors de l\'actualisation du statut');
+      toast.error(errorMessage);
       setIsRefreshingConnect(false);
     }
   };
