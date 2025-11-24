@@ -124,13 +124,23 @@ const AccountSetupSection = () => {
       };
     }
 
-    // Utiliser le stripe_connect_status du profil utilisateur
-    const stripeConnectStatus = user?.stripe_connect_status;
+    // Priorité aux données de l'API check-stripe-account-status
+    if (accountStatus?.onboardingCompleted && accountStatus?.chargesEnabled) {
+      return {
+        status: 'complete',
+        label: '✅ Configuré',
+        color: 'bg-green-100 text-green-800',
+        icon: CheckCircle
+      };
+    }
 
+    // Fallback sur le stripe_connect_status du profil
+    const stripeConnectStatus = user?.stripe_connect_status;
+    
     if (stripeConnectStatus === 'complete') {
       return {
         status: 'complete',
-        label: 'Configuration terminée',
+        label: '✅ Configuré',
         color: 'bg-green-100 text-green-800',
         icon: CheckCircle
       };
@@ -160,21 +170,25 @@ const AccountSetupSection = () => {
   const handleRefreshConnectStatus = async () => {
     try {
       setIsRefreshingConnect(true);
+      console.log('🔄 Refreshing Stripe Connect status...');
       
       // Utiliser la fonction dédiée pour vérifier et synchroniser le statut
       checkConnectStatus(undefined, {
-        onSuccess: () => {
-          // Rafraîchir le profil utilisateur après la synchronisation
-          setTimeout(async () => {
-            await refreshUser();
-          }, 1000);
+        onSuccess: async (data) => {
+          console.log('✅ Status refreshed successfully:', data);
+          // Le hook useCheckStripeConnectStatus gère déjà le rafraîchissement du profil
+        },
+        onError: (error) => {
+          console.error('❌ Refresh failed:', error);
+        },
+        onSettled: () => {
+          setIsRefreshingConnect(false);
         }
       });
       
     } catch (error: any) {
-      console.error('Refresh status error:', error);
+      console.error('❌ Refresh status error:', error);
       toast.error(error.message || 'Erreur lors de l\'actualisation du statut');
-    } finally {
       setIsRefreshingConnect(false);
     }
   };

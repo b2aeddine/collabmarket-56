@@ -13,22 +13,29 @@ const OnboardingRefresh = () => {
 
   useEffect(() => {
     // Vérifier automatiquement le statut au retour de Stripe
-    console.log('🔄 Vérification automatique du statut Stripe au retour...');
+    console.log('🔄 Auto-checking Stripe status on return from Stripe...');
     setStatus('checking');
     
-    checkStatus(undefined, {
-      onSuccess: () => {
-        setStatus('success');
-        // Rediriger après 2 secondes
-        setTimeout(() => {
-          navigate('/influencer-dashboard');
-        }, 2000);
-      },
-      onError: () => {
-        setStatus('error');
-      }
-    });
-  }, []);
+    // Attendre un peu pour que Stripe finisse de traiter
+    const timer = setTimeout(() => {
+      checkStatus(undefined, {
+        onSuccess: (data) => {
+          console.log('✅ Status check successful:', data);
+          setStatus('success');
+          // Rediriger après 2 secondes pour que l'utilisateur voie le succès
+          setTimeout(() => {
+            navigate('/influencer-dashboard');
+          }, 2000);
+        },
+        onError: (error) => {
+          console.error('❌ Status check failed:', error);
+          setStatus('error');
+        }
+      });
+    }, 1000); // Attendre 1 seconde après l'arrivée sur la page
+
+    return () => clearTimeout(timer);
+  }, [navigate]);
 
   const handleRetry = () => {
     setStatus('checking');
