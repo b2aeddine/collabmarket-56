@@ -12,10 +12,10 @@ import { useCreateSocialLink } from "@/hooks/useSocialLinks";
 import { toast } from "sonner";
 
 interface AddSocialNetworkModalProps {
-  userId?: string;
+  onAddNetwork?: (network: SocialNetwork) => void;
 }
 
-const AddSocialNetworkModal = ({ userId: _userId }: AddSocialNetworkModalProps) => {
+const AddSocialNetworkModal = ({ onAddNetwork }: AddSocialNetworkModalProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState({
     platform: "" as SocialNetwork['platform'],
@@ -62,7 +62,7 @@ const AddSocialNetworkModal = ({ userId: _userId }: AddSocialNetworkModalProps) 
         engagement_rate: formData.engagement_rate ? parseFloat(formData.engagement_rate) : 0,
       };
 
-      await createSocialLinkMutation.mutateAsync(socialData);
+      const result = await createSocialLinkMutation.mutateAsync(socialData);
       
       toast.success("Réseau social ajouté avec succès !");
       

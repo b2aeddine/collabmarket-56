@@ -14,13 +14,9 @@
  * - Other sensitive data
  */
 
-import fs from 'fs';
-import path from 'path';
-import { glob } from 'glob';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const fs = require('fs');
+const path = require('path');
+const glob = require('glob');
 
 // Configuration
 const SRC_DIR = path.join(__dirname, '..', 'src');
@@ -84,7 +80,7 @@ let totalIssues = 0;
 const issuesByFile = new Map();
 
 function findFiles() {
-  return glob.globSync(path.join(SRC_DIR, '**/*'), {
+  return glob.sync(path.join(SRC_DIR, '**/*'), {
     ignore: EXCLUDE_PATTERNS,
     nodir: true,
     absolute: true,

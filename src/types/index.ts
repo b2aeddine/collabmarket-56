@@ -151,8 +151,7 @@ export interface Review {
   influencer_id: string;
   rating: number;
   comment?: string;
-  is_public: boolean | null;
-  is_verified: boolean | null;
+  is_public: boolean;
   created_at: string;
 }
 

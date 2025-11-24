@@ -94,10 +94,10 @@ export const PortfolioManagement = ({ userId }: PortfolioManagementProps) => {
                 <PortfolioCard
                   key={item.id}
                   id={item.id}
-                  title={item.title ?? null}
-                  description={item.description ?? null}
+                  title={item.title}
+                  description={item.description}
                   image_url={item.image_url}
-                  link_url={item.link_url ?? null}
+                  link_url={item.link_url}
                   influencer_id={item.influencer_id}
                   created_at={item.created_at}
                   onDelete={() => setDeleteId(item.id)}

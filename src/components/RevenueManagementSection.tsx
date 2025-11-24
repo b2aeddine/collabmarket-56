@@ -6,14 +6,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Euro, CreditCard, Plus, Trash2, Edit } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
+import { Euro, CreditCard, Plus, Calendar, User, Building, Trash2, Edit } from "lucide-react";
 import { useInfluencerRevenues } from "@/hooks/useInfluencerRevenues";
 import { useBankAccounts, type BankAccount } from "@/hooks/useBankAccounts";
 import { useWithdrawals } from "@/hooks/useWithdrawals";
 import { toast } from "sonner";
 
 const RevenueManagementSection = () => {
-  const { balance, withdrawalRequests, isLoading } = useInfluencerRevenues();
+  const { balance, revenues, withdrawalRequests, isLoading } = useInfluencerRevenues();
   const { bankAccounts, addBankAccount, updateBankAccount, deleteBankAccount } = useBankAccounts();
   const { createWithdrawal } = useWithdrawals();
   
@@ -389,7 +391,7 @@ const RevenueManagementSection = () => {
                       </Badge>
                     </div>
                     <div className="text-sm text-gray-600">
-                      {request.requested_at ? new Date(request.requested_at).toLocaleDateString('fr-FR') : 'N/A'}
+                      {new Date(request.requested_at).toLocaleDateString('fr-FR')}
                     </div>
                   </div>
                 </div>

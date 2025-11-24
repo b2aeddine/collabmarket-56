@@ -13,13 +13,9 @@
  * 4. Creates backups before modification
  */
 
-import fs from 'fs';
-import path from 'path';
-import { glob } from 'glob';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const fs = require('fs');
+const path = require('path');
+const glob = require('glob');
 
 // Configuration
 const SRC_DIR = path.join(__dirname, '..', 'src');
@@ -27,11 +23,10 @@ const BACKUP_DIR = path.join(__dirname, '..', '.backups', new Date().toISOString
 const DRY_RUN = process.argv.includes('--dry-run');
 
 // Patterns to remove
-// Updated regex to handle nested parentheses and multiline statements better
 const CONSOLE_LOG_PATTERNS = [
-  /console\.log\((?:[^()]|\([^()]*\))*\);?\s*\n?/g,
-  /console\.debug\((?:[^()]|\([^()]*\))*\);?\s*\n?/g,
-  /console\.info\((?:[^()]|\([^()]*\))*\);?\s*\n?/g,
+  /console\.log\([^)]*\);?\s*\n?/g,
+  /console\.debug\([^)]*\);?\s*\n?/g,
+  /console\.info\([^)]*\);?\s*\n?/g,
 ];
 
 // Files to process
@@ -57,7 +52,7 @@ function findFiles() {
   const files = [];
   
   FILE_PATTERNS.forEach(pattern => {
-    const matches = glob.globSync(pattern, {
+    const matches = glob.sync(pattern, {
       ignore: EXCLUDE_PATTERNS,
       absolute: true,
     });
