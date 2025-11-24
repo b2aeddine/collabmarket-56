@@ -15,7 +15,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { glob } from 'glob';
+import { globSync } from 'glob';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -57,7 +57,7 @@ function findFiles() {
   const files = [];
   
   FILE_PATTERNS.forEach(pattern => {
-    const matches = glob.globSync(pattern, {
+    const matches = globSync(pattern, {
       ignore: EXCLUDE_PATTERNS,
       absolute: true,
     });
