@@ -59,7 +59,6 @@ serve(async (req) => {
       supabaseService.from('offers')
         .select('*')
         .eq('id', offerId)
-        .or('is_deleted.is.null,is_deleted.eq.false') // Exclude soft-deleted offers
         .single(),
       supabaseService.from('profiles').select('*').eq('id', influencerId).single()
     ]);
@@ -67,6 +66,9 @@ serve(async (req) => {
     if (offerResponse.error || influencerResponse.error) {
       throw new Error("Failed to fetch offer or influencer details");
     }
+
+    const offer = offerResponse.data;
+    const influencerProfile = influencerResponse.data;
 
     // Check if customer exists or create one
     const customers = await stripe.customers.list({ 
@@ -127,17 +129,20 @@ serve(async (req) => {
       expires_at: Math.floor(Date.now() / 1000) + (24 * 60 * 60), // 24 hours
     });
 
-    // Store the payment authorization in orders table
+    // Store the payment authorization in orders table with offer snapshot
     const { error: insertError } = await supabaseService
       .from('orders')
       .insert({
         merchant_id: user.id,
         influencer_id: influencerId,
         offer_id: offerId,
+        offer_title: offer.title, // Store offer snapshot
+        offer_description: offer.description,
+        offer_delivery_time: offer.delivery_time,
         total_amount: amount,
         net_amount: amount * 0.9, // 90% for influencer
         commission_rate: 10,
-        status: 'pending', // Use 'pending' instead of 'payment_authorized'
+        status: 'pending',
         stripe_session_id: session.id,
         special_instructions: `Marque: ${brandName}\nProduit: ${productName}\nBrief: ${brief}`,
         delivery_date: deadline ? new Date(deadline).toISOString() : null,

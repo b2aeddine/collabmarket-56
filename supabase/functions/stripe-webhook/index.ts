@@ -101,7 +101,7 @@ serve(async (req) => {
         } else {
           console.log("✨ Creating new order from webhook metadata");
           
-          // Créer la commande avec les metadata du PaymentIntent
+          // Créer la commande avec les metadata du PaymentIntent incluant les données de l'offre
           const metadata = paymentIntent.metadata;
           const totalAmount = parseFloat(metadata.total_amount || '0');
           const netAmount = parseFloat(metadata.net_amount || '0');
@@ -113,6 +113,9 @@ serve(async (req) => {
               merchant_id: metadata.merchant_id,
               influencer_id: metadata.influencer_id,
               offer_id: metadata.offer_id,
+              offer_title: metadata.offer_title, // Store offer snapshot
+              offer_description: metadata.offer_description,
+              offer_delivery_time: metadata.offer_delivery_time,
               total_amount: totalAmount,
               net_amount: netAmount,
               commission_rate: parseFloat(metadata.commission_rate || '10'),

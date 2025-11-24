@@ -33,16 +33,12 @@ export const useOrders = (userRole?: string) => {
           influencer_id,
           merchant_id,
           offer_id,
+          offer_title,
+          offer_description,
+          offer_delivery_time,
           payment_captured,
           stripe_payment_intent_id,
           stripe_session_id,
-          offers!left(
-            id,
-            title,
-            description,
-            price,
-            delivery_time
-          ),
           influencer:profiles!orders_influencer_id_fkey(
             id,
             first_name,
@@ -200,7 +196,6 @@ export const useAcceptOrderAndPay = () => {
         .eq('id', orderId)
         .select(`
           *,
-          offers(title),
           influencer:profiles!orders_influencer_id_fkey(first_name, last_name)
         `)
         .single();
@@ -212,7 +207,7 @@ export const useAcceptOrderAndPay = () => {
         body: {
           orderId: order.id,
           amount: order.total_amount,
-          description: `${order.offers?.title || 'Prestation'} - ${order.influencer?.first_name || ''} ${order.influencer?.last_name || ''}`,
+          description: `${order.offer_title || 'Prestation'} - ${order.influencer?.first_name || ''} ${order.influencer?.last_name || ''}`,
           successUrl: `${window.location.origin}/payment-success?order_id=${order.id}`,
           cancelUrl: `${window.location.origin}/payment-cancel?order_id=${order.id}`,
         }

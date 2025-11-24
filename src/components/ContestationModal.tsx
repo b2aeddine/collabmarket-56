@@ -84,7 +84,7 @@ const ContestationModal = ({ isOpen, onClose, order }: ContestationModalProps) =
         
         <div className="space-y-4 mt-6">
           <div className="text-sm text-muted-foreground space-y-1">
-            <p><strong>Service:</strong> {order.offers?.title}</p>
+            <p><strong>Service:</strong> {order.offer_title}</p>
             <p><strong>Montant:</strong> {order.total_amount}€</p>
             <p><strong>Commande:</strong> #{order.id.slice(0, 8)}</p>
           </div>

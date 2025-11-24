@@ -243,7 +243,7 @@ const OrderActionModal = ({ order, isOpen, onClose, userRole }: OrderActionModal
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="text-sm text-gray-600">
-            <p><strong>Service:</strong> {order.offers?.title}</p>
+            <p><strong>Service:</strong> {order.offer_title}</p>
             <p><strong>Montant:</strong> {order.total_amount}€</p>
             <p><strong>Commande:</strong> #{order.id.slice(0, 8)}</p>
           </div>

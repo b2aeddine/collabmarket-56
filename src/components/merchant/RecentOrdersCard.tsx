@@ -11,13 +11,11 @@ interface Order {
   status: string;
   total_amount: number;
   created_at: string;
+  offer_title?: string;
   influencer?: {
     first_name?: string;
     last_name?: string;
     avatar_url?: string;
-  };
-  offers?: {
-    title?: string;
   };
 }
 
@@ -83,7 +81,7 @@ const RecentOrdersCard = ({ orders, isLoading }: RecentOrdersCardProps) => {
                         'Influenceur'
                       }
                     </h4>
-                    <p className="text-sm text-gray-600 truncate">{order.offers?.title || 'Prestation'}</p>
+                    <p className="text-sm text-gray-600 truncate">{order.offer_title || 'Prestation'}</p>
                     <div className="flex items-center gap-2 mt-1">
                       <Badge className={`text-xs ${getStatusColor(order.status)}`}>
                         {getStatusText(order.status)}

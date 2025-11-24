@@ -27,12 +27,11 @@ export const useOffers = (influencerId?: string) => {
           )
         `)
         .eq('is_active', true)
-        .or('is_deleted.is.null,is_deleted.eq.false') // Exclude soft-deleted offers
         .order('created_at', { ascending: false })
         .limit(influencerId ? 50 : 20);
 
       if (influencerId) {
-        // For specific influencer, get all their non-deleted offers (including inactive)
+        // For specific influencer, get all their offers (including inactive)
         query = supabase
           .from('offers')
           .select(`
@@ -54,7 +53,6 @@ export const useOffers = (influencerId?: string) => {
             )
           `)
           .eq('influencer_id', influencerId)
-          .or('is_deleted.is.null,is_deleted.eq.false') // Exclude soft-deleted offers
           .order('created_at', { ascending: false })
           .limit(50);
       }
@@ -112,10 +110,10 @@ export const useDeleteOffer = () => {
   
   return useMutation({
     mutationFn: async (offerId: string) => {
-      // Soft delete: mark as deleted instead of actually deleting
+      // Real delete - orders are now independent with copied data
       const { error } = await supabase
         .from('offers')
-        .update({ is_deleted: true })
+        .delete()
         .eq('id', offerId);
       
       if (error) {
