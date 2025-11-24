@@ -1,4 +1,5 @@
 // Hook pour animer les éléments au scroll
+import { useRef } from 'react';
 import { useInView } from 'framer-motion';
 
 export type AnimationVariant = 
