@@ -36,6 +36,9 @@ verify_jwt = true
 [functions.update-stripe-account-details]
 verify_jwt = true
 
+[functions.create-stripe-account-link]
+verify_jwt = true
+
 # Stripe Identity Functions
 [functions.create-stripe-identity]
 verify_jwt = true
