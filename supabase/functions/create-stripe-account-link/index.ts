@@ -69,20 +69,41 @@ serve(async (req) => {
 
     // Vérifier le statut du compte
     const account = await stripe.accounts.retrieve(stripeAccountId);
-    console.log('Account charges_enabled:', account.charges_enabled);
-    console.log('Account details_submitted:', account.details_submitted);
+    console.log('Account details:', {
+      charges_enabled: account.charges_enabled,
+      details_submitted: account.details_submitted,
+      payouts_enabled: account.payouts_enabled,
+      currently_due: account.requirements?.currently_due?.length || 0,
+      eventually_due: account.requirements?.eventually_due?.length || 0
+    });
 
     // Déterminer l'URL de retour
     const origin = req.headers.get('origin') || 'https://preview--collabmarket-56.lovable.app';
     const refreshUrl = `${origin}/onboarding/refresh`;
     const returnUrl = `${origin}/influencer-dashboard`;
 
+    // Déterminer automatiquement le type de lien approprié
+    // Si le compte a des requirements en attente ou n'est pas complètement configuré, utiliser account_onboarding
+    // Sinon, tenter account_update
+    let linkType = type;
+    
+    // Si des informations sont requises ou si l'onboarding n'est pas terminé, forcer account_onboarding
+    if (account.requirements?.currently_due && account.requirements.currently_due.length > 0) {
+      console.log('Requirements pending, using account_onboarding instead of account_update');
+      linkType = 'account_onboarding';
+    } else if (!account.charges_enabled || !account.payouts_enabled) {
+      console.log('Account not fully enabled, using account_onboarding');
+      linkType = 'account_onboarding';
+    }
+
+    console.log(`Creating account link with type: ${linkType}`);
+
     // Créer le lien pour mettre à jour le compte (y compris le compte bancaire)
     const accountLink = await stripe.accountLinks.create({
       account: stripeAccountId,
       refresh_url: refreshUrl,
       return_url: returnUrl,
-      type: type, // 'account_onboarding' ou 'account_update'
+      type: linkType, // Utiliser le type détecté automatiquement
       collect: 'currently_due', // Collecter uniquement les informations manquantes
     });
 
@@ -100,10 +121,65 @@ serve(async (req) => {
   } catch (error: any) {
     console.error('Error creating account link:', error);
     
+    // Gérer spécifiquement l'erreur de type de lien invalide
+    if (error.raw?.param === 'type' && error.message?.includes('account_onboarding')) {
+      console.log('Retrying with account_onboarding type...');
+      
+      try {
+        // Récupérer à nouveau les données du compte
+        const { data: retryAccountData } = await supabaseService
+          .from('stripe_accounts')
+          .select('stripe_account_id')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (!retryAccountData?.stripe_account_id) {
+          throw new Error('Compte Stripe introuvable');
+        }
+
+        const origin = req.headers.get('origin') || 'https://preview--collabmarket-56.lovable.app';
+        const refreshUrl = `${origin}/onboarding/refresh`;
+        const returnUrl = `${origin}/influencer-dashboard`;
+        
+        // Réessayer avec account_onboarding
+        const accountLink = await stripe.accountLinks.create({
+          account: retryAccountData.stripe_account_id,
+          refresh_url: refreshUrl,
+          return_url: returnUrl,
+          type: 'account_onboarding',
+          collect: 'currently_due',
+        });
+
+        console.log('Account link created successfully with account_onboarding type');
+
+        return new Response(JSON.stringify({ 
+          url: accountLink.url,
+          expiresAt: accountLink.expires_at,
+          message: 'Lien créé avec succès (onboarding requis)'
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200,
+        });
+      } catch (retryError: any) {
+        console.error('Retry failed:', retryError);
+        return new Response(
+          JSON.stringify({ 
+            error: retryError.message || 'Impossible de créer le lien Stripe',
+            code: 'RETRY_FAILED'
+          }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 500,
+          }
+        );
+      }
+    }
+    
     return new Response(
       JSON.stringify({ 
-        error: error.message || 'Une erreur est survenue',
-        code: 'INTERNAL_ERROR'
+        error: error.message || 'Une erreur est survenue lors de la création du lien Stripe',
+        code: error.code || 'INTERNAL_ERROR',
+        details: error.raw?.message || null
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

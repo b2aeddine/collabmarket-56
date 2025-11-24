@@ -69,11 +69,17 @@ export const useStripeConnect = () => {
 
       if (error) {
         console.error('Error from edge function:', error);
-        throw error;
+        throw new Error(error.message || 'Erreur lors de la création du lien Stripe');
       }
       
       if (data?.error) {
+        console.error('Error in response data:', data);
         throw new Error(data.error);
+      }
+
+      if (!data?.url) {
+        console.error('No URL in response:', data);
+        throw new Error('Aucune URL de redirection reçue de Stripe');
       }
       
       return data;
@@ -89,9 +95,16 @@ export const useStripeConnect = () => {
     onError: (error: any) => {
       console.error('Bank account link error:', error);
       
-      const errorMessage = error.message || 'Erreur lors de la création du lien Stripe';
+      let errorMessage = error.message || 'Erreur lors de la création du lien Stripe';
       
-      toast.error('❌ Erreur', {
+      // Gérer les erreurs spécifiques
+      if (error.message?.includes('non-2xx')) {
+        errorMessage = 'Erreur de connexion à Stripe. Veuillez réessayer dans quelques instants.';
+      } else if (error.message?.includes('account_onboarding')) {
+        errorMessage = 'Votre compte nécessite une configuration supplémentaire. Vous allez être redirigé vers Stripe.';
+      }
+      
+      toast.error('❌ Erreur de configuration', {
         description: errorMessage,
         duration: 6000
       });
