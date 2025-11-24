@@ -26,15 +26,27 @@ const OrderPage = () => {
   const { offerId, influencerId } = useMemo(() => {
     const offerId = params.serviceId;
     const influencerId = searchParams.get("influencer");
-    console.log("OrderPage: URL params extracted", { offerId, influencerId });
     return { offerId, influencerId };
   }, [params.serviceId, searchParams]);
 
   const directPayment = useDirectPayment();
   const { orderData, handleInputChange, handlePaymentMethodChange, handleCheckboxChange, handleFilesChange } = useOrderData();
 
-  const [offer, setOffer] = useState<any>(null);
-  const [influencer, setInfluencer] = useState<any>(null);
+  const [offer, setOffer] = useState<{
+    id: string;
+    price: number;
+    title: string;
+    description: string;
+    delivery_time: string;
+    influencer_id: string;
+  } | null>(null);
+  const [influencer, setInfluencer] = useState<{
+    id: string;
+    first_name: string;
+    last_name: string;
+    avatar_url?: string;
+    custom_username?: string;
+  } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,8 +69,6 @@ const OrderPage = () => {
     }
 
     try {
-      console.log("Starting data fetch for", { offerId, influencerId });
-      
       const [offerResponse, influencerResponse] = await Promise.all([
         supabase
           .from('offers')
@@ -92,7 +102,6 @@ const OrderPage = () => {
         throw new Error('Cette offre ne correspond pas à cet influenceur');
       }
 
-      console.log("Data fetched successfully");
       setOffer(offerResponse.data);
       setInfluencer(influencerResponse.data);
       setError(null);

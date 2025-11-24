@@ -1,8 +1,13 @@
-
+/**
+ * Main authentication hook
+ * Combines session management and profile operations
+ * REFACTORED: Now uses separated concerns
+ */
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { User as SupabaseUser } from '@supabase/supabase-js';
 import { logger } from '@/utils/logger';
+import { useUserProfile } from './useUserProfile';
+import { useAuthSession } from './useAuthSession';
 
 export interface User {
   id: string;
@@ -23,16 +28,13 @@ export interface User {
   custom_username?: string;
   is_profile_public?: boolean;
   profile_share_count?: number;
-  // Stripe Identity fields
   stripe_identity_session_id?: string;
   stripe_identity_status?: string;
   stripe_identity_url?: string;
   identity_status?: string;
-  // Stripe Connect fields
   stripe_connect_status?: string;
   stripe_connect_account_id?: string;
   is_stripe_connect_active?: boolean;
-  // Add aliases for compatibility with EditProfileModal
   firstName?: string;
   lastName?: string;
   gender?: string;
@@ -43,67 +45,18 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true);
   const [initialized, setInitialized] = useState(false);
 
-  // Fonction pour charger le profil utilisateur (déplacée hors du useEffect)
-  const loadUserProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error) {
-        logger.error('Error fetching user profile:', error);
-        return null;
-      }
-
-      return {
-        id: data.id,
-        email: data.email,
-        role: data.role,
-        first_name: data.first_name,
-        last_name: data.last_name,
-        phone: data.phone,
-        city: data.city,
-        avatar_url: data.avatar_url,
-        bio: data.bio,
-        date_of_birth: data.date_of_birth,
-        profile_views: data.profile_views,
-        is_verified: data.is_verified,
-        created_at: data.created_at,
-        updated_at: data.updated_at,
-        company_name: data.company_name,
-        custom_username: data.custom_username,
-        is_profile_public: data.is_profile_public,
-        profile_share_count: data.profile_share_count,
-        stripe_identity_session_id: data.stripe_identity_session_id,
-        stripe_identity_status: data.stripe_identity_status,
-        stripe_identity_url: data.stripe_identity_url,
-        identity_status: data.identity_status,
-        stripe_connect_status: data.stripe_connect_status,
-        stripe_connect_account_id: data.stripe_connect_account_id,
-        is_stripe_connect_active: data.is_stripe_connect_active,
-        firstName: data.first_name,
-        lastName: data.last_name,
-        gender: undefined,
-      };
-    } catch (error) {
-      logger.error('Error loading user profile:', error);
-      return null;
-    }
-  };
+  const { loadProfile, updateProfile: updateUserProfile } = useUserProfile();
+  const authSession = useAuthSession();
 
   useEffect(() => {
-    if (initialized) return; // Éviter les réinitialisations multiples
+    if (initialized) return;
 
-    // Initialisation une seule fois
     const initializeAuth = async () => {
       try {
-        // Vérifier la session actuelle
-        const { data: { session } } = await supabase.auth.getSession();
+        const session = await authSession.getSession();
         
         if (session?.user) {
-          const profile = await loadUserProfile(session.user.id);
+          const profile = await loadProfile(session.user.id);
           setUser(profile);
         }
         
@@ -118,7 +71,6 @@ export const useAuth = () => {
 
     initializeAuth();
 
-    // Écouter les changements d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_OUT' || !session) {
         setUser(null);
@@ -126,12 +78,12 @@ export const useAuth = () => {
       } else if (event === 'SIGNED_IN' && session?.user) {
         logger.debug('SIGNED_IN event triggered, loading profile...');
         setLoading(true);
-        const profile = await loadUserProfile(session.user.id);
+        const profile = await loadProfile(session.user.id);
         logger.debug('Profile loaded successfully');
         setUser(profile);
         setLoading(false);
       } else if (event === 'TOKEN_REFRESHED' && session?.user && !user) {
-        const profile = await loadUserProfile(session.user.id);
+        const profile = await loadProfile(session.user.id);
         setUser(profile);
         setLoading(false);
       }
@@ -140,22 +92,10 @@ export const useAuth = () => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [initialized]);
-
-  // Redirection automatique désactivée pour éviter les boucles infinies
-  // Les redirections sont maintenant gérées dans les pages Login/Signup
+  }, [initialized, loadProfile, user, authSession]);
 
   const signIn = async (email: string, password: string) => {
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      return { error };
-    } catch (error) {
-      logger.error('Error signing in:', error);
-      return { error };
-    }
+    return await authSession.signIn(email, password);
   };
 
   const signUp = async (
@@ -163,70 +103,26 @@ export const useAuth = () => {
     password: string, 
     userData: Record<string, string | boolean | undefined>
   ) => {
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: userData,
-          emailRedirectTo: `${window.location.origin}/`,
-        },
-      });
-      return { error, data };
-    } catch (error: unknown) {
-      logger.error('Error signing up:', error);
-      return { error, data: null };
-    }
+    return await authSession.signUp({ email, password, userData });
   };
 
   const signOut = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      setUser(null);
-      window.location.href = '/';
-    } catch (error) {
-      logger.error('Error signing out:', error);
-    }
+    await authSession.signOut();
+    setUser(null);
   };
 
   const updateProfile = async (updates: Partial<User>) => {
     if (!user?.id) {
       return { error: { message: 'Aucun utilisateur connecté' } };
     }
-
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .update(updates)
-        .eq('id', user.id)
-        .select()
-        .single();
-
-      if (error) {
-        return { error: { message: error.message } };
-      }
-
-      // Update local state
-      setUser(prev => prev ? {
-        ...prev,
-        ...updates,
-        firstName: updates.first_name || prev.firstName,
-        lastName: updates.last_name || prev.lastName,
-      } : null);
-      
-      return { error: null, data };
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Erreur inattendue';
-      return { error: { message } };
-    }
+    return await updateUserProfile(user.id, updates);
   };
 
   const refreshUser = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const session = await authSession.getSession();
       if (session?.user) {
-        const profile = await loadUserProfile(session.user.id);
+        const profile = await loadProfile(session.user.id);
         setUser(profile);
         return profile;
       }
@@ -238,7 +134,7 @@ export const useAuth = () => {
 
   return {
     user,
-    profile: user, // Alias pour la compatibilité
+    profile: user,
     loading,
     signIn,
     signUp,
@@ -246,7 +142,6 @@ export const useAuth = () => {
     updateProfile,
     refreshUser,
     refetchUser: () => {
-      // Fonction de rechargement simplifiée
       if (user?.id) {
         window.location.reload();
       }

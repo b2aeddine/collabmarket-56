@@ -2,28 +2,11 @@ import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { handleError } from '@/utils/errorHandler';
-
-interface CreateConnectPaymentParams {
-  influencerId: string;
-  offerId: string;
-  amount: number;
-  brandName: string;
-  productName: string;
-  brief: string;
-  deadline?: string;
-  specialInstructions?: string;
-}
-
-interface CapturePaymentParams {
-  orderId: string;
-}
-
-interface PaymentResponse {
-  url?: string;
-  sessionId?: string;
-  paymentIntentId?: string;
-  [key: string]: unknown;
-}
+import type { 
+  StripeConnectPaymentParams, 
+  PaymentCaptureParams, 
+  PaymentResponse 
+} from '@/types/payment';
 
 /**
  * Hook for managing Stripe Connect payments
@@ -31,7 +14,7 @@ interface PaymentResponse {
  */
 export const useStripeConnectPayment = () => {
   const createPayment = useMutation({
-    mutationFn: async (params: CreateConnectPaymentParams): Promise<PaymentResponse> => {
+    mutationFn: async (params: StripeConnectPaymentParams): Promise<PaymentResponse> => {
       const { data, error } = await supabase.functions.invoke('create-payment-with-connect', {
         body: params
       });
@@ -55,7 +38,7 @@ export const useStripeConnectPayment = () => {
   });
 
   const capturePayment = useMutation({
-    mutationFn: async (params: CapturePaymentParams) => {
+    mutationFn: async (params: PaymentCaptureParams) => {
       const { data, error } = await supabase.functions.invoke('capture-payment-and-transfer', {
         body: params
       });
