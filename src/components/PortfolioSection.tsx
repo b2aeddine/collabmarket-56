@@ -13,7 +13,7 @@ interface PortfolioSectionProps {
 export const PortfolioSection = ({ influencerId, showAll = false, onViewAll }: PortfolioSectionProps) => {
   const { portfolioItems, isLoading } = usePortfolio(influencerId);
   const displayItems = showAll ? portfolioItems : portfolioItems.slice(0, 4);
-  const hasMore = portfolioItems.length > 4;
+  const hasMore = portfolioItems.length > 1;
 
   if (isLoading) {
     return (
