@@ -71,8 +71,12 @@ export const useStripeConnect = () => {
         throw error;
       }
       
-      if (!data.success) {
-        throw new Error(data.error || 'Échec de la mise à jour du compte bancaire');
+      if (data?.error) {
+        throw new Error(JSON.stringify({
+          error: data.error,
+          code: data.code,
+          stripeCode: data.stripeCode
+        }));
       }
       
       return data;
@@ -92,8 +96,20 @@ export const useStripeConnect = () => {
     onError: (error: any) => {
       console.error('Bank account update error:', error);
       
-      const errorData = error.message ? JSON.parse(error.message) : error;
-      const errorMessage = errorData?.error || error.message || 'Erreur inconnue';
+      let errorMessage = 'Erreur inconnue';
+      
+      // Essayer de parser le message d'erreur si c'est du JSON
+      try {
+        if (error.message && error.message.startsWith('{')) {
+          const errorData = JSON.parse(error.message);
+          errorMessage = errorData.error || errorMessage;
+        } else {
+          errorMessage = error.message || errorMessage;
+        }
+      } catch {
+        // Si le parsing échoue, utiliser le message brut
+        errorMessage = error.message || errorMessage;
+      }
       
       toast.error('❌ Erreur lors de la mise à jour', {
         description: errorMessage,
