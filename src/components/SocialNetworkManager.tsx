@@ -1,11 +1,9 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import SocialNetworkCard from "./SocialNetworkCard";
 import AddSocialNetworkModal from "./AddSocialNetworkModal";
-import EditSocialNetworkModal from "./EditSocialNetworkModal";
-import { useSocialLinks, useCreateSocialLink, useUpdateSocialLink, useDeleteSocialLink } from "@/hooks/useSocialLinks";
-import { Plus, ExternalLink, Loader2 } from "lucide-react";
+import { useSocialLinks, useUpdateSocialLink, useDeleteSocialLink } from "@/hooks/useSocialLinks";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface SocialNetworkManagerProps {
@@ -13,8 +11,7 @@ interface SocialNetworkManagerProps {
 }
 
 const SocialNetworkManager = ({ userId }: SocialNetworkManagerProps) => {
-  const { socialLinks, isLoading, refetch } = useSocialLinks(userId);
-  const createSocialLink = useCreateSocialLink();
+  const { socialLinks, isLoading } = useSocialLinks(userId);
   const updateSocialLink = useUpdateSocialLink();
   const deleteSocialLink = useDeleteSocialLink();
   
@@ -107,14 +104,6 @@ const SocialNetworkManager = ({ userId }: SocialNetworkManagerProps) => {
     }
   };
 
-  const handleVisitProfile = (url: string) => {
-    const validatedUrl = validateAndFormatUrl(url);
-    if (validatedUrl) {
-      window.open(validatedUrl, '_blank', 'noopener,noreferrer');
-    } else {
-      toast.error("Lien invalide");
-    }
-  };
 
   if (isLoading) {
     return (
@@ -150,13 +139,13 @@ const SocialNetworkManager = ({ userId }: SocialNetworkManagerProps) => {
                 profile_url={link.profile_url}
                 followers={link.followers || 0}
                 engagement_rate={link.engagement_rate || 0}
-                is_connected={link.is_connected}
-                is_active={link.is_active}
+                is_connected={link.is_connected ?? undefined}
+                is_active={link.is_active ?? undefined}
                 onToggleActive={() => {}}
                 onDelete={() => handleDeleteNetwork(link.id)}
                 onUpdateNetwork={(updatedNetwork) => handleEditNetwork(updatedNetwork)}
                 user_id={link.user_id}
-                created_at={link.created_at}
+                created_at={link.created_at ?? undefined}
               />
             ))}
           </div>
