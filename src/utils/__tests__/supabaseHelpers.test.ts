@@ -6,7 +6,10 @@ vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
     storage: {
       from: vi.fn(() => ({
-        upload: vi.fn(),
+        upload: vi.fn(() => Promise.resolve({
+          data: { path: 'avatars/user-123.jpg' },
+          error: null,
+        })),
         getPublicUrl: vi.fn(() => ({
           data: { publicUrl: 'https://example.com/avatar.jpg' },
         })),
