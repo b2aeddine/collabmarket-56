@@ -155,7 +155,13 @@ const ReviewsSection = ({ influencerId }: ReviewsSectionProps) => {
             ...r, 
             comment: r.comment ?? undefined,
             is_public: r.is_public ?? false,
-            is_verified: r.is_verified ?? false
+            is_verified: r.is_verified ?? false,
+            merchant: r.merchant ? {
+              ...r.merchant,
+              first_name: r.merchant.first_name ?? undefined,
+              last_name: r.merchant.last_name ?? undefined,
+              avatar_url: r.merchant.avatar_url ?? undefined
+            } : undefined
           }))}
           reviewStats={reviewStats ?? undefined}
         />
