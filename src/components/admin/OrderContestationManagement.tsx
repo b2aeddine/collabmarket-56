@@ -153,7 +153,7 @@ const OrderContestationManagement = () => {
                       <h4 className="font-semibold">#{order.id.slice(0, 8)}</h4>
                       <p className="text-sm text-gray-600">{order.offer_title}</p>
                       <p className="text-sm text-gray-500">
-                        {order.date_contestation ? new Date(order.date_contestation).toLocaleDateString() : 'N/A'}
+                        {order.total_amount}€ - Contestée le {new Date(order.date_contestation).toLocaleDateString()}
                       </p>
                     </div>
                     <Badge className="bg-amber-100 text-amber-800">

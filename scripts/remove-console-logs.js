@@ -27,11 +27,10 @@ const BACKUP_DIR = path.join(__dirname, '..', '.backups', new Date().toISOString
 const DRY_RUN = process.argv.includes('--dry-run');
 
 // Patterns to remove
-// Updated regex to handle nested parentheses and multiline statements better
 const CONSOLE_LOG_PATTERNS = [
-  /console\.log\((?:[^()]|\([^()]*\))*\);?\s*\n?/g,
-  /console\.debug\((?:[^()]|\([^()]*\))*\);?\s*\n?/g,
-  /console\.info\((?:[^()]|\([^()]*\))*\);?\s*\n?/g,
+  /console\.log\([^)]*\);?\s*\n?/g,
+  /console\.debug\([^)]*\);?\s*\n?/g,
+  /console\.info\([^)]*\);?\s*\n?/g,
 ];
 
 // Files to process
