@@ -28,6 +28,22 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
+    // Initialize Supabase Client for Auth
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+    );
+
+    // Get authenticated user
+    const authHeader = req.headers.get("Authorization")!;
+    const token = authHeader.replace("Bearer ", "");
+    const { data: authData } = await supabaseClient.auth.getUser(token);
+    const user = authData.user;
+
+    if (!user) {
+      throw new Error("User not authenticated");
+    }
+
     // Get order details
     const { data: order, error: orderError } = await supabaseService
       .from('orders')
@@ -37,6 +53,11 @@ serve(async (req) => {
 
     if (orderError || !order) {
       throw new Error('Order not found');
+    }
+
+    // Verify user is the influencer for this order
+    if (order.influencer_id !== user.id) {
+      throw new Error("Unauthorized: You are not the influencer for this order");
     }
 
     if (!order.stripe_payment_intent_id) {

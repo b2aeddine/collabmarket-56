@@ -292,7 +292,7 @@ export const useConfirmOrderCompletion = () => {
   
   return useMutation({
     mutationFn: async (orderId: string) => {
-      const { data, error } = await supabase.functions.invoke('complete-order-payment', {
+      const { data, error } = await supabase.functions.invoke('complete-order-and-pay', {
         body: { orderId }
       });
       if (error) throw error;
