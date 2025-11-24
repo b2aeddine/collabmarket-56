@@ -205,9 +205,19 @@ Pour connecter un domaine:
 ## 🤝 Contribution
 
 Ce projet utilise:
-- ESLint pour le linting
-- TypeScript strict mode
+- ESLint pour le linting avec règles de sécurité
+- TypeScript strict mode activé
 - Prettier pour le formatage
+- Console.log automatiquement supprimés en production
+
+## 📚 Documentation
+
+Tous les rapports d'audit et analyses techniques sont disponibles dans le dossier [`docs/audits/`](./docs/audits/):
+- Audits de sécurité
+- Audits de synchronisation
+- Diagnostics Stripe
+- Optimisations de performance
+- Analyses techniques
 
 ## 📄 License
 

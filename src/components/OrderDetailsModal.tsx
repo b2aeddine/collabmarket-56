@@ -55,7 +55,7 @@ const OrderActions = ({ order, userRole, onClose }: { order: any, userRole: stri
   // Hook for capturing payment when influencer accepts
   const capturePayment = useMutation({
     mutationFn: async (orderId: string) => {
-      const { data, error } = await supabase.functions.invoke('capture-payment', {
+      const { data, error } = await supabase.functions.invoke('capture-payment-and-transfer', {
         body: { orderId }
       });
       if (error) throw error;
