@@ -13,9 +13,13 @@
  * 4. Creates backups before modification
  */
 
-const fs = require('fs');
-const path = require('path');
-const glob = require('glob');
+import fs from 'fs';
+import path from 'path';
+import { glob } from 'glob';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Configuration
 const SRC_DIR = path.join(__dirname, '..', 'src');
@@ -52,7 +56,7 @@ function findFiles() {
   const files = [];
   
   FILE_PATTERNS.forEach(pattern => {
-    const matches = glob.sync(pattern, {
+    const matches = glob.globSync(pattern, {
       ignore: EXCLUDE_PATTERNS,
       absolute: true,
     });
