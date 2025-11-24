@@ -11,6 +11,7 @@ import SocialNetworkCard from "@/components/SocialNetworkCard";
 import ReviewsSection from "@/components/ReviewsSection";
 import AllServicesModal from "@/components/AllServicesModal";
 import AllSocialNetworksModal from "@/components/AllSocialNetworksModal";
+import AllPortfolioModal from "@/components/AllPortfolioModal";
 import { Users, Heart, Star, MapPin, Eye, ExternalLink } from "lucide-react";
 import { InfluencerProfileSkeleton } from "@/components/common/InfluencerProfileSkeleton";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
@@ -25,6 +26,7 @@ const PublicInfluencerProfile = () => {
   const [error, setError] = useState<string | null>(null);
   const [showAllServices, setShowAllServices] = useState(false);
   const [showAllNetworks, setShowAllNetworks] = useState(false);
+  const [showAllPortfolio, setShowAllPortfolio] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -402,7 +404,10 @@ const PublicInfluencerProfile = () => {
               <Card className="shadow-xl border-0 animate-fade-in">
                 <CardContent className="p-6">
                   <h2 className="text-2xl font-bold mb-6">Portfolio</h2>
-                  <PortfolioSection influencerId={profile.id} />
+                  <PortfolioSection 
+                    influencerId={profile.id} 
+                    onViewAll={() => setShowAllPortfolio(true)}
+                  />
                 </CardContent>
               </Card>
 
@@ -426,6 +431,12 @@ const PublicInfluencerProfile = () => {
         isOpen={showAllNetworks}
         onClose={() => setShowAllNetworks(false)}
         networks={influencer.socialNetworks}
+      />
+
+      <AllPortfolioModal
+        open={showAllPortfolio}
+        onOpenChange={setShowAllPortfolio}
+        influencerId={profile.id}
       />
     </div>
   );

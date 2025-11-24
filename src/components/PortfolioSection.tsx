@@ -6,10 +6,14 @@ import { OptimizedImage } from "@/components/common/OptimizedImage";
 
 interface PortfolioSectionProps {
   influencerId: string;
+  showAll?: boolean;
+  onViewAll?: () => void;
 }
 
-export const PortfolioSection = ({ influencerId }: PortfolioSectionProps) => {
+export const PortfolioSection = ({ influencerId, showAll = false, onViewAll }: PortfolioSectionProps) => {
   const { portfolioItems, isLoading } = usePortfolio(influencerId);
+  const displayItems = showAll ? portfolioItems : portfolioItems.slice(0, 4);
+  const hasMore = portfolioItems.length > 4;
 
   if (isLoading) {
     return (
@@ -43,8 +47,9 @@ export const PortfolioSection = ({ influencerId }: PortfolioSectionProps) => {
   };
 
   return (
-    <div className="grid grid-cols-2 gap-4">
-      {portfolioItems.map((item) => (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        {displayItems.map((item) => (
         <Card key={item.id} className="overflow-hidden">
           <div className="relative aspect-square">
             <OptimizedImage
@@ -77,7 +82,20 @@ export const PortfolioSection = ({ influencerId }: PortfolioSectionProps) => {
             )}
           </div>
         </Card>
-      ))}
+        ))}
+      </div>
+      
+      {!showAll && hasMore && onViewAll && (
+        <div className="text-center">
+          <Button 
+            variant="outline" 
+            onClick={onViewAll}
+            className="w-full"
+          >
+            Voir tout ({portfolioItems.length})
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
