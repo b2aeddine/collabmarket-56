@@ -19,10 +19,12 @@ const EditStripeAccountModal = ({ isOpen, onClose, currentAccount }: EditStripeA
 
   const handleOpenStripeDashboard = async () => {
     try {
+      console.log('🔗 Opening Stripe Express Dashboard...');
       await updateBankDetails();
-      // La redirection se fait automatiquement vers Stripe
+      // La redirection se fait automatiquement dans le hook
     } catch (error) {
-      console.error('Error opening Stripe dashboard:', error);
+      console.error('❌ Error opening Stripe dashboard:', error);
+      // L'erreur est déjà gérée dans le hook avec un toast
     }
   };
 
@@ -43,10 +45,10 @@ const EditStripeAccountModal = ({ isOpen, onClose, currentAccount }: EditStripeA
           </div>
         </DialogHeader>
         
-        <Alert className="bg-amber-50 border-amber-200">
-          <AlertCircle className="h-4 w-4 text-amber-600" />
-          <AlertDescription className="text-sm text-amber-800">
-            <strong>Important :</strong> Vous allez être redirigé vers le tableau de bord Stripe pour modifier vos informations bancaires de manière sécurisée.
+        <Alert className="bg-blue-50 border-blue-200">
+          <AlertCircle className="h-4 w-4 text-blue-600" />
+          <AlertDescription className="text-sm text-blue-800">
+            <strong>Modification sécurisée :</strong> Vous allez être redirigé vers le tableau de bord Stripe Express pour modifier vos informations bancaires de manière sécurisée.
           </AlertDescription>
         </Alert>
 
@@ -78,12 +80,12 @@ const EditStripeAccountModal = ({ isOpen, onClose, currentAccount }: EditStripeA
             {isLoading ? (
               <>
                 <span className="animate-pulse">●</span>
-                <span className="ml-2">Ouverture en cours...</span>
+                <span className="ml-2">Connexion à Stripe...</span>
               </>
             ) : (
               <>
                 <ExternalLink className="w-4 h-4 mr-2" />
-                Ouvrir le tableau de bord Stripe
+                Accéder au tableau de bord Stripe
               </>
             )}
           </Button>
@@ -97,6 +99,10 @@ const EditStripeAccountModal = ({ isOpen, onClose, currentAccount }: EditStripeA
           >
             Annuler
           </Button>
+          
+          <p className="text-xs text-gray-500 text-center">
+            Vous serez redirigé vers Stripe pour effectuer vos modifications de manière sécurisée.
+          </p>
         </div>
       </DialogContent>
     </Dialog>

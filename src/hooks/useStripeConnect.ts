@@ -8,22 +8,34 @@ export const useStripeConnect = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { refreshUser } = useAuth();
 
-  // Check account status
+  // Check account status - ALWAYS refetch fresh data
   const { data: accountStatus, refetch: refetchAccountStatus, isLoading: isLoadingStatus } = useQuery({
     queryKey: ['stripe-connect-status'],
     queryFn: async () => {
       console.log('🔍 Fetching Stripe Connect status...');
-      const { data, error } = await supabase.functions.invoke('check-stripe-account-status');
-      if (error) {
-        console.error('❌ Error fetching status:', error);
-        throw error;
+      
+      try {
+        const { data, error } = await supabase.functions.invoke('check-stripe-account-status', {
+          method: 'POST'
+        });
+        
+        if (error) {
+          console.error('❌ Error fetching status:', error);
+          throw error;
+        }
+        
+        console.log('✅ Stripe status:', data);
+        return data;
+      } catch (err) {
+        console.error('❌ Failed to fetch Stripe status:', err);
+        throw err;
       }
-      console.log('✅ Stripe status fetched:', data);
-      return data;
     },
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: true,
-    staleTime: 0, // Always fetch fresh data
+    refetchOnMount: 'always', // Always refetch when component mounts
+    refetchOnWindowFocus: true, // Refetch when window regains focus
+    staleTime: 0, // Data is immediately stale
+    gcTime: 0, // Don't cache the data
+    retry: 2, // Retry failed requests
   });
 
   // Create onboarding session
@@ -62,7 +74,7 @@ export const useStripeConnect = () => {
   // Open Stripe Express Dashboard for bank account update
   const updateBankAccount = useMutation({
     mutationFn: async () => {
-      console.log('🔗 Opening Stripe Express Dashboard for bank update...');
+      console.log('🔗 Opening Stripe Dashboard for bank update...');
       
       try {
         const session = await supabase.auth.getSession();
@@ -72,10 +84,10 @@ export const useStripeConnect = () => {
           throw new Error('Vous devez être connecté pour accéder à Stripe');
         }
 
-        console.log('📡 Calling edge function...');
+        console.log('📡 Calling create-stripe-account-link with type: dashboard');
         
         const { data, error } = await supabase.functions.invoke('create-stripe-account-link', {
-          body: { type: 'account_update' },
+          body: { type: 'dashboard' }, // Use 'dashboard' to get Login Link for complete accounts
           headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -96,7 +108,7 @@ export const useStripeConnect = () => {
           throw new Error('Aucune URL de redirection reçue de Stripe');
         }
 
-        console.log('✅ Stripe link created successfully');
+        console.log('✅ Stripe link created successfully:', data.type);
         return data;
         
       } catch (err: any) {
