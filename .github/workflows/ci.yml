@@ -30,7 +30,7 @@ jobs:
           cache: 'npm'
           
       - name: 📦 Install dependencies
-        run: npm ci
+        run: npm install
         
       - name: 🔎 Run ESLint
         run: npm run lint
@@ -63,7 +63,7 @@ jobs:
           cache: 'npm'
           
       - name: 📦 Install dependencies
-        run: npm ci
+        run: npm install
         
       - name: 🛡️ Run npm audit
         run: npm audit --audit-level=moderate
@@ -103,7 +103,7 @@ jobs:
           cache: 'npm'
           
       - name: 📦 Install dependencies
-        run: npm ci
+        run: npm install
         
       - name: 🧪 Run tests
         run: npm test -- --run --coverage
@@ -135,7 +135,7 @@ jobs:
           cache: 'npm'
           
       - name: 📦 Install dependencies
-        run: npm ci
+        run: npm install
         
       - name: 🔨 Build production
         run: npm run build
@@ -175,7 +175,7 @@ jobs:
           cache: 'npm'
           
       - name: 📦 Install dependencies
-        run: npm ci
+        run: npm install
         
       - name: 🔎 Run TypeScript check
         run: npx tsc --noEmit
