@@ -20,7 +20,10 @@
     "clean:logs:dry": "node scripts/remove-console-logs.js --dry-run",
     "docker:dev": "docker-compose up dev",
     "docker:prod": "docker-compose up prod",
-    "docker:build": "docker build -t collabmarket:latest ."
+    "docker:build": "docker build -t collabmarket:latest .",
+    "supabase:deploy": "supabase functions deploy",
+    "supabase:deploy:all": "bash scripts/deploy-functions.sh",
+    "supabase:deploy:all:win": "powershell -ExecutionPolicy Bypass -File scripts/deploy-functions.ps1"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
