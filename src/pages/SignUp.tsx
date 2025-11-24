@@ -207,21 +207,21 @@ const SignUp = () => {
       const { error } = await signUp(formData.email, formData.password, userData);
       
       if (error) {
-        console.error('Signup error:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
         
-        if (error.message.includes('User already registered') || error.message.includes('already registered')) {
+        if (errorMessage.includes('User already registered') || errorMessage.includes('already registered')) {
           setErrors({ email: "Un compte avec cet email existe déjà" });
           toast.error("Un compte avec cet email existe déjà. Essayez de vous connecter.");
-        } else if (error.message.includes('Password should be at least 6 characters')) {
+        } else if (errorMessage.includes('Password should be at least 6 characters')) {
           setErrors({ password: "Le mot de passe doit contenir au moins 6 caractères" });
           toast.error("Le mot de passe doit contenir au moins 6 caractères.");
-        } else if (error.message.includes('Invalid email')) {
+        } else if (errorMessage.includes('Invalid email')) {
           setErrors({ email: "L'adresse email n'est pas valide" });
           toast.error("L'adresse email n'est pas valide.");
-        } else if (error.message.includes('Signup disabled')) {
+        } else if (errorMessage.includes('Signup disabled')) {
           toast.error("Les inscriptions sont temporairement désactivées.");
         } else {
-          toast.error("Erreur lors de l'inscription: " + error.message);
+          toast.error("Erreur lors de l'inscription: " + errorMessage);
         }
         setIsLoading(false);
         return;

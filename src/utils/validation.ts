@@ -5,6 +5,96 @@
  * IMPORTANT: Never remove these validations - they are critical for security
  */
 
+import { z } from "zod";
+
+/**
+ * Validation schema for order payment data
+ * Ensures all required fields are present and properly formatted
+ */
+export const orderPaymentSchema = z.object({
+  brandName: z.string()
+    .min(1, "Le nom de marque est requis")
+    .max(200, "Le nom de marque ne peut pas dépasser 200 caractères")
+    .trim(),
+  productName: z.string()
+    .min(1, "Le nom du produit est requis")
+    .max(200, "Le nom du produit ne peut pas dépasser 200 caractères")
+    .trim(),
+  brief: z.string()
+    .min(10, "Le brief doit contenir au moins 10 caractères")
+    .max(2000, "Le brief ne peut pas dépasser 2000 caractères")
+    .trim(),
+  deadline: z.string().optional(),
+  specialInstructions: z.string()
+    .max(2000, "Les instructions ne peuvent pas dépasser 2000 caractères")
+    .optional(),
+  acceptTerms: z.boolean().refine(val => val === true, {
+    message: "Vous devez accepter les conditions générales"
+  }),
+  paymentMethod: z.enum(["card", "bank_transfer"]).optional(),
+});
+
+export type OrderPaymentData = z.infer<typeof orderPaymentSchema>;
+
+/**
+ * Validation schema for profile updates
+ * Protects against injection and ensures data integrity
+ */
+export const profileUpdateSchema = z.object({
+  first_name: z.string()
+    .min(1, "Le prénom est requis")
+    .max(100, "Le prénom ne peut pas dépasser 100 caractères")
+    .trim()
+    .optional(),
+  last_name: z.string()
+    .min(1, "Le nom est requis")
+    .max(100, "Le nom ne peut pas dépasser 100 caractères")
+    .trim()
+    .optional(),
+  phone: z.string()
+    .regex(/^\+?[0-9\s-()]+$/, "Format de téléphone invalide")
+    .max(20, "Le numéro de téléphone est trop long")
+    .optional(),
+  city: z.string()
+    .max(100, "Le nom de la ville est trop long")
+    .optional(),
+  bio: z.string()
+    .max(1000, "La bio ne peut pas dépasser 1000 caractères")
+    .optional(),
+  company_name: z.string()
+    .max(200, "Le nom de l'entreprise est trop long")
+    .optional(),
+});
+
+/**
+ * Validation schema for withdrawal requests
+ */
+export const withdrawalSchema = z.object({
+  amount: z.number()
+    .positive("Le montant doit être positif")
+    .max(100000, "Le montant ne peut pas dépasser 100 000€")
+    .refine(val => Number.isFinite(val), "Le montant doit être un nombre valide"),
+  bankAccountId: z.string().uuid("ID de compte bancaire invalide"),
+});
+
+/**
+ * Validates data against a schema and returns parsed result or null
+ * @param schema - Zod schema to validate against
+ * @param data - Data to validate
+ * @returns Parsed data if valid, null otherwise with error message in console
+ */
+export function validateData<T>(schema: z.ZodSchema<T>, data: unknown): T | null {
+  try {
+    return schema.parse(data);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      // Log validation errors for debugging (no sensitive data)
+      console.warn("Validation failed:", error.errors.map(e => e.message).join(", "));
+    }
+    return null;
+  }
+}
+
 // RFC 5322 compliant email regex (simplified but secure)
 const EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
