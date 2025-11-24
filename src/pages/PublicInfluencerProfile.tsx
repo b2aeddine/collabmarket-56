@@ -355,13 +355,15 @@ const PublicInfluencerProfile = () => {
                   <CardContent className="p-6">
                     <div className="flex justify-between items-center mb-6">
                       <h2 className="text-2xl font-bold">Mes prestations</h2>
-                      <Button
-                        variant="outline"
-                        onClick={() => setShowAllServices(true)}
-                        className="text-sm"
-                      >
-                        Voir tout
-                      </Button>
+                      {influencer.services.length > 1 && (
+                        <Button
+                          variant="outline"
+                          onClick={() => setShowAllServices(true)}
+                          className="text-sm"
+                        >
+                          Voir tout
+                        </Button>
+                      )}
                     </div>
                     <ServicesCarousel 
                       services={influencer.services}
@@ -379,13 +381,15 @@ const PublicInfluencerProfile = () => {
                   <CardContent className="p-6">
                     <div className="flex justify-between items-center mb-4">
                       <h2 className="text-2xl font-bold">Réseaux sociaux</h2>
-                      <Button
-                        variant="outline"
-                        onClick={() => setShowAllNetworks(true)}
-                        className="text-sm"
-                      >
-                        Voir tout
-                      </Button>
+                      {influencer.socialNetworks.length > 1 && (
+                        <Button
+                          variant="outline"
+                          onClick={() => setShowAllNetworks(true)}
+                          className="text-sm"
+                        >
+                          Voir tout
+                        </Button>
+                      )}
                     </div>
                     <SocialNetworksCarousel 
                       networks={influencer.socialNetworks}

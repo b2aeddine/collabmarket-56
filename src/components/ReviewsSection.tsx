@@ -77,7 +77,7 @@ const ReviewsSection = ({ influencerId }: ReviewsSectionProps) => {
                 </p>
               </div>
             )}
-            {reviews && reviews.length > 3 && (
+            {reviews && reviews.length > 1 && (
               <Button 
                 variant="outline" 
                 size="sm"

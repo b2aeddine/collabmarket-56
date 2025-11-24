@@ -329,7 +329,7 @@ const InfluencerProfile = () => {
                   <CardContent className="p-4 sm:p-6">
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 sm:mb-6">
                       <h2 className="text-lg sm:text-xl md:text-2xl font-bold">Mes prestations</h2>
-                      {influencer.services.length > 0 && <Button variant="outline" size="sm" onClick={() => setShowAllServices(true)} className="text-xs sm:text-sm w-full sm:w-auto">
+                      {influencer.services.length > 1 && <Button variant="outline" size="sm" onClick={() => setShowAllServices(true)} className="text-xs sm:text-sm w-full sm:w-auto">
                           Voir tout
                         </Button>}
                     </div>
@@ -344,7 +344,7 @@ const InfluencerProfile = () => {
                   <CardContent className="p-4 sm:p-6">
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
                       <h2 className="text-lg sm:text-xl md:text-2xl font-bold">Réseaux sociaux</h2>
-                      {influencer.socialNetworks.length > 0 && <Button variant="outline" size="sm" onClick={() => setShowAllNetworks(true)} className="text-xs sm:text-sm w-full sm:w-auto">
+                      {influencer.socialNetworks.length > 1 && <Button variant="outline" size="sm" onClick={() => setShowAllNetworks(true)} className="text-xs sm:text-sm w-full sm:w-auto">
                           Voir tout
                         </Button>}
                     </div>
