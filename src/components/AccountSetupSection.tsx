@@ -17,8 +17,7 @@ const AccountSetupSection = () => {
     isLoadingStatus, 
     isLoading: stripeConnectLoading, 
     startOnboarding, 
-    updateBankDetails, 
-    refetchAccountStatus,
+    updateBankDetails
   } = useStripeConnect();
   const { createIdentitySession, isLoading: identityLoading } = useStripeIdentity();
   const { mutate: checkIdentityStatus, isPending: isCheckingIdentityStatus } = useCheckStripeIdentityStatus();
