@@ -32,7 +32,7 @@ export const useDisputes = () => {
             id,
             status,
             total_amount,
-            offers(title),
+            offer_title,
             merchant:profiles!orders_merchant_id_fkey(first_name, last_name),
             influencer:profiles!orders_influencer_id_fkey(first_name, last_name)
           )

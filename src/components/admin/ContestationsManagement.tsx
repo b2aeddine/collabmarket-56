@@ -103,7 +103,7 @@ const ContestationsManagement = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <p className="text-sm"><strong>Service:</strong> {contestation.order?.offers?.title}</p>
+                    <p className="text-sm"><strong>Service:</strong> {contestation.order?.offer_title || 'N/A'}</p>
                     <p className="text-sm"><strong>Statut commande:</strong> {contestation.order?.status}</p>
                   </div>
                 </div>
@@ -147,7 +147,7 @@ const ContestationsManagement = () => {
                   <div>
                     <p className="font-medium">#{contestation.id.slice(0, 8)}</p>
                     <p className="text-sm text-muted-foreground">
-                      {contestation.order?.offers?.title} - {contestation.order?.total_amount}€
+                      {contestation.order?.offer_title || 'N/A'} - {contestation.order?.total_amount}€
                     </p>
                   </div>
                   <Badge className={getStatutColor(contestation.statut)}>
