@@ -53,17 +53,18 @@ export const useStripeConnect = () => {
     },
   });
 
-  // Update bank account details
+  // Open Stripe Express Dashboard for bank account update
   const updateBankAccount = useMutation({
-    mutationFn: async (bankAccount: {
-      iban: string;
-      accountHolder: string;
-      country?: string;
-    }) => {
-      console.log('Updating bank account via Stripe Connect...');
+    mutationFn: async () => {
+      console.log('Opening Stripe Express Dashboard for bank update...');
       
-      const { data, error } = await supabase.functions.invoke('update-stripe-account-details', {
-        body: { bankAccount }
+      const session = await supabase.auth.getSession();
+      const token = session.data.session?.access_token;
+      if (!token) throw new Error('Non authentifié');
+
+      const { data, error } = await supabase.functions.invoke('create-stripe-account-link', {
+        body: { type: 'account_update' },
+        headers: { Authorization: `Bearer ${token}` }
       });
 
       if (error) {
@@ -72,46 +73,25 @@ export const useStripeConnect = () => {
       }
       
       if (data?.error) {
-        throw new Error(JSON.stringify({
-          error: data.error,
-          code: data.code,
-          stripeCode: data.stripeCode
-        }));
+        throw new Error(data.error);
       }
       
       return data;
     },
     onSuccess: (data) => {
-      console.log('Bank account updated successfully:', data);
-      toast.success('✅ Compte bancaire mis à jour', {
-        description: `Se termine par ${data.last4} - ${data.bankName || 'Compte configuré'}`,
-        duration: 4000
-      });
-      
-      // Rafraîchir le statut après un court délai
-      setTimeout(() => {
-        refetchAccountStatus();
-      }, 1000);
+      console.log('Redirecting to Stripe Express Dashboard:', data);
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        toast.error('Aucune URL de redirection reçue');
+      }
     },
     onError: (error: any) => {
-      console.error('Bank account update error:', error);
+      console.error('Bank account link error:', error);
       
-      let errorMessage = 'Erreur inconnue';
+      const errorMessage = error.message || 'Erreur lors de la création du lien Stripe';
       
-      // Essayer de parser le message d'erreur si c'est du JSON
-      try {
-        if (error.message && error.message.startsWith('{')) {
-          const errorData = JSON.parse(error.message);
-          errorMessage = errorData.error || errorMessage;
-        } else {
-          errorMessage = error.message || errorMessage;
-        }
-      } catch {
-        // Si le parsing échoue, utiliser le message brut
-        errorMessage = error.message || errorMessage;
-      }
-      
-      toast.error('❌ Erreur lors de la mise à jour', {
+      toast.error('❌ Erreur', {
         description: errorMessage,
         duration: 6000
       });
@@ -127,12 +107,8 @@ export const useStripeConnect = () => {
     }
   };
 
-  const updateBankDetails = async (bankAccount: {
-    iban: string;
-    accountHolder: string;
-    country?: string;
-  }) => {
-    await updateBankAccount.mutateAsync(bankAccount);
+  const updateBankDetails = async () => {
+    await updateBankAccount.mutateAsync();
   };
 
   const handleRefreshConnectStatus = async () => {

@@ -104,7 +104,7 @@ const StripeConnectOnboarding = () => {
       return;
     }
     
-    await updateBankDetails(bankForm);
+    await updateBankDetails();
     setShowBankForm(false);
     setBankForm({ iban: '', accountHolder: '', country: 'FR' });
   };
