@@ -7,9 +7,20 @@ import type { Database } from './types';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://vklayzyhocjpicnblwfx.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrbGF5enlob2NqcGljbmJsd2Z4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3ODA4MDMsImV4cCI6MjA2NzM1NjgwM30.pUSBHigrCNULCQAPdYCKixt7OYNICKHCgbBaelFqJE8";
 
-// Validate environment variables in production
+// Debug: Log configuration (only in development)
+if (import.meta.env.DEV) {
+  console.log('🔧 Supabase Configuration:', {
+    url: SUPABASE_URL,
+    hasEnvUrl: !!import.meta.env.VITE_SUPABASE_URL,
+    hasEnvKey: !!import.meta.env.VITE_SUPABASE_ANON_KEY,
+    isProduction: import.meta.env.PROD,
+  });
+}
+
+// Validate: Warn if using fallback values in production (but don't throw to allow app to work)
 if (import.meta.env.PROD && !import.meta.env.VITE_SUPABASE_URL) {
-  throw new Error('VITE_SUPABASE_URL is required in production. Please check your .env file.');
+  console.warn('⚠️ VITE_SUPABASE_URL not found in environment variables. Using fallback value.');
+  console.warn('⚠️ Please configure VITE_SUPABASE_URL in Vercel environment variables and redeploy.');
 }
 
 // Import the supabase client like this:
