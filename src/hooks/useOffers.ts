@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Offer } from '@/types';
 
 export const useOffers = (influencerId?: string) => {
-  const { data: offers, isLoading, error } = useQuery({
+  const { data: offers, isLoading, error, refetch } = useQuery({
     queryKey: ['offers', influencerId],
     queryFn: async () => {
       let query = supabase
@@ -61,10 +61,11 @@ export const useOffers = (influencerId?: string) => {
       if (error) throw error;
       return data || [];
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes cache
+    staleTime: 0, // No cache - always fetch fresh data
+    refetchOnMount: true, // Refetch when component mounts
   });
 
-  return { offers, isLoading, error };
+  return { offers, isLoading, error, refetch };
 };
 
 export const useCreateOffer = () => {
@@ -81,8 +82,8 @@ export const useCreateOffer = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['offers'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['offers'] });
     },
   });
 };
@@ -99,8 +100,8 @@ export const useUpdateOffer = () => {
       
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['offers'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['offers'] });
     },
   });
 };
@@ -121,8 +122,8 @@ export const useDeleteOffer = () => {
         throw new Error('Impossible de supprimer l\'offre. Veuillez réessayer.');
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['offers'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['offers'] });
     },
   });
 };
