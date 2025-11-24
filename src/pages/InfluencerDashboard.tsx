@@ -254,10 +254,6 @@ const InfluencerDashboard = () => {
   };
 
   const handleDeleteOffer = async (offerId: string) => {
-    if (!window.confirm('Êtes-vous sûr de vouloir supprimer cette offre ?')) {
-      return;
-    }
-    
     try {
       await deleteOfferMutation.mutateAsync(offerId);
       toast.success("Offre supprimée avec succès !");
