@@ -44,7 +44,7 @@ const OrderActionModal = ({ order, isOpen, onClose, userRole }: OrderActionModal
       toast.success('Commande acceptée et paiement capturé !');
       onClose();
     },
-    onError: (error) => {
+    onError: (_error) => {
       toast.error('Erreur lors de la capture du paiement');
     },
   });
@@ -63,7 +63,7 @@ const OrderActionModal = ({ order, isOpen, onClose, userRole }: OrderActionModal
       toast.success('Commande refusée et paiement annulé');
       onClose();
     },
-    onError: (error) => {
+    onError: (_error) => {
       toast.error('Erreur lors de l\'annulation du paiement');
     },
   });
@@ -176,7 +176,7 @@ const OrderActionModal = ({ order, isOpen, onClose, userRole }: OrderActionModal
     }
   };
 
-  const canContestOrder = (order: any) => {
+  const canContestOrder = (order: Order) => {
     if (order.status !== 'delivered') return false;
     if (!order.updated_at) return false;
     const deliveredAt = new Date(order.updated_at);
