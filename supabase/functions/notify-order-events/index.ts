@@ -68,7 +68,7 @@ serve(async (req) => {
         notificationContent = `${order.influencer?.first_name} a marqué la prestation "${order.offers?.title}" comme livrée. Vous avez 48h pour confirmer la réception.`;
         break;
 
-      case 'order_contested':
+      case 'order_contested': {
         // Notify admin of contestation
         notificationTitle = 'Nouvelle contestation';
         notificationContent = `${order.influencer?.first_name} a contesté la commande "${order.offers?.title}". Intervention administrateur requise.`;
@@ -94,8 +94,9 @@ serve(async (req) => {
             .insert(adminNotifications);
         }
         break;
+      }
 
-      case 'order_auto_cancelled':
+      case 'order_auto_cancelled': {
         // Notify both parties
         const notifications = [
           {
@@ -118,6 +119,7 @@ serve(async (req) => {
           .from('notifications')
           .insert(notifications);
         break;
+      }
 
       case 'order_auto_completed':
         // Notify influencer that payment was released

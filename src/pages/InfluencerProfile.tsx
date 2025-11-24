@@ -158,7 +158,6 @@ const InfluencerProfile = () => {
       return 'instagram';
     } else if (titleLower.includes('facebook')) {
       return 'facebook';
-      return 'x';
     }
     return 'instagram'; // Par défaut
   };

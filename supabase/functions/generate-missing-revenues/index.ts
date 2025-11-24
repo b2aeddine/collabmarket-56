@@ -48,7 +48,7 @@ serve(async (req) => {
     }
 
     let processed = 0;
-    let errors = [];
+    const errors = [];
 
     for (const order of completedOrders) {
       try {

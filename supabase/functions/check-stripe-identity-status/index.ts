@@ -80,7 +80,7 @@ serve(async (req) => {
     });
 
     // Mettre à jour le profil avec le statut actuel
-    let updateData: any = {
+    const updateData: any = {
       stripe_identity_status: session.status,
       updated_at: new Date().toISOString()
     };

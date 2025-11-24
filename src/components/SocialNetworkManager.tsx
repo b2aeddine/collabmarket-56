@@ -54,6 +54,7 @@ const SocialNetworkManager = ({ userId }: SocialNetworkManagerProps) => {
     if (!baseUrl) return username;
 
     // Nettoyer le username
+    // eslint-disable-next-line no-useless-escape
     const cleanUsername = username.replace(/[@\/]/g, '');
     return baseUrl + cleanUsername;
   };

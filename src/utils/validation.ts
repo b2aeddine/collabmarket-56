@@ -218,6 +218,7 @@ export function sanitizeString(input: string, maxLength: number = 1000): string 
   sanitized = sanitized.replace(/\0/g, '');
   
   // Remove control characters except newlines and tabs
+  // eslint-disable-next-line no-control-regex
   sanitized = sanitized.replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]/g, '');
   
   return sanitized;
@@ -267,6 +268,7 @@ export function validatePhone(phone: string): boolean {
   }
   
   // Remove spaces, dots, dashes
+  // eslint-disable-next-line no-useless-escape
   const cleaned = phone.replace(/[\s.\-]/g, '');
   
   // French phone: 10 digits starting with 0, or +33 followed by 9 digits

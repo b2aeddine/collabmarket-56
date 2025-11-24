@@ -95,7 +95,7 @@ export const useAuth = () => {
   }, [initialized, loadProfile, user, authSession]);
 
   const signIn = async (email: string, password: string) => {
-    return await authSession.signIn(email, password);
+    return authSession.signIn(email, password);
   };
 
   const signUp = async (
@@ -103,7 +103,7 @@ export const useAuth = () => {
     password: string, 
     userData: Record<string, string | boolean | undefined>
   ) => {
-    return await authSession.signUp({ email, password, userData });
+    return authSession.signUp({ email, password, userData });
   };
 
   const signOut = async () => {
@@ -115,7 +115,7 @@ export const useAuth = () => {
     if (!user?.id) {
       return { error: { message: 'Aucun utilisateur connecté' } };
     }
-    return await updateUserProfile(user.id, updates);
+    return updateUserProfile(user.id, updates);
   };
 
   const refreshUser = async () => {
