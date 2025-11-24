@@ -17,6 +17,7 @@ import { FileUploadSection } from "@/components/order/FileUploadSection";
 import { PaymentMethodSection } from "@/components/order/PaymentMethodSection";
 import { useOrderData } from "@/hooks/useOrderData";
 import PaymentButton from "@/components/PaymentButton";
+import { orderPaymentSchema } from "@/utils/validation";
 
 const OrderPage = () => {
   const params = useParams();
@@ -113,13 +114,12 @@ const OrderPage = () => {
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!orderData.acceptTerms) {
-      toast.error("Vous devez accepter les conditions générales");
-      return;
-    }
-
-    if (!orderData.brandName || !orderData.productName || !orderData.brief) {
-      toast.error("Veuillez remplir tous les champs obligatoires");
+    // Validate form data with Zod schema
+    const validationResult = orderPaymentSchema.safeParse(orderData);
+    
+    if (!validationResult.success) {
+      const firstError = validationResult.error.errors[0];
+      toast.error(firstError.message);
       return;
     }
 
@@ -129,23 +129,20 @@ const OrderPage = () => {
     }
 
     try {
-      console.log("Creating direct payment with data:", orderData);
-      
       // Direct payment with authorization (no order creation first)
       await directPayment.mutateAsync({
         influencerId: influencerId || "",
         offerId: offerId || "",
         amount: pricingData.finalTotal,
-        brandName: orderData.brandName,
-        productName: orderData.productName,
-        brief: orderData.brief,
-        deadline: orderData.deadline,
-        specialInstructions: `Marque: ${orderData.brandName}\nProduit: ${orderData.productName}\nBrief: ${orderData.brief}`,
+        brandName: validationResult.data.brandName,
+        productName: validationResult.data.productName,
+        brief: validationResult.data.brief,
+        deadline: validationResult.data.deadline,
+        specialInstructions: validationResult.data.specialInstructions,
       });
 
     } catch (error) {
-      console.error("Error creating payment:", error);
-      toast.error("Erreur lors de la création du paiement");
+      // Error handling is done in the hook
     }
   }, [orderData, offer, influencer, pricingData, influencerId, offerId, directPayment]);
 

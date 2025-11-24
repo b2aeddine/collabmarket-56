@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { handleError } from "../_shared/errorHandler.ts";
 
 serve(async (req) => {
   const origin = req.headers.get('origin');
@@ -13,12 +14,11 @@ serve(async (req) => {
 
   try {
     const { orderId } = await req.json();
-    console.log('✅ Capturing payment and transferring for order:', orderId);
 
     // SECURITY: Verify authentication
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      throw new Error('Unauthorized: Missing authentication');
+      throw new Error('unauthorized');
     }
 
     // Initialize Supabase with service role for auth verification
@@ -33,11 +33,8 @@ serve(async (req) => {
     const { data: { user }, error: authError } = await supabaseService.auth.getUser(token);
     
     if (authError || !user) {
-      console.error('Auth error:', authError);
-      throw new Error('Unauthorized: Invalid token');
+      throw new Error('unauthorized');
     }
-
-    console.log('Authenticated user:', user.id);
 
     // Initialize Stripe
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
@@ -57,13 +54,7 @@ serve(async (req) => {
 
     // SECURITY: Verify user authorization - only merchant can capture payment
     if (order.merchant_id !== user.id && order.influencer_id !== user.id) {
-      console.error('Unauthorized attempt by user', user.id, 'for order with merchant', order.merchant_id, 'and influencer', order.influencer_id);
-      throw new Error('Unauthorized: You are not authorized to capture payment for this order');
-    }
-
-    // Additional check: only merchant should complete orders typically
-    if (order.merchant_id !== user.id) {
-      console.warn('Non-merchant user attempting to capture payment:', user.id);
+      throw new Error('insufficient_permissions');
     }
 
     if (!order.stripe_payment_intent_id) {
@@ -71,7 +62,6 @@ serve(async (req) => {
     }
 
     if (order.payment_captured) {
-      console.log('Payment already captured for order:', orderId);
       return new Response(JSON.stringify({ 
         success: true,
         message: 'Payment already captured'
@@ -90,8 +80,6 @@ serve(async (req) => {
 
     // Capture the payment
     const capturedPayment = await stripe.paymentIntents.capture(order.stripe_payment_intent_id);
-    
-    console.log('Payment captured successfully:', capturedPayment.id);
 
     // Calculate amounts
     const totalAmount = capturedPayment.amount;
@@ -110,7 +98,6 @@ serve(async (req) => {
       .eq('id', orderId);
 
     if (updateError) {
-      console.error('Error updating order:', updateError);
       throw new Error('Failed to update order status');
     }
 
@@ -121,9 +108,7 @@ serve(async (req) => {
       .eq('order_id', orderId)
       .maybeSingle();
 
-    if (existingRevenue) {
-      console.log('✅ Revenue already exists for order:', orderId);
-    } else {
+    if (!existingRevenue) {
       // Create revenue record ONLY if it doesn't exist
       const { error: revenueError } = await supabaseService
         .from('influencer_revenues')
@@ -138,11 +123,8 @@ serve(async (req) => {
         });
 
       if (revenueError) {
-        console.error('Error creating revenue record:', revenueError);
         throw revenueError;
       }
-      
-      console.log('✅ Revenue created for order:', orderId, 'Net amount:', influencerAmount / 100);
     }
 
     // Create transfer record
@@ -163,10 +145,8 @@ serve(async (req) => {
       });
 
     if (transferError) {
-      console.error('Error creating transfer record:', transferError);
+      throw transferError;
     }
-
-    console.log('✅ Payment captured and transfer completed for order:', orderId);
 
     return new Response(JSON.stringify({ 
       success: true,
@@ -180,12 +160,6 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('Error in capture-payment-and-transfer:', error);
-    return new Response(JSON.stringify({ 
-      error: error.message 
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 500,
-    });
+    return handleError(error, 'capture-payment-and-transfer');
   }
 });

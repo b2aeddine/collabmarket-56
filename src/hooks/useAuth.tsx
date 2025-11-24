@@ -158,7 +158,11 @@ export const useAuth = () => {
     }
   };
 
-  const signUp = async (email: string, password: string, userData: any) => {
+  const signUp = async (
+    email: string, 
+    password: string, 
+    userData: Record<string, string | boolean | undefined>
+  ) => {
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -169,7 +173,7 @@ export const useAuth = () => {
         },
       });
       return { error, data };
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Error signing up:', error);
       return { error, data: null };
     }
@@ -212,8 +216,9 @@ export const useAuth = () => {
       } : null);
       
       return { error: null, data };
-    } catch (error: any) {
-      return { error: { message: error.message || 'Erreur inattendue' } };
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erreur inattendue';
+      return { error: { message } };
     }
   };
 

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { handleError } from '@/utils/errorHandler';
 
 export interface WithdrawalRequest {
   id: string;
@@ -30,7 +31,7 @@ export const useWithdrawals = () => {
       });
 
       if (Number(balance) < amount) {
-        throw new Error('Solde insuffisant');
+        throw new Error('insufficient_funds');
       }
 
       const { data, error } = await supabase
@@ -52,9 +53,9 @@ export const useWithdrawals = () => {
       queryClient.invalidateQueries({ queryKey: ['withdrawal-requests'] });
       queryClient.invalidateQueries({ queryKey: ['influencer-balance'] });
     },
-    onError: (error) => {
-      console.error('Error creating withdrawal:', error);
-      toast.error(error.message || 'Erreur lors de la création de la demande');
+    onError: (error: unknown) => {
+      const message = handleError('Withdrawal.create', error);
+      toast.error(message);
     },
   });
 
@@ -136,9 +137,9 @@ export const useAdminWithdrawals = () => {
       toast.success('Statut de la demande mis à jour');
       queryClient.invalidateQueries({ queryKey: ['admin-withdrawal-requests'] });
     },
-    onError: (error) => {
-      console.error('Error updating withdrawal status:', error);
-      toast.error('Erreur lors de la mise à jour');
+    onError: (error: unknown) => {
+      const message = handleError('Withdrawal.updateStatus', error);
+      toast.error(message);
     },
   });
 

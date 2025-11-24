@@ -3,15 +3,13 @@ import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { validateRequest, createPaymentSchema } from "../_shared/validation.ts";
+import { handleError } from "../_shared/errorHandler.ts";
 
 serve(async (req) => {
   const origin = req.headers.get('origin');
   const corsHeaders = getCorsHeaders(origin);
   
-  console.log('🚀 create-payment-with-connect called from origin:', origin);
-  
   if (req.method === 'OPTIONS') {
-    console.log('✅ CORS preflight request - returning headers');
     return new Response(null, { headers: corsHeaders });
   }
 
@@ -27,8 +25,6 @@ serve(async (req) => {
       deadline,
       specialInstructions
     } = await validateRequest(req, createPaymentSchema);
-
-    console.log('✅ Request validated:', { influencerId, offerId, amount, brandName, productName });
 
     // Initialize Stripe
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
@@ -191,9 +187,6 @@ serve(async (req) => {
       expires_at: Math.floor(Date.now() / 1000) + (24 * 60 * 60), // 24 hours
     });
 
-    console.log('✅ Stripe session created successfully:', session.id);
-    console.log('📦 Order will be created by webhook after successful payment');
-
     return new Response(JSON.stringify({ 
       url: session.url,
       sessionId: session.id,
@@ -206,12 +199,6 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('Error in create-payment-with-connect:', error);
-    return new Response(JSON.stringify({ 
-      error: error.message 
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 500,
-    });
+    return handleError(error, 'create-payment-with-connect');
   }
 });
