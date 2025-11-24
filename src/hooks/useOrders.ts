@@ -54,6 +54,7 @@ export const useOrders = (userRole?: string) => {
             company_name
           )
         `)
+      .not('status', 'in', '("annulée","cancelled")')
       .order('created_at', { ascending: false });
 
       // Filter by user role to only get relevant orders
