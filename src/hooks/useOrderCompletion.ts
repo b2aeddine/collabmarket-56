@@ -21,7 +21,6 @@ export const useCompleteOrderPayment = () => {
       queryClient.invalidateQueries({ queryKey: ['pending-orders'] });
     },
     onError: (error) => {
-      console.error('Error completing order payment:', error);
       toast.error('Erreur lors de la confirmation de la prestation');
     },
   });

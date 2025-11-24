@@ -9,6 +9,7 @@ import Header from "@/components/Header";
 import { Heart, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { logger } from "@/utils/logger";
 
 // Nouveaux composants
 import { GradientText, GradientButton } from "@/components/common";
@@ -180,11 +181,9 @@ const SignUp = () => {
     setIsLoading(true);
 
     try {
-      console.log('Selected role during signup:', selectedRole);
-      const userData: any = {
+      const userData: Record<string, string | boolean | undefined> = {
         role: selectedRole === "influencer" ? "influenceur" : selectedRole === "admin" ? "admin" : "commercant"
       };
-      console.log('User data being sent:', userData);
 
       if (selectedRole === "influencer") {
         userData.first_name = formData.firstName.trim();
@@ -201,8 +200,6 @@ const SignUp = () => {
         userData.website = formData.website;
         userData.siret = formData.siret;
       }
-
-      // Attempting signup
 
       const { error } = await signUp(formData.email, formData.password, userData);
       
@@ -226,8 +223,6 @@ const SignUp = () => {
         setIsLoading(false);
         return;
       }
-
-      // Signup successful
       
       toast.success("Inscription réussie ! Redirection vers votre dashboard...");
       
@@ -242,7 +237,7 @@ const SignUp = () => {
       }, 1000);
       
     } catch (error) {
-      console.error('Unexpected signup error:', error);
+      logger.error('Unexpected signup error:', error);
       toast.error("Une erreur inattendue s'est produite. Veuillez réessayer.");
     } finally {
       setIsLoading(false);

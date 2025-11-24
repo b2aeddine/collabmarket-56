@@ -2,17 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useStripeConnectPayment } from './useStripeConnectPayment';
 import { handleError } from '@/utils/errorHandler';
-
-interface DirectPaymentParams {
-  influencerId: string;
-  offerId: string;
-  amount: number;
-  brandName: string;
-  productName: string;
-  brief: string;
-  deadline?: string;
-  specialInstructions?: string;
-}
+import type { StripeConnectPaymentParams } from '@/types/payment';
 
 /**
  * Hook for processing direct payments using Stripe Connect
@@ -22,7 +12,7 @@ export const useDirectPayment = () => {
   const { createPaymentAsync } = useStripeConnectPayment();
 
   return useMutation({
-    mutationFn: async (params: DirectPaymentParams) => {
+    mutationFn: async (params: StripeConnectPaymentParams) => {
       return await createPaymentAsync({
         influencerId: params.influencerId,
         offerId: params.offerId,
