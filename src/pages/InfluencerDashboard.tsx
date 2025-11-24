@@ -9,7 +9,7 @@ import AddSocialNetworkModal from "@/components/AddSocialNetworkModal";
 import EditProfileModal from "@/components/EditProfileModal";
 import ProfileShareButton from "@/components/ProfileShareButton";
 import ProfileSettingsModal from "@/components/ProfileSettingsModal";
-import { TrendingUp, Eye, ShoppingBag, Instagram, MessageCircle, Camera, Zap, Megaphone, Euro, MapPin, Settings } from "lucide-react";
+import { Eye, ShoppingBag, Instagram, MessageCircle, Camera, Zap, Megaphone, Euro, MapPin, Settings } from "lucide-react";
 
 import { SocialNetwork } from "@/types";
 import { Link, useSearchParams } from "react-router-dom";

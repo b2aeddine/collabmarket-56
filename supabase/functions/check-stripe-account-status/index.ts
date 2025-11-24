@@ -62,7 +62,10 @@ serve(async (req) => {
     );
 
     // Get authenticated user
-    const authHeader = req.headers.get('Authorization')!;
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error("Missing Authorization header");
+    }
     const token = authHeader.replace('Bearer ', '');
     const { data } = await supabaseClient.auth.getUser(token);
     const user = data.user;
@@ -160,7 +163,7 @@ serve(async (req) => {
     try {
       account = await stripe.accounts.retrieve(stripeAccountToUse.stripe_account_id);
       console.log(`[${requestId}] ✅ Retrieved account from Stripe`);
-    } catch (stripeError: any) {
+    } catch (stripeError: unknown) {
       console.error(`[${requestId}] ❌ Stripe API error:`, {
         message: stripeError.message,
         type: stripeError.type,
@@ -300,7 +303,7 @@ serve(async (req) => {
       status: 200,
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(`[${requestId}] ❌ Error:`, {
       message: error.message,
       type: error.type,

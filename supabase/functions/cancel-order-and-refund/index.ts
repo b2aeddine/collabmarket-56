@@ -68,7 +68,7 @@ serve(async (req) => {
         console.log('Cancelling payment intent:', order.stripe_payment_intent_id);
         await stripe.paymentIntents.cancel(order.stripe_payment_intent_id);
         console.log('Payment intent cancelled successfully');
-      } catch (stripeError: any) {
+      } catch (stripeError: unknown) {
         // Si le paiement a déjà été capturé, on le rembourse
         if (stripeError.code === 'payment_intent_unexpected_state') {
           console.log('Payment already captured, creating refund instead');
@@ -107,7 +107,7 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in cancel-order-and-refund:', error);
     return new Response(
       JSON.stringify({ error: error.message }),

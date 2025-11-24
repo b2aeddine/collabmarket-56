@@ -89,7 +89,7 @@ describe('sanitizeString', () => {
 
   it('should handle empty strings', () => {
     expect(sanitizeString('')).toBe('');
-    expect(sanitizeString(null as any)).toBe('');
+    expect(sanitizeString(null as unknown as string)).toBe('');
   });
 });
 

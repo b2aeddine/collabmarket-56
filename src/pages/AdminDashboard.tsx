@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import { BarChart, Users, MessageSquare, AlertTriangle, UserCheck, CreditCard } from "lucide-react";
 import Header from "@/components/Header";
 import { ContactMessagesSection } from "@/components/admin/ContactMessagesSection";

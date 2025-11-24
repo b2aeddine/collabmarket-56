@@ -105,8 +105,8 @@ const OrderPage = () => {
       setInfluencer(influencerResponse.data);
       setError(null);
 
-    } catch (_error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erreur lors du chargement des données';
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Erreur lors du chargement des données';
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {

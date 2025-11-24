@@ -13,9 +13,13 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY')!
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY');
+    
+    if (!supabaseUrl || !supabaseKey || !stripeSecretKey) {
+      throw new Error('Missing required environment variables');
+    }
 
     console.log('Environment check:', {
       hasSupabaseUrl: !!supabaseUrl,
@@ -80,7 +84,7 @@ serve(async (req) => {
     });
 
     // Mettre à jour le profil avec le statut actuel
-    const updateData: any = {
+    const updateData: { stripe_identity_status: string; stripe_identity_verification_id?: string } = {
       stripe_identity_status: session.status,
       updated_at: new Date().toISOString()
     };

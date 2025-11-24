@@ -2,14 +2,14 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { logger } from '../logger';
 
 describe('Logger Security Tests', () => {
-  let consoleLogSpy: any;
-  let consoleErrorSpy: any;
-  let consoleWarnSpy: any;
+  let consoleLogSpy: jest.SpyInstance;
+  let consoleErrorSpy: jest.SpyInstance;
+  let _consoleWarnSpy: jest.SpyInstance;
 
   beforeEach(() => {
     consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    _consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -80,7 +80,7 @@ describe('Logger Security Tests', () => {
 
   it('should not log debug messages in production', () => {
     // This test assumes production mode
-    const originalEnv = import.meta.env.MODE;
+    const _originalEnv = import.meta.env.MODE;
     
     logger.debug('Debug message', { data: 'test' });
     

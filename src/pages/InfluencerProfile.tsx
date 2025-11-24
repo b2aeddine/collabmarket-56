@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import snapchatLogo from "@/assets/snapchat-logo.png";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Header from "@/components/Header";
-import SocialNetworkCard from "@/components/SocialNetworkCard";
 import MessagingModal from "@/components/MessagingModal";
 import ReviewsSection from "@/components/ReviewsSection";
 import AllServicesModal from "@/components/AllServicesModal";
@@ -19,8 +18,23 @@ import { InfluencerProfileSkeleton } from "@/components/common/InfluencerProfile
 import { ServicesCarousel } from "@/components/common/ServicesCarousel";
 import { SocialNetworksCarousel } from "@/components/common/SocialNetworksCarousel";
 import { PortfolioSection } from "@/components/PortfolioSection";
+import { SocialNetwork, Offer, User } from "@/types";
 
 import ScrollReveal from "@/components/common/ScrollReveal";
+
+interface ProfileCategory {
+  category_id: string;
+  categories: {
+    name: string;
+  } | null;
+}
+
+interface ProfileWithRelations extends User {
+  social_links?: SocialNetwork[];
+  offers?: Offer[];
+  profile_categories?: ProfileCategory[];
+}
+
 const InfluencerProfile = () => {
   const {
     id
@@ -163,7 +177,7 @@ const InfluencerProfile = () => {
   };
 
   // Cast profile to proper type after validation
-  const validProfile = profile as any;
+  const validProfile = profile as ProfileWithRelations | null;
 
   // Transformer les données pour l'affichage avec les vraies statistiques d'avis
   const influencer = validProfile ? {
@@ -174,14 +188,14 @@ const InfluencerProfile = () => {
     avatar: validProfile.avatar_url || "/placeholder.svg",
     category: validProfile.profile_categories?.[0]?.categories?.name || "Lifestyle",
     bio: validProfile.bio || "Passionné de création de contenu.",
-    followers: validProfile.social_links?.reduce((sum: any, link: any) => sum + (link.followers || 0), 0) || 0,
-    engagement: validProfile.social_links?.length > 0 ? Number((validProfile.social_links.reduce((sum: any, link: any) => sum + (link.engagement_rate || 0), 0) / validProfile.social_links.length).toFixed(1)) : 0,
+    followers: validProfile.social_links?.reduce((sum: number, link: SocialNetwork) => sum + (link.followers || 0), 0) || 0,
+    engagement: validProfile.social_links && validProfile.social_links.length > 0 ? Number((validProfile.social_links.reduce((sum: number, link: SocialNetwork) => sum + (link.engagement_rate || 0), 0) / validProfile.social_links.length).toFixed(1)) : 0,
     // Utiliser les vraies données d'avis de la base de données
     rating: reviewStats?.averageRating || 0,
     reviewCount: reviewStats?.totalReviews || 0,
     profileViews: validProfile.profile_views || 0,
     gallery: ["/placeholder.svg", "/placeholder.svg", "/placeholder.svg", "/placeholder.svg", "/placeholder.svg", "/placeholder.svg"],
-    socialNetworks: validProfile.social_links?.map((link: any) => ({
+    socialNetworks: validProfile.social_links?.map((link: SocialNetwork) => ({
       id: link.id,
       platform: link.platform as 'instagram' | 'tiktok' | 'youtube' | 'x' | 'snapchat',
       username: link.username,
@@ -191,8 +205,8 @@ const InfluencerProfile = () => {
       is_connected: link.is_active || false
     })) || [],
     services: (() => {
-      const activeOffers = validProfile.offers?.filter((offer: any) => offer.is_active);
-      return activeOffers?.map((offer: any) => ({
+      const activeOffers = validProfile.offers?.filter((offer: Offer) => offer.is_active);
+      return activeOffers?.map((offer: Offer) => ({
         id: offer.id,
         type: offer.title,
         description: offer.description || '',
@@ -251,7 +265,7 @@ const InfluencerProfile = () => {
                       </div>
                       
                       <div className="flex flex-wrap gap-2 justify-center mb-3 sm:mb-4">
-                        {validProfile.profile_categories?.map((pc: any, index: number) => (
+                        {validProfile.profile_categories?.map((pc: ProfileCategory, index: number) => (
                           <Badge 
                             key={pc.category_id} 
                             className={index === 0 ? "bg-gradient-primary text-white text-xs sm:text-sm" : "text-xs sm:text-sm"}
@@ -384,7 +398,7 @@ const InfluencerProfile = () => {
       <AllPortfolioModal
         open={showAllPortfolio}
         onOpenChange={setShowAllPortfolio}
-        influencerId={id!}
+        influencerId={id || ''}
       />
     </div>;
 };

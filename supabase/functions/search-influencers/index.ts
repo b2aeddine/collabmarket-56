@@ -185,7 +185,8 @@ serve(async (req) => {
 
     // Apply additional filters
     if (filters.niche) {
-      results = results.filter((r) => r.categories.includes(filters.niche!));
+      const niche = filters.niche;
+      results = results.filter((r) => r.categories.includes(niche));
     }
 
     if (filters.minBudget !== undefined || filters.maxBudget !== undefined) {
@@ -206,12 +207,14 @@ serve(async (req) => {
     }
 
     if (filters.minEngagement !== undefined) {
-      results = results.filter((r) => r.avgEngagement >= filters.minEngagement!);
+      const minEngagement = filters.minEngagement;
+      results = results.filter((r) => r.avgEngagement >= minEngagement);
     }
 
     if (filters.platforms && filters.platforms.length > 0) {
+      const platforms = filters.platforms;
       results = results.filter((r) => 
-        filters.platforms!.some(p => r.platforms.includes(p))
+        platforms.some(p => r.platforms.includes(p))
       );
     }
 
