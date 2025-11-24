@@ -1,9 +1,5 @@
 project_id = "vklayzyhocjpicnblwfx"
 
-# Edge Functions Configuration
-[functions]
-enabled = true
-
 # Payment Functions
 [functions.create-payment-with-connect]
 verify_jwt = true
