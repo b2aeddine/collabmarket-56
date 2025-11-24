@@ -16,7 +16,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useOrders } from "@/hooks/useOrders";
 import { useOffers, useCreateOffer, useUpdateOffer, useDeleteOffer } from "@/hooks/useOffers";
-import { useSocialLinks, useUpdateSocialLink, useDeleteSocialLink } from "@/hooks/useSocialLinks";
+import { useSocialLinks, useCreateSocialLink, useUpdateSocialLink, useDeleteSocialLink } from "@/hooks/useSocialLinks";
 import { useProfileCategories } from "@/hooks/useCategories";
 import { useInfluencerRevenues } from "@/hooks/useInfluencerRevenues";
 import { useUnreadMessagesCount } from "@/hooks/useMessages";
