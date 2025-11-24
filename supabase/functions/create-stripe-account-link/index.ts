@@ -118,8 +118,9 @@ serve(async (req) => {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 200,
         });
-      } catch (loginError: any) {
-        console.error('❌ Error creating login link:', loginError.message);
+      } catch (loginError: unknown) {
+        const errorMessage = loginError instanceof Error ? loginError.message : 'Unknown error';
+        console.error('❌ Error creating login link:', errorMessage);
         // Si le login link échoue, on essaie account_update
         console.log('⚠️ Falling back to account_update link');
       }
@@ -163,7 +164,7 @@ serve(async (req) => {
         status: 200,
       });
 
-    } catch (linkError: any) {
+    } catch (linkError: unknown) {
       // Si account_update échoue, réessayer avec account_onboarding
       if (linkError.raw?.param === 'type' && linkType === 'account_update') {
         console.log('🔄 account_update failed, retrying with account_onboarding');
@@ -192,7 +193,7 @@ serve(async (req) => {
       throw linkError;
     }
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ Error:', {
       message: error.message,
       type: error.type,

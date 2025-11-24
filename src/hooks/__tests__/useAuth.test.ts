@@ -42,7 +42,7 @@ describe('useAuth Hook - Security Tests', () => {
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
       data: { session: null },
       error: null,
-    } as any);
+    } as unknown as ReturnType<typeof supabase.auth.getSession>);
 
     const { result } = renderHook(() => useAuth(), { wrapper });
 
@@ -56,7 +56,7 @@ describe('useAuth Hook - Security Tests', () => {
   it('should reject sign in with invalid credentials', async () => {
     vi.mocked(supabase.auth.signInWithPassword).mockResolvedValue({
       data: { user: null, session: null },
-      error: { message: 'Invalid credentials' } as any,
+      error: { message: 'Invalid credentials' } as unknown as { message: string },
     });
 
     const { result } = renderHook(() => useAuth(), { wrapper });
@@ -79,7 +79,7 @@ describe('useAuth Hook - Security Tests', () => {
     vi.mocked(supabase.auth.signUp).mockResolvedValue({
       data: { user: { id: '123', email: 'test@example.com' }, session: null },
       error: null,
-    } as any);
+    } as unknown as ReturnType<typeof supabase.auth.getSession>);
 
     const { result } = renderHook(() => useAuth(), { wrapper });
 
@@ -101,11 +101,11 @@ describe('useAuth Hook - Security Tests', () => {
         } 
       },
       error: null,
-    } as any);
+    } as unknown as ReturnType<typeof supabase.auth.getSession>);
 
     vi.mocked(supabase.auth.signOut).mockResolvedValue({
       error: null,
-    } as any);
+    } as unknown as ReturnType<typeof supabase.auth.getSession>);
 
     const { result } = renderHook(() => useAuth(), { wrapper });
 
@@ -129,7 +129,7 @@ describe('useAuth Hook - Security Tests', () => {
         session: { user: mockUser } 
       },
       error: null,
-    } as any);
+    } as unknown as ReturnType<typeof supabase.auth.getSession>);
 
     vi.mocked(supabase.from).mockReturnValue({
       select: vi.fn().mockReturnValue({
@@ -140,7 +140,7 @@ describe('useAuth Hook - Security Tests', () => {
           }),
         }),
       }),
-    } as any);
+    } as unknown as ReturnType<typeof supabase.auth.getSession>);
 
     const { result } = renderHook(() => useAuth(), { wrapper });
 

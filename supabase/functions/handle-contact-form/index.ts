@@ -21,7 +21,7 @@ const contactFormSchema = z.object({
 const RATE_LIMIT_WINDOW = 3600000; // 1 hour in milliseconds
 const MAX_SUBMISSIONS_PER_HOUR = 3;
 
-async function checkRateLimit(supabase: any, ipAddress: string): Promise<void> {
+async function checkRateLimit(supabase: ReturnType<typeof createClient>, ipAddress: string): Promise<void> {
   const oneHourAgo = new Date(Date.now() - RATE_LIMIT_WINDOW);
   
   // Count recent submissions from this IP
@@ -44,7 +44,7 @@ async function checkRateLimit(supabase: any, ipAddress: string): Promise<void> {
   }
 }
 
-async function recordSubmission(supabase: any, ipAddress: string): Promise<void> {
+async function recordSubmission(supabase: ReturnType<typeof createClient>, ipAddress: string): Promise<void> {
   const { error } = await supabase
     .from('contact_form_rate_limit')
     .insert({ ip_address: ipAddress });

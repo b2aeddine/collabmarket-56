@@ -61,7 +61,10 @@ serve(async (req) => {
     );
 
     // Get authenticated user
-    const authHeader = req.headers.get('Authorization')!;
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error("Missing Authorization header");
+    }
     const token = authHeader.replace('Bearer ', '');
     const { data } = await supabaseClient.auth.getUser(token);
     const user = data.user;
@@ -137,7 +140,7 @@ serve(async (req) => {
       });
       
       console.log('External account created successfully:', externalAccount.id);
-    } catch (stripeError: any) {
+    } catch (stripeError: unknown) {
       console.error('Stripe error creating external account:', stripeError);
       
       // Traduire les erreurs Stripe courantes
@@ -207,7 +210,7 @@ serve(async (req) => {
       status: 200,
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating Stripe account details:', error);
     
     return new Response(

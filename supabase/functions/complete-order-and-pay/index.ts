@@ -68,7 +68,7 @@ serve(async (req) => {
         console.log('Capturing payment intent:', order.stripe_payment_intent_id);
         await stripe.paymentIntents.capture(order.stripe_payment_intent_id);
         console.log('Payment captured successfully');
-      } catch (stripeError: any) {
+      } catch (stripeError: unknown) {
         console.error('Stripe capture error:', stripeError);
         // Continue même si la capture échoue
       }
@@ -125,7 +125,7 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in complete-order-and-pay:', error);
     return new Response(
       JSON.stringify({ error: error.message }),

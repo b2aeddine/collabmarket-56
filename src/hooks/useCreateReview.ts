@@ -59,7 +59,7 @@ export const useCreateReview = () => {
       console.error('Error creating review:', error);
       toast({
         title: "Erreur",
-        description: error.message || "Impossible de publier l'avis. Veuillez réessayer.",
+        description: errorMessage || "Impossible de publier l'avis. Veuillez réessayer.",
         variant: "destructive",
       });
     },

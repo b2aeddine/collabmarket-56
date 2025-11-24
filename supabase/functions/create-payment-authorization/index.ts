@@ -45,7 +45,10 @@ serve(async (req) => {
     );
 
     // Get authenticated user
-    const authHeader = req.headers.get("Authorization")!;
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      throw new Error("Missing Authorization header");
+    }
     const token = authHeader.replace("Bearer ", "");
     const { data } = await supabaseClient.auth.getUser(token);
     const user = data.user;
@@ -68,7 +71,7 @@ serve(async (req) => {
     }
 
     const offer = offerResponse.data;
-    const influencerProfile = influencerResponse.data;
+    const _influencerProfile = influencerResponse.data;
 
     // Check if customer exists or create one
     const customers = await stripe.customers.list({ 

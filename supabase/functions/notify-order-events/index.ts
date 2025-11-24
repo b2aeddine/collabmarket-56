@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { orderId, event, details } = await req.json();
+    const { orderId, event, details: _details } = await req.json();
 
     // Create Supabase client with service role
     const supabase = createClient(

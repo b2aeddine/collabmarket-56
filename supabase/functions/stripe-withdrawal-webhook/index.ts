@@ -74,7 +74,7 @@ serve(async (req) => {
   }
 });
 
-async function handlePayoutPaid(payout: any, supabase: any) {
+async function handlePayoutPaid(payout: { id: string; [key: string]: unknown }, supabase: ReturnType<typeof createClient>) {
   console.log('Handling payout.paid:', payout.id);
   
   // Update withdrawal status to completed
@@ -94,7 +94,7 @@ async function handlePayoutPaid(payout: any, supabase: any) {
   console.log('Withdrawal marked as completed:', payout.id);
 }
 
-async function handlePayoutFailed(payout: any, supabase: any) {
+async function handlePayoutFailed(payout: { id: string; [key: string]: unknown }, supabase: ReturnType<typeof createClient>) {
   console.log('Handling payout.failed:', payout.id);
   
   // Update withdrawal status to failed and add failure reason
@@ -148,7 +148,7 @@ async function handlePayoutFailed(payout: any, supabase: any) {
   console.log('Withdrawal marked as failed:', payout.id);
 }
 
-async function handlePayoutCanceled(payout: any, supabase: any) {
+async function handlePayoutCanceled(payout: { id: string; [key: string]: unknown }, supabase: ReturnType<typeof createClient>) {
   console.log('Handling payout.canceled:', payout.id);
   
   // Similar to failed, but with different status

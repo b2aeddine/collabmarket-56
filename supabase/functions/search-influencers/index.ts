@@ -22,6 +22,57 @@ interface SearchFilters {
   pageSize?: number;
 }
 
+interface SocialLink {
+  platform: string;
+  followers: number;
+  engagement_rate: number;
+  username?: string;
+}
+
+interface Offer {
+  price: number;
+  is_active: boolean;
+}
+
+interface Review {
+  rating: number;
+}
+
+interface Category {
+  name: string;
+  slug?: string;
+}
+
+interface ProfileCategory {
+  categories: Category | null;
+}
+
+interface Profile {
+  id: string;
+  first_name: string;
+  last_name: string;
+  bio?: string;
+  city?: string;
+  avatar_url?: string;
+  is_verified: boolean;
+  profile_views?: number;
+  created_at: string;
+  social_links?: SocialLink[];
+  offers?: Offer[];
+  reviews?: Review[];
+  profile_categories?: ProfileCategory[];
+}
+
+interface SearchResult extends Profile {
+  totalFollowers: number;
+  avgEngagement: number;
+  minPrice: number;
+  avgRating: number;
+  categories: string[];
+  platforms: string[];
+  relevanceScore: number;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -96,27 +147,29 @@ serve(async (req) => {
     }
 
     // Transform and filter results
-    let results = (profiles || []).map((profile: any) => {
-      const totalFollowers = profile.social_links?.reduce((sum: number, link: any) => 
+    let results = (profiles || []) as Profile[];
+    results = results.map((profile) => {
+      const totalFollowers = profile.social_links?.reduce((sum: number, link: SocialLink) => 
         sum + (link.followers || 0), 0) || 0;
       
-      const avgEngagement = profile.social_links?.length > 0 
-        ? profile.social_links.reduce((sum: number, link: any) => 
+      const avgEngagement = profile.social_links && profile.social_links.length > 0 
+        ? profile.social_links.reduce((sum: number, link: SocialLink) => 
             sum + (link.engagement_rate || 0), 0) / profile.social_links.length 
         : 0;
       
-      const minPrice = profile.offers?.filter((o: any) => o.is_active).length > 0
-        ? Math.min(...profile.offers.filter((o: any) => o.is_active).map((o: any) => o.price))
+      const activeOffers = profile.offers?.filter((o: Offer) => o.is_active) || [];
+      const minPrice = activeOffers.length > 0
+        ? Math.min(...activeOffers.map((o: Offer) => o.price))
         : 0;
-
-      const avgRating = profile.reviews?.length > 0
-        ? profile.reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / profile.reviews.length
-        : 0;
-
-      const categories = profile.profile_categories?.map((pc: any) => 
-        pc.categories?.name).filter(Boolean) || [];
       
-      const platforms = [...new Set(profile.social_links?.map((sl: any) => sl.platform) || [])];
+      const avgRating = profile.reviews && profile.reviews.length > 0
+        ? profile.reviews.reduce((sum: number, r: Review) => sum + r.rating, 0) / profile.reviews.length
+        : 0;
+      
+      const categories = profile.profile_categories?.map((pc: ProfileCategory) => 
+        pc.categories?.name).filter((name): name is string => Boolean(name)) || [];
+      
+      const platforms = [...new Set(profile.social_links?.map((sl: SocialLink) => sl.platform) || [])];
 
       return {
         ...profile,
@@ -127,16 +180,16 @@ serve(async (req) => {
         categories,
         platforms,
         relevanceScore: 0 // Will be calculated below
-      };
+      } as SearchResult;
     });
 
     // Apply additional filters
     if (filters.niche) {
-      results = results.filter((r: any) => r.categories.includes(filters.niche));
+      results = results.filter((r) => r.categories.includes(filters.niche!));
     }
 
     if (filters.minBudget !== undefined || filters.maxBudget !== undefined) {
-      results = results.filter((r: any) => {
+      results = results.filter((r) => {
         if (r.minPrice === 0) return false;
         if (filters.minBudget !== undefined && r.minPrice < filters.minBudget) return false;
         if (filters.maxBudget !== undefined && r.minPrice > filters.maxBudget) return false;
@@ -145,7 +198,7 @@ serve(async (req) => {
     }
 
     if (filters.minFollowers !== undefined || filters.maxFollowers !== undefined) {
-      results = results.filter((r: any) => {
+      results = results.filter((r) => {
         if (filters.minFollowers !== undefined && r.totalFollowers < filters.minFollowers) return false;
         if (filters.maxFollowers !== undefined && r.totalFollowers > filters.maxFollowers) return false;
         return true;
@@ -153,11 +206,11 @@ serve(async (req) => {
     }
 
     if (filters.minEngagement !== undefined) {
-      results = results.filter((r: any) => r.avgEngagement >= filters.minEngagement);
+      results = results.filter((r) => r.avgEngagement >= filters.minEngagement!);
     }
 
     if (filters.platforms && filters.platforms.length > 0) {
-      results = results.filter((r: any) => 
+      results = results.filter((r) => 
         filters.platforms!.some(p => r.platforms.includes(p))
       );
     }
@@ -171,7 +224,7 @@ serve(async (req) => {
           const prompt = `Given the search query "${filters.searchTerm}", score these influencer profiles from 0-100 based on relevance. Return ONLY a JSON array of scores in the same order.
 
 Profiles:
-${results.slice(0, 50).map((r: any, i: number) => 
+${results.slice(0, 50).map((r: SearchResult, i: number) => 
   `${i}. ${r.first_name} ${r.last_name} - ${r.bio || 'No bio'} - Categories: ${r.categories.join(', ')}`
 ).join('\n')}
 
@@ -197,7 +250,7 @@ Return format: [score1, score2, ...]`;
             const aiData = await aiResponse.json();
             const scores = JSON.parse(aiData.choices[0].message.content);
             
-            results.slice(0, 50).forEach((r: any, i: number) => {
+            results.slice(0, 50).forEach((r: SearchResult, i: number) => {
               r.relevanceScore = scores[i] || 50;
             });
           }
@@ -210,7 +263,7 @@ Return format: [score1, score2, ...]`;
 
     // Sort results
     const sortBy = filters.sortBy || 'relevance';
-    results.sort((a: any, b: any) => {
+    results.sort((a: SearchResult, b: SearchResult) => {
       switch (sortBy) {
         case 'relevance':
           return b.relevanceScore - a.relevanceScore;

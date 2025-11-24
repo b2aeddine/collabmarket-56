@@ -128,8 +128,9 @@ serve(async (req) => {
         link = loginLink.url;
         linkMethod = 'login_link';
         console.log(`[${requestId}] ✅ TEST: Login Link created successfully`);
-      } catch (loginError: any) {
-        console.error(`[${requestId}] ⚠️ TEST: Login Link failed:`, loginError.message);
+      } catch (loginError: unknown) {
+        const errorMessage = loginError instanceof Error ? loginError.message : 'Unknown error';
+        console.error(`[${requestId}] ⚠️ TEST: Login Link failed:`, errorMessage);
         shouldUseLoginLink = false;
       }
     }
@@ -148,7 +149,7 @@ serve(async (req) => {
         link = accountLink.url;
         linkMethod = linkType;
         console.log(`[${requestId}] ✅ TEST: Account Link created successfully`);
-      } catch (linkError: any) {
+      } catch (linkError: unknown) {
         // If account_update fails, retry with account_onboarding
         if (linkError.raw?.param === 'type' && linkType === 'account_update') {
           console.log(`[${requestId}] 🧪 TEST: Retrying with account_onboarding...`);
@@ -193,7 +194,7 @@ serve(async (req) => {
       status: 200,
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(`[${requestId}] ❌ TEST: Error:`, {
       message: error.message,
       type: error.type,

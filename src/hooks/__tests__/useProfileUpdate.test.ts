@@ -38,13 +38,9 @@ describe('useProfileUpdate - Security Tests', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: mockUser },
       error: null,
-    } as any);
+    } as unknown as ReturnType<typeof supabase.auth.getUser>);
 
     // Mock successful profile update
-    const mockUpdate = vi.fn().mockResolvedValue({
-      data: { id: 'user-123', first_name: 'John' },
-      error: null,
-    });
     const mockSelect = vi.fn().mockReturnValue({ single: vi.fn().mockResolvedValue({ data: { id: 'user-123' }, error: null }) });
     vi.mocked(supabase.from).mockReturnValue({
       update: vi.fn().mockReturnValue({
@@ -52,7 +48,7 @@ describe('useProfileUpdate - Security Tests', () => {
           select: mockSelect,
         }),
       }),
-    } as any);
+    } as unknown as ReturnType<typeof supabase.from>);
 
     const { result } = renderHook(
       () => useProfileUpdate(),
@@ -73,7 +69,7 @@ describe('useProfileUpdate - Security Tests', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: mockUser },
       error: null,
-    } as any);
+    } as unknown as ReturnType<typeof supabase.auth.getUser>);
 
     const { result } = renderHook(
       () => useProfileUpdate(),
@@ -103,7 +99,7 @@ describe('useProfileUpdate - Security Tests', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: null },
       error: null,
-    } as any);
+    } as unknown as ReturnType<typeof supabase.auth.getUser>);
 
     const { result } = renderHook(
       () => useProfileUpdate(),

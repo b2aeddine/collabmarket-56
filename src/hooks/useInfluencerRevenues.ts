@@ -1,9 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
-import { useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 export const useInfluencerRevenues = () => {
-  const { data: balance, isLoading: isLoadingBalance, refetch: refetchBalance } = useQuery({
+  const { data: balance, isLoading: isLoadingBalance } = useQuery({
     queryKey: ['influencer-balance'],
     queryFn: async () => {
       const { data: user } = await supabase.auth.getUser();

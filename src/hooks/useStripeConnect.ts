@@ -59,6 +59,7 @@ export const useStripeConnect = () => {
       }
     },
     onError: (error: unknown) => {
+      const errorObj = error as { message?: string; name?: string; error?: unknown; context?: { error?: unknown; response?: unknown; step?: string }; step?: string };
       const message = errorObj?.message || errorObj?.name || 'Erreur inconnue';
       const serverErr = errorObj?.error || errorObj?.context?.error || errorObj?.context?.response || null;
       const step = errorObj?.context?.step || errorObj?.step;
@@ -140,19 +141,19 @@ export const useStripeConnect = () => {
       let errorTitle = 'Erreur de configuration';
       
       // Gérer les erreurs spécifiques
-      if (error.message?.includes('MISSING_STRIPE_KEY')) {
+      if (errorObj?.message?.includes('MISSING_STRIPE_KEY')) {
         errorMessage = 'Configuration Stripe manquante. Contactez le support technique.';
         errorTitle = 'Erreur de configuration serveur';
-      } else if (error.message?.includes('NO_STRIPE_ACCOUNT')) {
+      } else if (errorObj?.message?.includes('NO_STRIPE_ACCOUNT')) {
         errorMessage = 'Aucun compte Stripe Connect trouvé. Veuillez d\'abord configurer votre compte.';
         errorTitle = 'Compte Stripe manquant';
-      } else if (error.message?.includes('non-2xx') || error.message?.includes('FunctionsHttpError')) {
+      } else if (errorObj?.message?.includes('non-2xx') || errorObj?.message?.includes('FunctionsHttpError')) {
         errorMessage = 'Impossible de se connecter à Stripe. Vérifiez votre connexion et réessayez.';
         errorTitle = 'Erreur de connexion';
-      } else if (error.message?.includes('account_onboarding')) {
+      } else if (errorObj?.message?.includes('account_onboarding')) {
         errorMessage = 'Configuration supplémentaire requise sur Stripe.';
         errorTitle = 'Configuration incomplète';
-      } else if (error.message?.includes('Non authentifié')) {
+      } else if (errorObj?.message?.includes('Non authentifié')) {
         errorMessage = 'Votre session a expiré. Veuillez vous reconnecter.';
         errorTitle = 'Session expirée';
       }

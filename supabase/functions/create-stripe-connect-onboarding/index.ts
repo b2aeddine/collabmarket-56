@@ -143,7 +143,7 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    const err = error as any;
+    const err = error as { raw?: { message?: string }; message?: string };
     const message = err?.raw?.message || err?.message || (typeof err === 'string' ? err : 'Unknown error');
     const code = err?.raw?.code || err?.code;
     console.error('Error creating Stripe Connect account:', { message, code, step, err });

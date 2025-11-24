@@ -40,7 +40,7 @@ describe('useUpdateOrder - Security Tests', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: mockUser },
       error: null,
-    } as any);
+    } as unknown as ReturnType<typeof supabase.auth.getUser>);
 
     // Mock order fetch - user is the influencer
     const mockOrder = { influencer_id: mockUser.id, merchant_id: 'merchant-123' };
@@ -62,7 +62,7 @@ describe('useUpdateOrder - Security Tests', () => {
     vi.mocked(supabase.from).mockReturnValue({
       select: mockSelect,
       update: mockUpdate,
-    } as any);
+    } as unknown as ReturnType<typeof supabase.auth.getUser>);
 
     const { result } = renderHook(
       () => useUpdateOrder(),
@@ -85,7 +85,7 @@ describe('useUpdateOrder - Security Tests', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: mockUser },
       error: null,
-    } as any);
+    } as unknown as ReturnType<typeof supabase.auth.getUser>);
 
     // Mock order fetch - order belongs to different user
     const mockOrder = { influencer_id: mockOtherUser.id, merchant_id: 'merchant-123' };
@@ -97,7 +97,7 @@ describe('useUpdateOrder - Security Tests', () => {
 
     vi.mocked(supabase.from).mockReturnValue({
       select: mockSelect,
-    } as any);
+    } as unknown as ReturnType<typeof supabase.auth.getUser>);
 
     const { result } = renderHook(
       () => useUpdateOrder(),
@@ -122,7 +122,7 @@ describe('useUpdateOrder - Security Tests', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: null },
       error: null,
-    } as any);
+    } as unknown as ReturnType<typeof supabase.auth.getUser>);
 
     const { result } = renderHook(
       () => useUpdateOrder(),
