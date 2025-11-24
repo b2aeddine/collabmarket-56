@@ -146,12 +146,10 @@ const InfluencerDashboard = () => {
       return;
     }
 
-    console.log('Adding new offer:', newOffer);
-
     try {
       // Validation des champs obligatoires
       if (!newOffer.type || !newOffer.price || !newOffer.platform) {
-        toast.error('Tous les champs obligatoires doivent être remplis (plateforme, type, prix)');
+      toast.error('Tous les champs obligatoires doivent être remplis (plateforme, type, prix)');
         return;
       }
 
@@ -167,10 +165,8 @@ const InfluencerDashboard = () => {
         updated_at: new Date().toISOString(),
       });
       
-      console.log('Offer created successfully');
       toast.success("Offre créée avec succès !");
     } catch (error) {
-      console.error("Error creating offer:", error);
       toast.error("Erreur lors de la création de l'offre");
     }
   };
@@ -191,7 +187,6 @@ const InfluencerDashboard = () => {
       
       toast.success(`Réseau social ${newActiveState ? 'activé' : 'désactivé'} avec succès !`);
     } catch (error) {
-      console.error("Error toggling network:", error);
       toast.error("Erreur lors de la modification du réseau social");
     }
   };
@@ -212,7 +207,6 @@ const InfluencerDashboard = () => {
       });
       toast.success("Réseau social ajouté avec succès !");
     } catch (error) {
-      console.error("Error adding network:", error);
       toast.error("Erreur lors de l'ajout du réseau social");
     }
   };
@@ -238,7 +232,6 @@ const InfluencerDashboard = () => {
       });
       toast.success("Réseau social mis à jour avec succès !");
     } catch (error) {
-      console.error("Error updating network:", error);
       toast.error("Erreur lors de la mise à jour du réseau social");
     }
   };
@@ -248,7 +241,6 @@ const InfluencerDashboard = () => {
       await deleteSocialLinkMutation.mutateAsync(networkId);
       toast.success("Réseau social supprimé avec succès !");
     } catch (error) {
-      console.error("Error deleting network:", error);
       toast.error("Erreur lors de la suppression du réseau social");
     }
   };
@@ -259,7 +251,6 @@ const InfluencerDashboard = () => {
       await deleteOfferMutation.mutateAsync(offerId);
       toast.success("Offre supprimée avec succès !", { id: 'delete-offer' });
     } catch (error: any) {
-      console.error("Error deleting offer:", error);
       const errorMessage = error?.message || "Erreur lors de la suppression de l'offre";
       toast.error(errorMessage, { id: 'delete-offer' });
     }
@@ -287,15 +278,12 @@ const InfluencerDashboard = () => {
       await refetchUser();
       toast.success("Profil mis à jour avec succès !");
     } catch (error) {
-      console.error("Error updating profile:", error);
       toast.error("Erreur lors de la mise à jour du profil");
     }
   };
 
   const handleSaveOffer = async (updatedOffer: any) => {
     try {
-      console.log('Updating offer:', updatedOffer);
-      
       await updateOfferMutation.mutateAsync({
         offerId: updatedOffer.id,
         data: {
@@ -309,7 +297,6 @@ const InfluencerDashboard = () => {
       });
       toast.success("Offre mise à jour avec succès !");
     } catch (error) {
-      console.error("Error updating offer:", error);
       toast.error("Erreur lors de la mise à jour de l'offre");
     }
   };
@@ -328,7 +315,6 @@ const InfluencerDashboard = () => {
       });
       toast.success(`Offre ${offer.is_active ? 'désactivée' : 'activée'} avec succès !`);
     } catch (error) {
-      console.error("Error toggling offer:", error);
       toast.error("Erreur lors de la modification de l'offre");
     }
   };

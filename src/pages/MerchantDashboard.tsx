@@ -85,13 +85,6 @@ const MerchantDashboard = memo(() => {
 
     const totalSpent = capturedOrders.reduce((sum, order) => sum + Number(order.total_amount || 0), 0);
 
-    console.log('📊 Merchant Stats (REAL payments only):', {
-      totalOrders: orders.length,
-      completedOrders: completedOrders.length,
-      capturedOrders: capturedOrders.length,
-      totalSpent: totalSpent.toFixed(2)
-    });
-
     return {
       totalOrders: orders.length,
       activeOrders: orders.filter(order => 

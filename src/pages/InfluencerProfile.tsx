@@ -39,8 +39,6 @@ const InfluencerProfile = () => {
     reviewStats
   } = useReviews(id || '');
   const incrementViews = useIncrementProfileViews();
-  console.log('Profile data:', profile);
-  console.log('Review stats:', reviewStats);
 
   // Incrémenter les vues du profil
   useEffect(() => {
@@ -58,7 +56,6 @@ const InfluencerProfile = () => {
     return <InfluencerProfileSkeleton />;
   }
   if (error) {
-    console.error('Profile error:', error);
     return <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-teal-50">
         <Header />
         <div className="container mx-auto px-4 py-8">
@@ -195,9 +192,7 @@ const InfluencerProfile = () => {
       is_connected: link.is_active || false
     })) || [],
     services: (() => {
-      console.log('Profile offers:', validProfile.offers);
       const activeOffers = validProfile.offers?.filter((offer: any) => offer.is_active);
-      console.log('Active offers:', activeOffers);
       return activeOffers?.map((offer: any) => ({
         id: offer.id,
         type: offer.title,
