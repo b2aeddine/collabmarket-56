@@ -48,7 +48,7 @@ describe('uploadAvatar Security Tests', () => {
 
   it('should reject files where MIME type does not match extension', async () => {
     const mismatchedFile = new File(['content'], 'image.jpg', {
-      type: 'application/javascript', // Wrong MIME type
+      type: 'image/png', // Valid image type but doesn't match .jpg extension
     });
 
     await expect(uploadAvatar(mismatchedFile, 'user-123')).rejects.toThrow(

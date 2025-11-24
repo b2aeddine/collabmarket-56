@@ -71,14 +71,14 @@ export const uploadAvatar = async (file: File, userId: string) => {
   const fileName = `${userId}.${fileExt}`;
   const filePath = `avatars/${fileName}`;
 
-  const { error: uploadError } = await supabase.storage
+  const uploadResult = await supabase.storage
     .from('avatars')
     .upload(filePath, file, { 
       upsert: true,
       contentType: file.type, // Explicitly set content type
     });
 
-  if (uploadError) throw uploadError;
+  if (uploadResult.error) throw uploadResult.error;
 
   const { data } = supabase.storage
     .from('avatars')
