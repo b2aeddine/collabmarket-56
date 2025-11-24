@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  # ========================================
+  # DEVELOPMENT ENVIRONMENT
+  # ========================================
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: collabmarket-dev
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
+      - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
+      - VITE_STRIPE_PUBLIC_KEY=${VITE_STRIPE_PUBLIC_KEY}
+    command: npm run dev
+    networks:
+      - collabmarket-network
+    restart: unless-stopped
+
+  # ========================================
+  # PRODUCTION ENVIRONMENT
+  # ========================================
+  prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
+        - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
+        - VITE_STRIPE_PUBLIC_KEY=${VITE_STRIPE_PUBLIC_KEY}
+        - VITE_APP_ENV=production
+    container_name: collabmarket-prod
+    ports:
+      - "80:80"
+    networks:
+      - collabmarket-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+networks:
+  collabmarket-network:
+    driver: bridge
+
