@@ -17,7 +17,7 @@ export const useContestations = (adminView = false) => {
             id,
             total_amount,
             status,
-            offers(title),
+            offer_title,
             influencer:profiles!orders_influencer_id_fkey(first_name, last_name),
             merchant:profiles!orders_merchant_id_fkey(first_name, last_name, company_name)
           )

@@ -111,19 +111,26 @@ export const useDeleteOffer = () => {
   
   return useMutation({
     mutationFn: async (offerId: string) => {
-      // Real delete - orders are now independent with copied data
+      console.log('[useDeleteOffer] Attempting to delete offer:', offerId);
+      
       const { error } = await supabase
         .from('offers')
         .delete()
         .eq('id', offerId);
       
       if (error) {
-        console.error('Delete offer error:', error);
-        throw new Error('Impossible de supprimer l\'offre. Veuillez réessayer.');
+        console.error('[useDeleteOffer] Delete error:', error);
+        throw new Error(error.message || 'Impossible de supprimer l\'offre');
       }
+      
+      console.log('[useDeleteOffer] Offer deleted successfully');
     },
     onSuccess: async () => {
+      console.log('[useDeleteOffer] Invalidating queries');
       await queryClient.invalidateQueries({ queryKey: ['offers'] });
     },
+    onError: (error) => {
+      console.error('[useDeleteOffer] Mutation error:', error);
+    }
   });
 };

@@ -18,7 +18,7 @@ export const PaymentStatusAlert = () => {
       .from("orders")
       .select(`
         *,
-        offers(title),
+        offer_title,
         influencer:profiles!orders_influencer_id_fkey(first_name, last_name)
       `)
       .eq("merchant_id", user.id)

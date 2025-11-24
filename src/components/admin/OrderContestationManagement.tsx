@@ -21,7 +21,8 @@ const OrderContestationManagement = () => {
         .from('orders')
         .select(`
           *,
-          offers(title, description),
+          offer_title,
+          offer_description,
           influencer:profiles!orders_influencer_id_fkey(first_name, last_name, email),
           merchant:profiles!orders_merchant_id_fkey(first_name, last_name, email, company_name)
         `)
