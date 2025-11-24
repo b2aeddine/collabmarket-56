@@ -1,26 +1,18 @@
 import { useMutation } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useStripeConnectPayment } from './useStripeConnectPayment';
+import { handleError } from '@/utils/errorHandler';
+import type { StripeConnectPaymentParams } from '@/types/payment';
 
-interface DirectPaymentParams {
-  influencerId: string;
-  offerId: string;
-  amount: number;
-  brandName: string;
-  productName: string;
-  brief: string;
-  deadline?: string;
-  specialInstructions?: string;
-}
-
+/**
+ * Hook for processing direct payments using Stripe Connect
+ * Handles payment creation and redirects to Stripe checkout
+ */
 export const useDirectPayment = () => {
   const { createPaymentAsync } = useStripeConnectPayment();
 
   return useMutation({
-    mutationFn: async (params: DirectPaymentParams) => {
-      console.log('Using Stripe Connect payment with params:', params);
-      
+    mutationFn: async (params: StripeConnectPaymentParams) => {
       return await createPaymentAsync({
         influencerId: params.influencerId,
         offerId: params.offerId,
@@ -33,17 +25,15 @@ export const useDirectPayment = () => {
       });
     },
     onSuccess: (data) => {
-      console.log('Stripe Connect payment successful:', data);
       if (data?.url) {
         window.location.href = data.url;
       } else {
-        console.error('No URL returned from Stripe Connect payment');
         toast.error('Aucune URL de paiement reçue');
       }
     },
-    onError: (error) => {
-      console.error('Error creating Stripe Connect payment:', error);
-      toast.error(`Erreur lors de la création du paiement: ${error.message || 'Erreur inconnue'}`);
+    onError: (error: unknown) => {
+      const message = handleError('DirectPayment', error);
+      toast.error(message);
     },
   });
 };

@@ -48,10 +48,7 @@ const AddSocialNetworkModal = ({ onAddNetwork }: AddSocialNetworkModalProps) => 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.log("Form submitted with data:", formData);
-    
     if (!formData.platform || !formData.username || !formData.profile_url) {
-      console.log("Missing required fields");
       toast.error("Veuillez remplir tous les champs obligatoires");
       return;
     }
@@ -65,11 +62,7 @@ const AddSocialNetworkModal = ({ onAddNetwork }: AddSocialNetworkModalProps) => 
         engagement_rate: formData.engagement_rate ? parseFloat(formData.engagement_rate) : 0,
       };
 
-      console.log("Calling createSocialLinkMutation with:", socialData);
-
       const result = await createSocialLinkMutation.mutateAsync(socialData);
-      
-      console.log("Social link created successfully:", result);
       
       toast.success("Réseau social ajouté avec succès !");
       
@@ -78,7 +71,6 @@ const AddSocialNetworkModal = ({ onAddNetwork }: AddSocialNetworkModalProps) => 
       setIsOpen(false);
 
     } catch (error) {
-      console.error('Error adding social network:', error);
       toast.error("Erreur lors de l'ajout du réseau social");
     }
   };

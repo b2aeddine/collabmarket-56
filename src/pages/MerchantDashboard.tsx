@@ -1,5 +1,5 @@
 
-import { useMemo } from "react";
+import { useMemo, useCallback, memo } from "react";
 import Header from "@/components/Header";
 import ProfileCard from "@/components/merchant/ProfileCard";
 import StatsGrid from "@/components/merchant/StatsGrid";
@@ -14,14 +14,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { useOrders } from "@/hooks/useOrders";
 import { useFavorites } from "@/hooks/useFavorites";
 
-const MerchantDashboard = () => {
+const MerchantDashboard = memo(() => {
   const { toast } = useToast();
   const { profile, user, loading: authLoading, refetchUser, updateProfile } = useAuth();
   const unreadCount = useUnreadMessagesCount();
   const { orders, isLoading: ordersLoading } = useOrders('commercant');
   const { favorites, isLoading: favoritesLoading } = useFavorites();
 
-  const handleSaveProfile = async (updatedUser: any) => {
+  const handleSaveProfile = useCallback(async (updatedUser: any) => {
     try {
       const updateData = {
         first_name: updatedUser.firstName,
@@ -51,24 +51,51 @@ const MerchantDashboard = () => {
         description: "Vos informations ont été enregistrées avec succès.",
       });
     } catch (error) {
-      console.error("Error updating profile:", error);
       toast({
         title: "Erreur",
         description: "Erreur lors de la mise à jour du profil",
         variant: "destructive"
       });
     }
-  };
+  }, [updateProfile, refetchUser, toast]);
 
-  // Memoize stats calculation to avoid recalculation on every render
-  const stats = useMemo(() => ({
-    totalOrders: orders?.length || 0,
-    activeOrders: orders?.filter(order => ['en_cours', 'delivered', 'payment_authorized'].includes(order.status)).length || 0,
-    completedOrders: orders?.filter(order => ['completed', 'terminée'].includes(order.status)).length || 0,
-    totalSpent: orders?.filter(order => ['completed', 'terminée'].includes(order.status)).reduce((sum, order) => sum + Number(order.total_amount), 0) || 0,
-    favoriteInfluencers: favorites?.length || 0,
-    newMessages: unreadCount,
-  }), [orders, favorites, unreadCount]);
+  const stats = useMemo(() => {
+    if (!orders || orders.length === 0) {
+      return {
+        totalOrders: 0,
+        activeOrders: 0,
+        completedOrders: 0,
+        totalSpent: 0,
+        favoriteInfluencers: 0,
+        newMessages: 0,
+      };
+    }
+
+    // Filter completed orders
+    const completedOrders = orders.filter(order => 
+      ['completed', 'terminée', 'terminee'].includes(order.status.toLowerCase())
+    );
+
+    // Calculate total spent ONLY for orders with CAPTURED payments (real Stripe payments)
+    const capturedOrders = orders.filter(order => 
+      order.payment_captured === true && 
+      order.stripe_payment_intent_id &&
+      !['annulée', 'annulee', 'cancelled', 'refusée_par_influenceur', 'pending'].includes(order.status.toLowerCase())
+    );
+
+    const totalSpent = capturedOrders.reduce((sum, order) => sum + Number(order.total_amount || 0), 0);
+
+    return {
+      totalOrders: orders.length,
+      activeOrders: orders.filter(order => 
+        ['en_cours', 'delivered', 'payment_authorized', 'paid', 'en_attente_confirmation_influenceur', 'en_contestation'].includes(order.status.toLowerCase())
+      ).length,
+      completedOrders: completedOrders.length,
+      totalSpent,
+      favoriteInfluencers: favorites?.length || 0,
+      newMessages: unreadCount,
+    };
+  }, [orders, favorites, unreadCount]);
 
   // Show loading state while user data is being fetched
   if (authLoading || !profile) {
@@ -135,6 +162,8 @@ const MerchantDashboard = () => {
       </div>
     </div>
   );
-};
+});
+
+MerchantDashboard.displayName = 'MerchantDashboard';
 
 export default MerchantDashboard;

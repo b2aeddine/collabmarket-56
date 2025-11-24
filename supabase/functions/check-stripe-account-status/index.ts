@@ -1,23 +1,51 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-};
+import { getCorsHeaders } from "../_shared/cors.ts";
 
 serve(async (req) => {
+  const origin = req.headers.get('origin');
+  const corsHeaders = getCorsHeaders(origin);
+  
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const requestId = crypto.randomUUID();
+  
   try {
-    console.log('Checking Stripe account status...');
+    console.log(`[${requestId}] ✅ Checking Stripe account status...`);
+
+    // Validate Stripe key
+    const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY');
+    if (!stripeSecretKey) {
+      console.error(`[${requestId}] ❌ STRIPE_SECRET_KEY not found`);
+      return new Response(JSON.stringify({ 
+        error: 'STRIPE_SECRET_KEY manquante',
+        hasAccount: false,
+        needsOnboarding: true 
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500,
+      });
+    }
+
+    if (!stripeSecretKey.startsWith('sk_')) {
+      console.error(`[${requestId}] ❌ STRIPE_SECRET_KEY invalid format: ${stripeSecretKey.substring(0, 10)}...`);
+      return new Response(JSON.stringify({ 
+        error: 'STRIPE_SECRET_KEY invalide (format)',
+        hasAccount: false,
+        needsOnboarding: true 
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500,
+      });
+    }
+
+    console.log(`[${requestId}] 🔑 Stripe key: ${stripeSecretKey.substring(0, 15)}...`);
 
     // Initialize Stripe
-    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
+    const stripe = new Stripe(stripeSecretKey, {
       apiVersion: '2023-10-16',
     });
 
@@ -40,11 +68,14 @@ serve(async (req) => {
     const user = data.user;
 
     if (!user?.email) {
+      console.error(`[${requestId}] ❌ User not authenticated`);
       throw new Error('User not authenticated');
     }
 
+    console.log(`[${requestId}] 👤 User: ${user.email}`);
+
     // D'abord, nettoyer les comptes en double et récupérer le bon compte
-    console.log('Checking for existing Stripe accounts for user:', user.id);
+    console.log(`[${requestId}] 🔍 Checking for existing Stripe accounts for user: ${user.id}`);
     
     // Récupérer tous les comptes Stripe pour cet utilisateur
     const { data: allStripeAccounts } = await supabaseService
@@ -56,7 +87,7 @@ serve(async (req) => {
     let stripeAccountToUse = null;
 
     if (!allStripeAccounts || allStripeAccounts.length === 0) {
-      console.log('No Stripe accounts found in database, searching Stripe...');
+      console.log(`[${requestId}] ⚠️ No Stripe accounts found in database, searching Stripe API...`);
       
       // Rechercher dans Stripe par email
       try {
@@ -64,7 +95,7 @@ serve(async (req) => {
         const matchingAccount = accounts.data.find(acc => acc.email === user.email);
         
         if (matchingAccount) {
-          console.log('Found Stripe account by email:', matchingAccount.id);
+          console.log(`[${requestId}] ✅ Found Stripe account by email: ${matchingAccount.id}`);
           
           // Créer l'entrée dans notre base
           const { data: newAccount, error: insertError } = await supabaseService
@@ -122,10 +153,35 @@ serve(async (req) => {
       });
     }
 
-    console.log('Retrieving Stripe account:', stripeAccountToUse.stripe_account_id);
+    console.log(`[${requestId}] 🌐 Retrieving Stripe account: ${stripeAccountToUse.stripe_account_id}`);
     
     // Get account details from Stripe
-    const account = await stripe.accounts.retrieve(stripeAccountToUse.stripe_account_id);
+    let account;
+    try {
+      account = await stripe.accounts.retrieve(stripeAccountToUse.stripe_account_id);
+      console.log(`[${requestId}] ✅ Retrieved account from Stripe`);
+    } catch (stripeError: any) {
+      console.error(`[${requestId}] ❌ Stripe API error:`, {
+        message: stripeError.message,
+        type: stripeError.type,
+        statusCode: stripeError.statusCode,
+        code: stripeError.code
+      });
+
+      if (stripeError.statusCode === 401) {
+        return new Response(JSON.stringify({ 
+          error: 'Clé API Stripe invalide - Vérifiez STRIPE_SECRET_KEY',
+          stripeError: stripeError.message,
+          hasAccount: false,
+          needsOnboarding: true 
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500,
+        });
+      }
+
+      throw stripeError;
+    }
     
     // Check if account has external accounts (bank accounts)
     const externalAccounts = await stripe.accounts.listExternalAccounts(
@@ -237,17 +293,25 @@ serve(async (req) => {
       stripe_status: stripeStatus
     };
 
-    console.log('Account status response:', response);
+    console.log(`[${requestId}] ✅ Response:`, response);
 
     return new Response(JSON.stringify(response), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
 
-  } catch (error) {
-    console.error('Error checking Stripe account status:', error);
+  } catch (error: any) {
+    console.error(`[${requestId}] ❌ Error:`, {
+      message: error.message,
+      type: error.type,
+      stack: error.stack
+    });
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        hasAccount: false,
+        needsOnboarding: true
+      }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,

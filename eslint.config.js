@@ -5,9 +5,10 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 /**
- * ESLint Configuration
+ * ESLint Configuration with Security Rules
  * 
- * Includes standard React/TS rules + Security rules
+ * This configuration includes both base rules and security-focused rules
+ * for production-ready code.
  */
 export default tseslint.config(
   { ignores: ["dist", "node_modules", "*.config.js"] },
@@ -23,7 +24,7 @@ export default tseslint.config(
       "react-refresh": reactRefresh,
     },
     rules: {
-      // Base rules
+      // Base React rules
       ...reactHooks.configs.recommended.rules,
       "react-refresh/only-export-components": [
         "warn",

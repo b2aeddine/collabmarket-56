@@ -3,6 +3,7 @@ import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { validateRequest, createPaymentSchema } from "../_shared/validation.ts";
+import { handleError } from "../_shared/errorHandler.ts";
 
 serve(async (req) => {
   const origin = req.headers.get('origin');
@@ -24,8 +25,6 @@ serve(async (req) => {
       deadline,
       specialInstructions
     } = await validateRequest(req, createPaymentSchema);
-
-    console.log('Creating payment with Stripe Connect:', { influencerId, offerId, amount });
 
     // Initialize Stripe
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
@@ -56,13 +55,19 @@ serve(async (req) => {
 
     // Get offer and influencer details (optimized: only select needed fields)
     const [offerResponse, influencerResponse] = await Promise.all([
-      supabaseService.from('offers').select('id, title, price, delivery_time, influencer_id').eq('id', offerId).single(),
+      supabaseService.from('offers')
+        .select('id, title, description, price, delivery_time, influencer_id')
+        .eq('id', offerId)
+        .single(),
       supabaseService.from('profiles').select('id, first_name, last_name, email').eq('id', influencerId).single()
     ]);
 
     if (offerResponse.error || influencerResponse.error) {
       throw new Error('Failed to fetch offer or influencer details');
     }
+
+    const offer = offerResponse.data;
+    const influencerProfile = influencerResponse.data;
 
     // Get influencer's Stripe Connect account (optimized: only select needed fields)
     const { data: stripeAccount } = await supabaseService
@@ -120,7 +125,8 @@ serve(async (req) => {
       },
     });
 
-    // Create Stripe session
+    // Create Stripe session avec toutes les metadata nécessaires
+    // IMPORTANT: On ne crée PAS la commande ici, elle sera créée par le webhook
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       line_items: [
@@ -143,6 +149,27 @@ serve(async (req) => {
           destination: stripeAccount.stripe_account_id,
         },
         capture_method: 'manual',
+        metadata: {
+          influencer_id: influencerId,
+          offer_id: offerId,
+          merchant_id: user.id,
+          merchant_email: user.email,
+          brand_name: brandName,
+          product_name: productName,
+          brief: brief,
+          deadline: deadline || '',
+          special_instructions: specialInstructions || '',
+          platform_fee: platformFee.toString(),
+          influencer_amount: influencerAmount.toString(),
+          total_amount: amount.toString(),
+          net_amount: (influencerAmount / 100).toString(),
+          commission_rate: '10',
+          offer_title: offer.title,
+          offer_description: offer.description,
+          offer_delivery_time: offer.delivery_time || '',
+          influencer_name: `${influencerProfile.first_name} ${influencerProfile.last_name}`,
+          influencer_email: influencerProfile.email,
+        },
       },
       metadata: {
         influencer_id: influencerId,
@@ -150,36 +177,15 @@ serve(async (req) => {
         merchant_id: user.id,
         brand_name: brandName,
         product_name: productName,
+        brief: brief,
+        deadline: deadline || '',
+        special_instructions: specialInstructions || '',
+        total_amount: amount.toString(),
       },
       success_url: `${req.headers.get('origin')}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.get('origin')}/payment-cancel?session_id={CHECKOUT_SESSION_ID}`,
       expires_at: Math.floor(Date.now() / 1000) + (24 * 60 * 60), // 24 hours
     });
-
-    // Store the order in database
-    const { error: insertError } = await supabaseService
-      .from('orders')
-      .insert({
-        merchant_id: user.id,
-        influencer_id: influencerId,
-        offer_id: offerId,
-        total_amount: amount,
-        net_amount: influencerAmount / 100, // Convert back to euros
-        commission_rate: 10,
-        status: 'pending',
-        stripe_session_id: session.id,
-        stripe_payment_intent_id: paymentIntent.id,
-        special_instructions: `Marque: ${brandName}\nProduit: ${productName}\nBrief: ${brief}`,
-        delivery_date: deadline ? new Date(deadline).toISOString() : null,
-        created_at: new Date().toISOString(),
-      });
-
-    if (insertError) {
-      console.error('Error inserting order:', insertError);
-      throw new Error(`Failed to create order record: ${insertError.message}`);
-    }
-
-    console.log('Payment with Connect created successfully:', session.id);
 
     return new Response(JSON.stringify({ 
       url: session.url,
@@ -193,12 +199,6 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('Error in create-payment-with-connect:', error);
-    return new Response(JSON.stringify({ 
-      error: error.message 
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 500,
-    });
+    return handleError(error, 'create-payment-with-connect');
   }
 });

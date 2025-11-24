@@ -6,6 +6,14 @@ export const useFavorites = () => {
   const { data: favorites, isLoading, error } = useQuery({
     queryKey: ['favorites'],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.warn('⚠️ useFavorites: No authenticated user');
+        return [];
+      }
+
+      console.log('⭐ Fetching favorites for merchant:', user.id);
+
       const { data, error } = await supabase
         .from('favorites')
         .select(`
@@ -19,9 +27,15 @@ export const useFavorites = () => {
             social_links(*)
           )
         `)
+        .eq('merchant_id', user.id)
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('❌ useFavorites error:', error);
+        throw error;
+      }
+
+      console.log('✅ Favorites loaded:', data?.length || 0);
       return data;
     },
     staleTime: 60000, // Cache for 1 minute

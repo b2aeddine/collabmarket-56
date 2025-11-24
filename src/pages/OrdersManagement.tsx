@@ -247,7 +247,7 @@ const OrdersManagement = () => {
     pending: userOrders.filter(o => ["pending", "en_attente_confirmation_influenceur", "payment_authorized"].includes(o.status)).length,
     inProgress: userOrders.filter(o => ["en_cours", "delivered", "accepted"].includes(o.status)).length,
     disputed: userOrders.filter(o => ["disputed", "en_contestation"].includes(o.status)).length,
-    refused: userOrders.filter(o => ["refused", "refusée_par_influenceur", "cancelled", "annulée"].includes(o.status)).length
+    refused: userOrders.filter(o => ["refused", "refusée_par_influenceur"].includes(o.status)).length
   };
 
   const getFilteredOrders = (tab: string) => {
@@ -261,7 +261,7 @@ const OrdersManagement = () => {
       case "disputed":
         return userOrders.filter(o => ["disputed", "en_contestation"].includes(o.status));
       case "refused":
-        return userOrders.filter(o => ["refused", "refusée_par_influenceur", "cancelled", "annulée"].includes(o.status));
+        return userOrders.filter(o => ["refused", "refusée_par_influenceur"].includes(o.status));
       default:
         return userOrders;
     }
@@ -446,7 +446,7 @@ const OrdersManagement = () => {
                             {/* Order Details */}
                             <div className="flex-1 min-w-0">
                               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
-                                <h3 className="text-lg font-semibold text-gray-800">{order.offers?.title || 'Service'}</h3>
+                                <h3 className="text-lg font-semibold text-gray-800">{order.offer_title || 'Service'}</h3>
                                 <div className="flex items-center gap-2">
                                   <Badge className={`${getStatusColor(order.status)} flex items-center gap-1`}>
                                     {getStatusIcon(order.status)}

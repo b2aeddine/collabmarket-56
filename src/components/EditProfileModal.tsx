@@ -101,8 +101,7 @@ const EditProfileModal = ({
       
       if (onClose) onClose();
     } catch (error) {
-      // L'erreur est déjà gérée dans le hook
-      console.error('Failed to update profile:', error);
+      // Error already handled in hook
     }
   }, [formData, selectedCategories, user.id, updateProfileMutation, onSave, onClose]);
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

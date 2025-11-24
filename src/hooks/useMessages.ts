@@ -9,6 +9,14 @@ export const useConversations = () => {
   const { data: conversations, isLoading, error } = useQuery({
     queryKey: ['conversations'],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.warn('⚠️ useConversations: No authenticated user');
+        return [];
+      }
+
+      console.log('💬 Fetching conversations for user:', user.id);
+
       const { data, error } = await supabase
         .from('conversations')
         .select(`
@@ -16,11 +24,19 @@ export const useConversations = () => {
           merchant:profiles!conversations_merchant_id_fkey(id, first_name, last_name, avatar_url),
           influencer:profiles!conversations_influencer_id_fkey(id, first_name, last_name, avatar_url)
         `)
+        .or(`merchant_id.eq.${user.id},influencer_id.eq.${user.id}`)
         .order('last_message_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('❌ useConversations error:', error);
+        throw error;
+      }
+
+      console.log('✅ Conversations loaded:', data?.length || 0);
       return data;
     },
+    staleTime: 30 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   // Écouter les changements en temps réel

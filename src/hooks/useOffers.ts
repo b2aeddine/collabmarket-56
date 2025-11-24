@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Offer } from '@/types';
 
 export const useOffers = (influencerId?: string) => {
-  const { data: offers, isLoading, error } = useQuery({
+  const { data: offers, isLoading, error, refetch } = useQuery({
     queryKey: ['offers', influencerId],
     queryFn: async () => {
       let query = supabase
@@ -26,9 +26,9 @@ export const useOffers = (influencerId?: string) => {
             avatar_url
           )
         `)
-        .eq('is_active', true) // Only active offers by default
+        .eq('is_active', true)
         .order('created_at', { ascending: false })
-        .limit(influencerId ? 50 : 20); // More for specific user, less for general
+        .limit(influencerId ? 50 : 20);
 
       if (influencerId) {
         // For specific influencer, get all their offers (including inactive)
@@ -61,10 +61,11 @@ export const useOffers = (influencerId?: string) => {
       if (error) throw error;
       return data || [];
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes cache
+    staleTime: 0, // No cache - always fetch fresh data
+    refetchOnMount: true, // Refetch when component mounts
   });
 
-  return { offers, isLoading, error };
+  return { offers, isLoading, error, refetch };
 };
 
 export const useCreateOffer = () => {
@@ -81,8 +82,8 @@ export const useCreateOffer = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['offers'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['offers'] });
     },
   });
 };
@@ -99,8 +100,8 @@ export const useUpdateOffer = () => {
       
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['offers'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['offers'] });
     },
   });
 };
@@ -110,15 +111,26 @@ export const useDeleteOffer = () => {
   
   return useMutation({
     mutationFn: async (offerId: string) => {
+      console.log('[useDeleteOffer] Attempting to delete offer:', offerId);
+      
       const { error } = await supabase
         .from('offers')
         .delete()
         .eq('id', offerId);
       
-      if (error) throw error;
+      if (error) {
+        console.error('[useDeleteOffer] Delete error:', error);
+        throw new Error(error.message || 'Impossible de supprimer l\'offre');
+      }
+      
+      console.log('[useDeleteOffer] Offer deleted successfully');
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['offers'] });
+    onSuccess: async () => {
+      console.log('[useDeleteOffer] Invalidating queries');
+      await queryClient.invalidateQueries({ queryKey: ['offers'] });
     },
+    onError: (error) => {
+      console.error('[useDeleteOffer] Mutation error:', error);
+    }
   });
 };

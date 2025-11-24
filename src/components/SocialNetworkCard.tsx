@@ -1,7 +1,7 @@
-
 import { Button } from "@/components/ui/button";
 import { ExternalLink, Edit, Trash2, Check } from "lucide-react";
 import EditSocialNetworkModal from "./EditSocialNetworkModal";
+import snapchatLogo from "@/assets/snapchat-logo.png";
 
 interface SocialNetworkCardProps {
   id?: string;
@@ -89,10 +89,8 @@ const SocialNetworkCard = ({
         );
       case 'snapchat':
         return (
-          <div className="w-10 h-10 rounded-xl bg-yellow-400 flex items-center justify-center">
-            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12.206 2.024c-1.018 0-6.683.585-6.683 7.728 0 1.374.336 2.591.611 3.415-.317.132-.675.278-1.026.423-1.322.546-1.93 1.004-1.93 1.65 0 .697.644 1.278 1.415 1.278.212 0 .433-.042.664-.126.87-.322 1.576-.48 2.098-.48.284 0 .474.066.632.169-.349.679-1.09 2.148-3.167 2.802-.133.042-.197.13-.197.245 0 .228.28.413.56.413.076 0 .152-.013.226-.04 2.638-.914 3.694-2.871 4.094-3.679.136.007.274.011.414.011.138 0 .276-.004.412-.011.4.808 1.456 2.765 4.094 3.679.074.027.15.04.226.04.28 0 .56-.185.56-.413 0-.115-.064-.203-.197-.245-2.077-.654-2.818-2.123-3.167-2.802.158-.103.348-.169.632-.169.522 0 1.228.158 2.098.48.231.084.452.126.664.126.771 0 1.415-.581 1.415-1.278 0-.646-.608-1.104-1.93-1.65-.351-.145-.709-.291-1.026-.423.275-.824.611-2.041.611-3.415 0-7.143-5.665-7.728-6.683-7.728l-.081.001-.081-.001z"/>
-            </svg>
+          <div className="w-10 h-10 rounded-xl overflow-hidden">
+            <img src={snapchatLogo} alt="Snapchat" className="w-full h-full object-cover" />
           </div>
         );
       default:
@@ -131,7 +129,6 @@ const SocialNetworkCard = ({
         url = 'https://' + url;
       }
       
-      console.log('Opening URL:', url, 'from original:', profile_url);
       window.open(url, '_blank', 'noopener,noreferrer');
     }
   };
@@ -188,7 +185,7 @@ const SocialNetworkCard = ({
         </Button>
         
         {(onUpdateNetwork || onDelete) && (
-          <div className="flex gap-2">
+          <div className="flex gap-1 sm:gap-2">
             {onUpdateNetwork && id && user_id && created_at && (
               <EditSocialNetworkModal
                 network={{
@@ -211,9 +208,10 @@ const SocialNetworkCard = ({
                 variant="outline"
                 size="sm"
                 onClick={onDelete}
-                className="text-red-500 border-red-200 hover:bg-red-50 text-xs sm:text-sm min-h-[32px] sm:min-h-[36px]"
+                className="flex-1 text-red-600 border-red-200 hover:bg-red-50 text-xs sm:text-sm min-h-[32px] sm:min-h-[36px]"
               >
-                <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1" />
+                <span className="hidden xs:inline">Suppr.</span>
               </Button>
             )}
           </div>

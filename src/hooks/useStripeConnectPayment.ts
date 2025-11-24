@@ -1,75 +1,59 @@
 import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { handleError } from '@/utils/errorHandler';
+import type { 
+  StripeConnectPaymentParams, 
+  PaymentCaptureParams, 
+  PaymentResponse 
+} from '@/types/payment';
 
-interface CreateConnectPaymentParams {
-  influencerId: string;
-  offerId: string;
-  amount: number;
-  brandName: string;
-  productName: string;
-  brief: string;
-  deadline?: string;
-  specialInstructions?: string;
-}
-
-interface CapturePaymentParams {
-  orderId: string;
-}
-
+/**
+ * Hook for managing Stripe Connect payments
+ * Handles both payment creation and capture operations
+ */
 export const useStripeConnectPayment = () => {
   const createPayment = useMutation({
-    mutationFn: async (params: CreateConnectPaymentParams) => {
-      console.log('Creating Stripe Connect payment with params:', params);
-      
+    mutationFn: async (params: StripeConnectPaymentParams): Promise<PaymentResponse> => {
       const { data, error } = await supabase.functions.invoke('create-payment-with-connect', {
         body: params
       });
 
-      console.log('Response from create-payment-with-connect:', { data, error });
-
       if (error) {
-        console.error('Supabase function error:', error);
         throw error;
       }
-      return data;
+      return data as PaymentResponse;
     },
     onSuccess: (data) => {
-      console.log('Payment creation successful:', data);
       if (data?.url) {
         window.location.href = data.url;
       } else {
-        console.error('No URL returned from payment creation');
         toast.error('Aucune URL de paiement reçue');
       }
     },
-    onError: (error: any) => {
-      console.error('Error creating Connect payment:', error);
-      toast.error(`Erreur lors de la création du paiement: ${error.message || 'Erreur inconnue'}`);
+    onError: (error: unknown) => {
+      const message = handleError('StripeConnectPayment.create', error);
+      toast.error(message);
     },
   });
 
   const capturePayment = useMutation({
-    mutationFn: async (params: CapturePaymentParams) => {
-      console.log('Capturing payment for order:', params.orderId);
-      
+    mutationFn: async (params: PaymentCaptureParams) => {
       const { data, error } = await supabase.functions.invoke('capture-payment-and-transfer', {
         body: params
       });
 
       if (error) {
-        console.error('Supabase function error:', error);
         throw error;
       }
       return data;
     },
-    onSuccess: (data) => {
-      console.log('Payment capture successful:', data);
+    onSuccess: () => {
       toast.success('Paiement confirmé et fonds transférés !');
     },
-    onError: (error: any) => {
-      console.error('Error capturing payment:', error);
-      toast.error(`Erreur lors de la capture du paiement: ${error.message || 'Erreur inconnue'}`);
+    onError: (error: unknown) => {
+      const message = handleError('StripeConnectPayment.capture', error);
+      toast.error(message);
     },
   });
 

@@ -48,6 +48,17 @@ const StripeConnectOnboarding = () => {
       };
     }
 
+    // Si on n'a pas de données du tout
+    if (!accountStatus) {
+      return {
+        status: 'no_data',
+        label: 'Configuration requise',
+        color: 'bg-orange-100 text-orange-800',
+        icon: <AlertCircle className="w-4 h-4" />
+      };
+    }
+
+    // Vérifier si le compte existe dans notre système
     if (!accountStatus?.hasAccount) {
       return {
         status: 'no_account',
@@ -57,29 +68,24 @@ const StripeConnectOnboarding = () => {
       };
     }
 
-    if (!accountStatus.onboardingCompleted) {
-      return {
-        status: 'pending',
-        label: 'Configuration incomplète',
-        color: 'bg-orange-100 text-orange-800',
-        icon: <Clock className="w-4 h-4" />
-      };
-    }
-
-    if (accountStatus.onboardingCompleted && accountStatus.chargesEnabled) {
+    // Vérifier si l'onboarding est terminé ET que les charges sont activées
+    const isComplete = accountStatus.onboardingCompleted && accountStatus.chargesEnabled;
+    
+    if (isComplete) {
       return {
         status: 'active',
-        label: 'Configuré',
+        label: '✅ Configuré',
         color: 'bg-green-100 text-green-800',
         icon: <CheckCircle className="w-4 h-4" />
       };
     }
 
+    // Si l'onboarding n'est pas terminé ou charges désactivées
     return {
-      status: 'error',
-      label: 'Problème détecté',
-      color: 'bg-red-100 text-red-800',
-      icon: <AlertCircle className="w-4 h-4" />
+      status: 'pending',
+      label: 'Configuration incomplète',
+      color: 'bg-orange-100 text-orange-800',
+      icon: <Clock className="w-4 h-4" />
     };
   };
 
@@ -104,7 +110,7 @@ const StripeConnectOnboarding = () => {
       return;
     }
     
-    await updateBankDetails(bankForm);
+    await updateBankDetails();
     setShowBankForm(false);
     setBankForm({ iban: '', accountHolder: '', country: 'FR' });
   };
@@ -125,21 +131,19 @@ const StripeConnectOnboarding = () => {
           </Badge>
         </div>
 
-        {/* Description */}
+        {/* Description - Show different message based on actual status */}
         <div className="text-gray-600">
-          {!accountStatus?.hasAccount && (
-            <p>Votre compte Stripe Connect est créé mais la configuration n'est pas terminée. Finalisez la configuration pour recevoir des paiements.</p>
-          )}
-          {accountStatus?.hasAccount && !accountStatus.onboardingCompleted && (
-            <p>Votre compte Stripe Connect est créé mais la configuration n'est pas terminée. Finalisez la configuration pour recevoir des paiements.</p>
-          )}
-          {accountStatus?.onboardingCompleted && accountStatus.chargesEnabled && (
-            <p>Votre compte Stripe Connect est entièrement configuré et prêt à recevoir des paiements.</p>
+          {statusInfo.status === 'active' ? (
+            <p>✅ <strong>Votre compte Stripe Connect est entièrement configuré.</strong> Vous pouvez recevoir des paiements et modifier vos informations bancaires à tout moment.</p>
+          ) : statusInfo.status === 'no_account' || statusInfo.status === 'no_data' ? (
+            <p>⚠️ Vous devez configurer votre compte Stripe Connect pour recevoir des paiements. Cliquez sur "Finaliser la configuration" pour commencer.</p>
+          ) : (
+            <p>⚠️ Votre configuration Stripe Connect nécessite des informations supplémentaires. Finalisez-la pour recevoir des paiements.</p>
           )}
         </div>
 
-        {/* Action Button */}
-        {(!accountStatus?.hasAccount || !accountStatus?.onboardingCompleted) && (
+        {/* Action Button - Only show if not complete */}
+        {statusInfo.status !== 'active' && (
           <div className="space-y-3">
             <Button 
               onClick={handleStartOnboarding}
@@ -165,15 +169,38 @@ const StripeConnectOnboarding = () => {
           </div>
         )}
 
-        {accountStatus?.hasAccount && accountStatus?.onboardingCompleted && !showBankForm && (
-          <Button 
-            onClick={() => setShowBankForm(true)}
-            variant="outline"
-            className="w-full"
-          >
-            <Building className="w-4 h-4 mr-2" />
-            {accountStatus.hasExternalAccount ? 'Modifier l\'IBAN' : 'Ajouter un IBAN'}
-          </Button>
+        {/* Bank account info and refresh - Show when complete */}
+        {statusInfo.status === 'active' && (
+          <div className="space-y-3">
+            {accountStatus?.hasExternalAccount && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="font-medium text-green-900 mb-1">Compte bancaire configuré</p>
+                    <p className="text-sm text-green-700">
+                      {accountStatus.externalAccountBankName && (
+                        <span className="font-medium">{accountStatus.externalAccountBankName}</span>
+                      )}
+                      {accountStatus.externalAccountLast4 && (
+                        <span className="ml-2">•••• {accountStatus.externalAccountLast4}</span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            <Button 
+              onClick={handleRefresh}
+              variant="outline"
+              disabled={isRefreshing || isLoadingStatus}
+              className="w-full"
+            >
+              <RefreshCcw className="w-4 h-4 mr-2" />
+              {isRefreshing ? 'Actualisation...' : 'Actualiser le statut'}
+            </Button>
+          </div>
         )}
 
         {/* Bank Account Form */}

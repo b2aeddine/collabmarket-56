@@ -61,53 +61,98 @@ serve(async (req) => {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
         console.log("💰 Payment succeeded for session:", session.id);
-        console.log("📋 Session metadata:", session.metadata);
+        console.log("📋 Payment status:", session.payment_status);
 
-        // Trouver la commande correspondante (optimized: only select needed fields)
-        const { data: existingOrder, error: findError } = await supabase
+        // Récupérer le PaymentIntent pour avoir toutes les metadata
+        const paymentIntent = await stripe.paymentIntents.retrieve(
+          session.payment_intent as string
+        );
+        
+        console.log("💳 PaymentIntent:", paymentIntent.id, "Status:", paymentIntent.status);
+        console.log("💳 PaymentIntent metadata:", paymentIntent.metadata);
+
+        // Vérifier si la commande existe déjà
+        const { data: existingOrder } = await supabase
           .from("orders")
-          .select("id, status, stripe_session_id, influencer_id, merchant_id, total_amount")
+          .select("id, status")
           .eq("stripe_session_id", session.id)
-          .single();
+          .maybeSingle();
 
-        if (findError) {
-          console.error("❌ Error finding order:", findError);
-          throw findError;
+        let orderId = existingOrder?.id;
+
+        if (existingOrder) {
+          console.log("⚠️ Order already exists:", existingOrder.id, "- Updating status");
+          
+          // Mettre à jour le statut uniquement
+          const { error: updateError } = await supabase
+            .from("orders")
+            .update({ 
+              status: "paid",
+              stripe_payment_intent_id: paymentIntent.id,
+              webhook_received_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            })
+            .eq("stripe_session_id", session.id);
+
+          if (updateError) {
+            console.error("❌ Error updating order status:", updateError);
+            throw updateError;
+          }
+        } else {
+          console.log("✨ Creating new order from webhook metadata");
+          
+          // Créer la commande avec les metadata du PaymentIntent incluant les données de l'offre
+          const metadata = paymentIntent.metadata;
+          const totalAmount = parseFloat(metadata.total_amount || '0');
+          const netAmount = parseFloat(metadata.net_amount || '0');
+          const specialInstructions = `Marque: ${metadata.brand_name || ''}\nProduit: ${metadata.product_name || ''}\nBrief: ${metadata.brief || ''}`;
+          
+          const { data: newOrder, error: insertError } = await supabase
+            .from("orders")
+            .insert({
+              merchant_id: metadata.merchant_id,
+              influencer_id: metadata.influencer_id,
+              offer_id: metadata.offer_id,
+              offer_title: metadata.offer_title, // Store offer snapshot
+              offer_description: metadata.offer_description,
+              offer_delivery_time: metadata.offer_delivery_time,
+              total_amount: totalAmount,
+              net_amount: netAmount,
+              commission_rate: parseFloat(metadata.commission_rate || '10'),
+              status: "paid",
+              stripe_session_id: session.id,
+              stripe_payment_intent_id: paymentIntent.id,
+              special_instructions: specialInstructions,
+              delivery_date: metadata.deadline ? new Date(metadata.deadline).toISOString() : null,
+              webhook_received_at: new Date().toISOString(),
+              created_at: new Date().toISOString(),
+            })
+            .select('id')
+            .single();
+
+          if (insertError) {
+            console.error("❌ Error creating order:", insertError);
+            throw insertError;
+          }
+          
+          orderId = newOrder.id;
+          console.log("✅ Order created successfully:", orderId);
         }
 
-        if (!existingOrder) {
-          console.error("⚠️ No order found for session:", session.id);
-          throw new Error(`No order found for session ${session.id}`);
-        }
-
-        console.log("🔍 Found order:", existingOrder.id, "Current status:", existingOrder.status);
-
-        // Mettre à jour le statut de la commande à 'paid'
-        const { error: updateError } = await supabase
-          .from("orders")
-          .update({ 
-            status: "paid",
-            webhook_received_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          })
-          .eq("stripe_session_id", session.id);
-
-        if (updateError) {
-          console.error("❌ Error updating order status:", updateError);
-          throw updateError;
-        }
+        // NE PAS créer de revenus ici - ils seront créés uniquement lors de la capture du paiement
+        console.log("ℹ️ Order created/updated but revenue will be created upon payment capture");
 
         // Marquer le log comme traité
         await supabase
           .from("payment_logs")
           .update({ 
             processed: true,
-            order_id: existingOrder.id 
+            order_id: orderId
           })
           .eq("stripe_session_id", session.id)
           .eq("event_type", event.type);
 
-        console.log("✅ Order status updated to paid for session:", session.id);
+        console.log("✅ Checkout session processed:", session.id);
         break;
       }
 
@@ -115,19 +160,27 @@ serve(async (req) => {
         const session = event.data.object as Stripe.Checkout.Session;
         console.log("⏰ Payment session expired:", session.id);
 
-        // Mettre à jour le statut de la commande à 'cancelled'
-        const { error: updateError } = await supabase
+        // Vérifier si une commande existe pour cette session
+        const { data: existingOrder } = await supabase
           .from("orders")
-          .update({ 
-            status: "cancelled",
-            webhook_received_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          })
-          .eq("stripe_session_id", session.id);
+          .select("id, status")
+          .eq("stripe_session_id", session.id)
+          .maybeSingle();
 
-        if (updateError) {
-          console.error("❌ Error updating order status:", updateError);
-          throw updateError;
+        if (existingOrder && existingOrder.status === 'pending') {
+          // Supprimer les commandes pending expirées
+          console.log("🗑️ Deleting expired pending order:", existingOrder.id);
+          
+          const { error: deleteError } = await supabase
+            .from("orders")
+            .delete()
+            .eq("id", existingOrder.id);
+
+          if (deleteError) {
+            console.error("❌ Error deleting expired order:", deleteError);
+          } else {
+            console.log("✅ Expired order deleted successfully");
+          }
         }
 
         // Marquer le log comme traité
@@ -137,7 +190,36 @@ serve(async (req) => {
           .eq("stripe_session_id", session.id)
           .eq("event_type", event.type);
 
-        console.log("✅ Order status updated to cancelled for session:", session.id);
+        console.log("✅ Expired session processed:", session.id);
+        break;
+      }
+
+      case "payment_intent.succeeded": {
+        const paymentIntent = event.data.object as Stripe.PaymentIntent;
+        console.log("💰 Payment intent succeeded:", paymentIntent.id);
+
+        // Find order by payment intent ID
+        const { data: order } = await supabase
+          .from("orders")
+          .select("id, status, payment_captured")
+          .eq("stripe_payment_intent_id", paymentIntent.id)
+          .maybeSingle();
+
+        if (order && !order.payment_captured) {
+          console.log("✅ Marking order as captured:", order.id);
+          
+          // Update order to mark payment as captured
+          await supabase
+            .from("orders")
+            .update({ 
+              payment_captured: true,
+              payment_captured_at: new Date().toISOString(),
+              status: order.status === 'pending' ? 'en_cours' : order.status,
+              updated_at: new Date().toISOString()
+            })
+            .eq("id", order.id);
+        }
+
         break;
       }
 

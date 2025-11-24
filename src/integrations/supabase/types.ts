@@ -125,6 +125,24 @@ export type Database = {
         }
         Relationships: []
       }
+      contact_form_rate_limit: {
+        Row: {
+          created_at: string
+          id: string
+          ip_address: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ip_address: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ip_address?: string
+        }
+        Relationships: []
+      }
       contact_messages: {
         Row: {
           admin_notes: string | null
@@ -624,7 +642,11 @@ export type Database = {
           influencer_id: string
           merchant_id: string
           net_amount: number
-          offer_id: string
+          offer_delivery_time: string | null
+          offer_description: string | null
+          offer_id: string | null
+          offer_platform: string | null
+          offer_title: string | null
           payment_captured: boolean | null
           payment_captured_at: string | null
           preuve_influenceur: string | null
@@ -656,7 +678,11 @@ export type Database = {
           influencer_id: string
           merchant_id: string
           net_amount: number
-          offer_id: string
+          offer_delivery_time?: string | null
+          offer_description?: string | null
+          offer_id?: string | null
+          offer_platform?: string | null
+          offer_title?: string | null
           payment_captured?: boolean | null
           payment_captured_at?: string | null
           preuve_influenceur?: string | null
@@ -688,7 +714,11 @@ export type Database = {
           influencer_id?: string
           merchant_id?: string
           net_amount?: number
-          offer_id?: string
+          offer_delivery_time?: string | null
+          offer_description?: string | null
+          offer_id?: string | null
+          offer_platform?: string | null
+          offer_title?: string | null
           payment_captured?: boolean | null
           payment_captured_at?: string | null
           preuve_influenceur?: string | null
@@ -716,13 +746,6 @@ export type Database = {
             columns: ["merchant_id"]
             isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "orders_offer_id_fkey"
-            columns: ["offer_id"]
-            isOneToOne: false
-            referencedRelation: "offers"
             referencedColumns: ["id"]
           },
         ]
@@ -761,6 +784,53 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      portfolio_items: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          id: string
+          image_url: string
+          influencer_id: string
+          is_active: boolean | null
+          link_url: string | null
+          title: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          image_url: string
+          influencer_id: string
+          is_active?: boolean | null
+          link_url?: string | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          image_url?: string
+          influencer_id?: string
+          is_active?: boolean | null
+          link_url?: string | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_items_influencer_id_fkey"
+            columns: ["influencer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1012,6 +1082,80 @@ export type Database = {
           },
         ]
       }
+      search_analytics: {
+        Row: {
+          avg_search_time: number | null
+          conversion_rate: number | null
+          created_at: string | null
+          date: string
+          id: string
+          top_filters: string[] | null
+          top_search_terms: string[] | null
+          total_searches: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          avg_search_time?: number | null
+          conversion_rate?: number | null
+          created_at?: string | null
+          date: string
+          id?: string
+          top_filters?: string[] | null
+          top_search_terms?: string[] | null
+          total_searches?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          avg_search_time?: number | null
+          conversion_rate?: number | null
+          created_at?: string | null
+          date?: string
+          id?: string
+          top_filters?: string[] | null
+          top_search_terms?: string[] | null
+          total_searches?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      search_history: {
+        Row: {
+          clicked_profile_id: string | null
+          created_at: string | null
+          filters: Json | null
+          id: string
+          result_count: number | null
+          search_term: string
+          user_id: string | null
+        }
+        Insert: {
+          clicked_profile_id?: string | null
+          created_at?: string | null
+          filters?: Json | null
+          id?: string
+          result_count?: number | null
+          search_term: string
+          user_id?: string | null
+        }
+        Update: {
+          clicked_profile_id?: string | null
+          created_at?: string | null
+          filters?: Json | null
+          id?: string
+          result_count?: number | null
+          search_term?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "search_history_clicked_profile_id_fkey"
+            columns: ["clicked_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       social_accounts: {
         Row: {
           access_token: string | null
@@ -1259,6 +1403,41 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          granted_at: string | null
+          granted_by: string | null
+          id: string
+          is_active: boolean | null
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_granted_by_fkey"
+            columns: ["granted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       withdrawal_requests: {
         Row: {
           admin_notes: string | null
@@ -1377,6 +1556,13 @@ export type Database = {
       auto_confirm_completed_orders: { Args: never; Returns: undefined }
       auto_handle_expired_orders: { Args: never; Returns: undefined }
       can_contest_order: { Args: { order_id: string }; Returns: boolean }
+      cleanup_invalid_revenues: {
+        Args: never
+        Returns: {
+          deleted_count: number
+        }[]
+      }
+      cleanup_rate_limit_entries: { Args: never; Returns: undefined }
       create_admin_account: { Args: never; Returns: undefined }
       create_initial_admin: { Args: never; Returns: undefined }
       enable_contestation_for_delivered_orders: {
@@ -1393,10 +1579,15 @@ export type Database = {
         Args: { user_id: string }
         Returns: number
       }
+      get_influencer_total_earned_verified: {
+        Args: { user_id: string }
+        Returns: number
+      }
       get_influencer_total_withdrawn: {
         Args: { user_id: string }
         Returns: number
       }
+      get_merchant_total_spent: { Args: { user_id: string }; Returns: number }
       get_public_influencers: {
         Args: { limit_count?: number }
         Returns: {
@@ -1431,6 +1622,7 @@ export type Database = {
           role: string
         }[]
       }
+      get_user_role: { Args: { user_id?: string }; Returns: string }
       is_admin: { Args: { user_id?: string }; Returns: boolean }
       is_current_user_admin: { Args: never; Returns: boolean }
       sync_social_analytics: {
@@ -1439,7 +1631,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "influenceur" | "commercant"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1566,6 +1758,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "influenceur", "commercant"],
+    },
   },
 } as const

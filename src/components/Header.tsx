@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, useMemo, memo } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -7,7 +7,8 @@ import { Menu, X, MessageCircle, Bell, User, LogOut, Heart } from "lucide-react"
 import { useUnreadMessagesCount } from "@/hooks/useMessages";
 import { useAuth } from "@/hooks/useAuth";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-const Header = () => {
+
+const Header = memo(() => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
   const unreadCount = useUnreadMessagesCount();
@@ -15,19 +16,25 @@ const Header = () => {
     profile,
     signOut
   } = useAuth();
-  const isActive = (path: string) => {
+  
+  const isActive = useCallback((path: string) => {
     return location.pathname === path;
-  };
-  const handleSignOut = async () => {
+  }, [location.pathname]);
+  
+  const handleSignOut = useCallback(async () => {
     try {
       await signOut();
     } catch (error) {
-      console.error('Error signing out:', error);
+      // Error is logged by auth context
     }
-  };
+  }, [signOut]);
+  
+  const toggleMenu = useCallback(() => {
+    setIsMenuOpen(prev => !prev);
+  }, []);
 
   // Déterminer la bonne route du dashboard selon le rôle
-  const getDashboardRoute = () => {
+  const dashboardRoute = useMemo(() => {
     if (profile?.role === 'commercant') {
       return '/merchant-dashboard';
     } else if (profile?.role === 'influenceur') {
@@ -36,7 +43,7 @@ const Header = () => {
       return '/admin/dashboard';
     }
     return '/';
-  };
+  }, [profile?.role]);
   return <header className="bg-white/95 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-14 sm:h-16">
@@ -102,7 +109,7 @@ const Header = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuItem asChild>
-                    <Link to={getDashboardRoute()} className="flex items-center">
+                    <Link to={dashboardRoute} className="flex items-center">
                       <User className="w-4 h-4 mr-2" />
                       Mon Profil
                     </Link>
@@ -163,7 +170,7 @@ const Header = () => {
 
               {/* Profile or Auth Buttons Mobile */}
               {profile ? <>
-                  <Link to={getDashboardRoute()} onClick={() => setIsMenuOpen(false)}>
+                  <Link to={dashboardRoute} onClick={() => setIsMenuOpen(false)}>
                     <Button variant="ghost" className="w-full justify-start text-sm sm:text-base">
                       <Avatar className="w-5 h-5 sm:w-6 sm:h-6 mr-2">
                         <AvatarImage src={profile.avatar_url || undefined} alt={`${profile.first_name} ${profile.last_name}`} />
@@ -194,5 +201,8 @@ const Header = () => {
           </div>}
       </div>
     </header>;
-};
+});
+
+Header.displayName = 'Header';
+
 export default Header;

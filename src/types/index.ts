@@ -58,6 +58,9 @@ export interface Order {
   merchant_id: string;
   influencer_id: string;
   offer_id: string;
+  offer_title?: string; // Snapshot of offer data
+  offer_description?: string;
+  offer_delivery_time?: string;
   status: 'pending' | 'accepted' | 'refused' | 'delivered' | 'completed' | 'disputed' | 'cancelled';
   total_amount: number;
   net_amount?: number;

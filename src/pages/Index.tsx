@@ -1,11 +1,11 @@
+import { memo } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Header from "@/components/Header";
 import { User, HandHeart, Building2, Target, Zap, BarChart3, Star, Users } from "lucide-react";
-import ScrollReveal from "@/components/common/ScrollReveal";
 
-const Index = () => {
+const Index = memo(() => {
   return <div className="min-h-screen bg-white flex flex-col">
       <Header />
       
@@ -44,7 +44,6 @@ Collaborations</span>
       {/* Features Cards */}
       <section className="py-8 sm:py-12 md:py-16 px-4">
         <div className="container mx-auto max-w-md">
-          <ScrollReveal variant="fade-up" delay={0.1}>
             <div className="bg-gradient-to-br from-pink-100 via-orange-100 to-teal-100 rounded-2xl sm:rounded-3xl p-6 sm:p-8 mb-8">
               
               {/* Influenceurs */}
@@ -86,7 +85,6 @@ Collaborations</span>
               </p>
             </div>
             </div>
-          </ScrollReveal>
         </div>
       </section>
 
@@ -170,5 +168,8 @@ Collaborations</span>
         </div>
       </section>
     </div>;
-};
+});
+
+Index.displayName = 'Index';
+
 export default Index;

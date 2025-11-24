@@ -8,7 +8,12 @@ export const useOrders = (userRole?: string) => {
     queryFn: async () => {
       // Get current user for filtering
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return [];
+      if (!user) {
+        console.warn('⚠️ useOrders: No authenticated user');
+        return [];
+      }
+
+      console.log('📦 useOrders: Fetching orders', { userId: user.id, userRole });
 
       let query = supabase
         .from('orders')
@@ -28,13 +33,12 @@ export const useOrders = (userRole?: string) => {
           influencer_id,
           merchant_id,
           offer_id,
-          offers!inner(
-            id,
-            title,
-            description,
-            price,
-            delivery_time
-          ),
+          offer_title,
+          offer_description,
+          offer_delivery_time,
+          payment_captured,
+          stripe_payment_intent_id,
+          stripe_session_id,
           influencer:profiles!orders_influencer_id_fkey(
             id,
             first_name,
@@ -50,29 +54,34 @@ export const useOrders = (userRole?: string) => {
             company_name
           )
         `)
-        .order('created_at', { ascending: false })
-        .limit(50); // Pagination
+      .not('status', 'in', '("annulée","cancelled")')
+      .order('created_at', { ascending: false });
 
       // Filter by user role to only get relevant orders
       if (userRole === 'influenceur') {
+        console.log('🎯 Filtering orders for influencer:', user.id);
         query = query.eq('influencer_id', user.id);
       } else if (userRole === 'commercant') {
+        console.log('🎯 Filtering orders for merchant:', user.id);
         query = query.eq('merchant_id', user.id);
       } else {
-        // SECURITY: Use PostgREST filter syntax safely instead of string interpolation
-        // For admin or unspecified role, get user's orders
-        // Using .or() with proper PostgREST syntax to prevent any potential injection
-        query = query.or(`influencer_id.eq.${user.id},merchant_id.eq.${user.id}`, { foreignTable: undefined });
+        // For admin or unspecified role, get all user's orders
+        console.log('🎯 Filtering orders for user (both roles):', user.id);
+        query = query.or(`influencer_id.eq.${user.id},merchant_id.eq.${user.id}`);
       }
       
       const { data, error } = await query;
       
-      if (error) throw error;
+      if (error) {
+        console.error('❌ useOrders error:', error);
+        throw error;
+      }
+      
+      console.log('✅ useOrders result:', { count: data?.length, userRole, userId: user.id });
       return data || [];
     },
     staleTime: 2 * 60 * 1000, // 2 minutes cache
     refetchOnWindowFocus: false,
-    enabled: !!userRole, // Only run when we have user role
   });
 
   return { orders, isLoading, error };
@@ -188,7 +197,6 @@ export const useAcceptOrderAndPay = () => {
         .eq('id', orderId)
         .select(`
           *,
-          offers(title),
           influencer:profiles!orders_influencer_id_fkey(first_name, last_name)
         `)
         .single();
@@ -200,7 +208,7 @@ export const useAcceptOrderAndPay = () => {
         body: {
           orderId: order.id,
           amount: order.total_amount,
-          description: `${order.offers?.title || 'Prestation'} - ${order.influencer?.first_name || ''} ${order.influencer?.last_name || ''}`,
+          description: `${order.offer_title || 'Prestation'} - ${order.influencer?.first_name || ''} ${order.influencer?.last_name || ''}`,
           successUrl: `${window.location.origin}/payment-success?order_id=${order.id}`,
           cancelUrl: `${window.location.origin}/payment-cancel?order_id=${order.id}`,
         }

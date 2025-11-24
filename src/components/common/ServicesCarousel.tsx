@@ -70,28 +70,30 @@ export const ServicesCarousel = ({
           
           return (
             <CarouselItem key={service.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 lg:basis-1/3">
-              <div className={`h-full p-4 sm:p-6 rounded-xl border-2 transition-all hover:shadow-lg relative ${
-                service.popular
-                  ? 'border-primary bg-primary/5'
-                  : 'border-gray-200 hover:border-primary/50 bg-white'
-              }`}>
-                {service.popular && (
-                  <Badge className="absolute -top-2 left-4 bg-primary z-10">
-                    Populaire
-                  </Badge>
-                )}
-                
-                <div className="flex flex-col h-full">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-3">
-                      {getPlatformLogo && getPlatformLogo(platform)}
-                      <div>
-                        <h3 className="text-lg font-semibold">{service.type}</h3>
-                        {platformName && <p className="text-sm text-gray-500">{platformName}</p>}
+              <div className="h-full">
+                <div className={`h-full p-4 sm:p-6 rounded-xl border-2 transition-all hover:shadow-lg relative flex flex-col ${
+                  service.popular
+                    ? 'border-primary bg-primary/5'
+                    : 'border-gray-200 hover:border-primary/50 bg-white'
+                }`}>
+                  {service.popular && (
+                    <Badge className="absolute -top-2 left-4 bg-primary z-10">
+                      Populaire
+                    </Badge>
+                  )}
+                  
+                  <div className="flex-1 flex flex-col">
+                    <div className="flex items-start gap-3 mb-3">
+                      <div className="flex-shrink-0 mt-1">
+                        {getPlatformLogo && getPlatformLogo(platform)}
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="text-lg font-semibold leading-tight">{service.type}</h3>
+                        {platformName && <p className="text-sm text-muted-foreground">{platformName}</p>}
                       </div>
                     </div>
-                    <p className="text-gray-600 mb-2 text-sm">{service.description}</p>
-                    <p className="text-xs text-gray-500">Livraison : {service.deliveryTime}</p>
+                    <p className="text-muted-foreground mb-2 text-sm line-clamp-2">{service.description}</p>
+                    <p className="text-xs text-muted-foreground mt-auto">Livraison : {service.deliveryTime}</p>
                   </div>
                   
                   <div className="mt-4 text-center">

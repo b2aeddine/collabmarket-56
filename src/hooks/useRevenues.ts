@@ -6,6 +6,14 @@ export const useRevenues = () => {
   const { data: revenues, isLoading, error } = useQuery({
     queryKey: ['revenues'],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.warn('⚠️ useRevenues: No authenticated user');
+        return [];
+      }
+
+      console.log('💰 Fetching revenues for user:', user.id);
+
       const { data, error } = await supabase
         .from('revenues')
         .select(`
@@ -16,11 +24,19 @@ export const useRevenues = () => {
             merchant:profiles!orders_merchant_id_fkey(first_name, last_name)
           )
         `)
+        .eq('influencer_id', user.id)
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('❌ useRevenues error:', error);
+        throw error;
+      }
+
+      console.log('✅ Revenues loaded:', data?.length || 0);
       return data;
     },
+    staleTime: 2 * 60 * 1000, // 2 minutes cache
+    refetchOnWindowFocus: false,
   });
 
   return { revenues, isLoading, error };
@@ -54,15 +70,31 @@ export const useBankAccounts = () => {
   const { data: bankAccounts, isLoading, error } = useQuery({
     queryKey: ['bank-accounts'],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.warn('⚠️ useBankAccounts: No authenticated user');
+        return [];
+      }
+
+      console.log('🏦 Fetching bank accounts for user:', user.id);
+
       const { data, error } = await supabase
         .from('bank_accounts')
         .select('*')
+        .eq('user_id', user.id)
         .eq('is_active', true)
         .order('is_default', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('❌ useBankAccounts error:', error);
+        throw error;
+      }
+
+      console.log('✅ Bank accounts loaded:', data?.length || 0);
       return data;
     },
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
+    refetchOnWindowFocus: false,
   });
 
   return { bankAccounts, isLoading, error };
@@ -136,17 +168,33 @@ export const useWithdrawals = () => {
   const { data: withdrawals, isLoading, error } = useQuery({
     queryKey: ['withdrawals'],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.warn('⚠️ useWithdrawals: No authenticated user');
+        return [];
+      }
+
+      console.log('💸 Fetching withdrawals for user:', user.id);
+
       const { data, error } = await supabase
         .from('withdrawals')
         .select(`
           *,
           bank_accounts(bank_name, account_holder)
         `)
+        .eq('influencer_id', user.id)
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('❌ useWithdrawals error:', error);
+        throw error;
+      }
+
+      console.log('✅ Withdrawals loaded:', data?.length || 0);
       return data;
     },
+    staleTime: 2 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   return { withdrawals, isLoading, error };

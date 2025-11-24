@@ -8,16 +8,34 @@ export const useStripeConnect = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { refreshUser } = useAuth();
 
-  // Check account status
+  // Check account status - ALWAYS refetch fresh data
   const { data: accountStatus, refetch: refetchAccountStatus, isLoading: isLoadingStatus } = useQuery({
     queryKey: ['stripe-connect-status'],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('check-stripe-account-status');
-      if (error) throw error;
-      return data;
+      console.log('🔍 Fetching Stripe Connect status...');
+      
+      try {
+        const { data, error } = await supabase.functions.invoke('check-stripe-account-status', {
+          method: 'POST'
+        });
+        
+        if (error) {
+          console.error('❌ Error fetching status:', error);
+          throw error;
+        }
+        
+        console.log('✅ Stripe status:', data);
+        return data;
+      } catch (err) {
+        console.error('❌ Failed to fetch Stripe status:', err);
+        throw err;
+      }
     },
-    refetchOnMount: true,
-    refetchOnWindowFocus: false,
+    refetchOnMount: 'always', // Always refetch when component mounts
+    refetchOnWindowFocus: true, // Refetch when window regains focus
+    staleTime: 0, // Data is immediately stale
+    gcTime: 0, // Don't cache the data
+    retry: 2, // Retry failed requests
   });
 
   // Create onboarding session
@@ -35,16 +53,12 @@ export const useStripeConnect = () => {
     },
     onSuccess: (data) => {
       if (data?.onboardingUrl) {
-        console.log('Redirecting to Stripe onboarding:', data.onboardingUrl);
-        // Redirection immédiate vers Stripe (même page)
-        window.location.href = data.onboardingUrl;
+      window.location.href = data.onboardingUrl;
       } else {
-        console.error('No onboarding URL received:', data);
         toast.error('Aucune URL de configuration reçue');
       }
     },
     onError: (error: any) => {
-      console.error('Error creating onboarding session:', error);
       const message = error?.message || error?.name || 'Erreur inconnue';
       const serverErr = error?.error || error?.context?.error || error?.context?.response || null;
       const step = error?.context?.step || error?.step;
@@ -57,26 +71,94 @@ export const useStripeConnect = () => {
     },
   });
 
-  // Update bank account details
+  // Open Stripe Express Dashboard for bank account update
   const updateBankAccount = useMutation({
-    mutationFn: async (bankAccount: {
-      iban: string;
-      accountHolder: string;
-      country?: string;
-    }) => {
-      const { data, error } = await supabase.functions.invoke('update-stripe-account-details', {
-        body: { bankAccount }
-      });
-      if (error) throw error;
-      return data;
+    mutationFn: async () => {
+      console.log('🔗 Opening Stripe Dashboard for bank update...');
+      
+      try {
+        const session = await supabase.auth.getSession();
+        const token = session.data.session?.access_token;
+        
+        if (!token) {
+          throw new Error('Vous devez être connecté pour accéder à Stripe');
+        }
+
+        console.log('📡 Calling create-stripe-account-link with type: dashboard');
+        
+        const { data, error } = await supabase.functions.invoke('create-stripe-account-link', {
+          body: { type: 'dashboard' }, // Use 'dashboard' to get Login Link for complete accounts
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        console.log('📩 Edge function response:', { data, error });
+
+        if (error) {
+          console.error('❌ Edge function error:', error);
+          throw new Error(error.message || 'Erreur lors de la connexion à Stripe');
+        }
+        
+        if (data?.error) {
+          console.error('❌ Error in response data:', data);
+          throw new Error(data.error);
+        }
+
+        if (!data?.url) {
+          console.error('❌ No URL in response:', data);
+          throw new Error('Aucune URL de redirection reçue de Stripe');
+        }
+
+        console.log('✅ Stripe link created successfully:', data.type);
+        return data;
+        
+      } catch (err: any) {
+        console.error('❌ Exception in updateBankAccount:', err);
+        throw err;
+      }
     },
-    onSuccess: () => {
-      toast.success('Informations bancaires mises à jour avec succès !');
-      refetchAccountStatus();
+    onSuccess: (data) => {
+      console.log('✅ Redirecting to Stripe Express Dashboard:', data);
+      if (data?.url) {
+        toast.success('Redirection vers Stripe...', {
+          description: 'Vous allez être redirigé vers le tableau de bord Stripe',
+          duration: 2000
+        });
+        setTimeout(() => {
+          window.location.href = data.url;
+        }, 500);
+      } else {
+        console.error('❌ No URL in success data');
+        toast.error('Aucune URL de redirection reçue');
+      }
     },
     onError: (error: any) => {
-      console.error('Error updating bank account:', error);
-      toast.error('Erreur lors de la mise à jour des informations bancaires');
+      console.error('❌ Bank account link error:', error);
+      
+      let errorMessage = error.message || 'Erreur lors de la création du lien Stripe';
+      let errorTitle = 'Erreur de configuration';
+      
+      // Gérer les erreurs spécifiques
+      if (error.message?.includes('MISSING_STRIPE_KEY')) {
+        errorMessage = 'Configuration Stripe manquante. Contactez le support technique.';
+        errorTitle = 'Erreur de configuration serveur';
+      } else if (error.message?.includes('NO_STRIPE_ACCOUNT')) {
+        errorMessage = 'Aucun compte Stripe Connect trouvé. Veuillez d\'abord configurer votre compte.';
+        errorTitle = 'Compte Stripe manquant';
+      } else if (error.message?.includes('non-2xx') || error.message?.includes('FunctionsHttpError')) {
+        errorMessage = 'Impossible de se connecter à Stripe. Vérifiez votre connexion et réessayez.';
+        errorTitle = 'Erreur de connexion';
+      } else if (error.message?.includes('account_onboarding')) {
+        errorMessage = 'Configuration supplémentaire requise sur Stripe.';
+        errorTitle = 'Configuration incomplète';
+      } else if (error.message?.includes('Non authentifié')) {
+        errorMessage = 'Votre session a expiré. Veuillez vous reconnecter.';
+        errorTitle = 'Session expirée';
+      }
+      
+      toast.error(errorTitle, {
+        description: errorMessage,
+        duration: 8000
+      });
     },
   });
 
@@ -89,34 +171,32 @@ export const useStripeConnect = () => {
     }
   };
 
-  const updateBankDetails = async (bankAccount: {
-    iban: string;
-    accountHolder: string;
-    country?: string;
-  }) => {
-    await updateBankAccount.mutateAsync(bankAccount);
+  const updateBankDetails = async () => {
+    await updateBankAccount.mutateAsync();
   };
 
   const handleRefreshConnectStatus = async () => {
     try {
+      console.log('🔄 Refreshing Stripe Connect status...');
       toast.info('Actualisation du statut Stripe Connect...');
+      
       const result = await refetchAccountStatus();
       const data = result.data as any;
       
-      // Forcer le rafraîchissement du profil utilisateur après la mise à jour du statut
-      setTimeout(async () => {
-        await refreshUser();
-      }, 1000);
+      console.log('📊 Refreshed status:', data);
+      
+      // Forcer le rafraîchissement du profil utilisateur
+      await refreshUser();
       
       if (data?.onboardingCompleted && data?.chargesEnabled) {
-        toast.success('Compte Stripe configuré et activé ✅');
+        toast.success('✅ Compte Stripe configuré et activé');
       } else if (data?.needsOnboarding || !data?.onboardingCompleted) {
-        toast.warning('Configuration incomplète — poursuivez l\'onboarding Stripe');
+        toast.warning('⚠️ Configuration incomplète — poursuivez l\'onboarding Stripe');
       } else {
         toast.success('Statut mis à jour');
       }
     } catch (error: any) {
-      console.error('Refresh status error:', error);
+      console.error('❌ Refresh status error:', error);
       toast.error(error.message || 'Erreur lors de l\'actualisation du statut');
     }
   };

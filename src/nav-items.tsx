@@ -23,6 +23,7 @@ import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentCancel from "./pages/PaymentCancel";
 import AdminDisputes from "./pages/AdminDisputes";
 import AdminDashboard from "./pages/AdminDashboard";
+import OnboardingRefresh from "./pages/OnboardingRefresh";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -177,6 +178,15 @@ export const navItems = [
     title: "Mentions légales",
     to: "/mentions-legales",
     page: <MentionsLegales />,
+  },
+  {
+    title: "Onboarding Refresh",
+    to: "/onboarding/refresh",
+    page: (
+      <ProtectedRoute requireRole="influenceur">
+        <OnboardingRefresh />
+      </ProtectedRoute>
+    ),
   },
   {
     title: "Page introuvable",

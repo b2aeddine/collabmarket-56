@@ -40,8 +40,6 @@ export const useInfluencers = (filters?: { category?: string; minFollowers?: num
   const { data: influencers, isLoading, error } = useQuery({
     queryKey: ['influencers', filters],
     queryFn: async () => {
-      console.log('Fetching influencers from database...');
-      
       // Direct query that works for both authenticated and anonymous users
       const { data, error } = await supabase
         .from('profiles')
@@ -66,9 +64,9 @@ export const useInfluencers = (filters?: { category?: string; minFollowers?: num
             engagement_rate,
             is_active
           ),
-          profile_categories!inner(
+          profile_categories(
             category_id,
-            categories!inner(
+            categories(
               id,
               name,
               slug
@@ -88,11 +86,8 @@ export const useInfluencers = (filters?: { category?: string; minFollowers?: num
         .limit(20);
       
       if (error) {
-        console.error('Error fetching influencers:', error);
         throw error;
       }
-      
-      console.log('Fetched influencers:', data?.length || 0);
       
       // Filtrer les données si nécessaire
       let filteredData = data || [];

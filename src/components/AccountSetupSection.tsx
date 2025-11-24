@@ -124,13 +124,23 @@ const AccountSetupSection = () => {
       };
     }
 
-    // Utiliser le stripe_connect_status du profil utilisateur
-    const stripeConnectStatus = user?.stripe_connect_status;
+    // Priorité aux données de l'API check-stripe-account-status
+    if (accountStatus?.onboardingCompleted && accountStatus?.chargesEnabled) {
+      return {
+        status: 'complete',
+        label: '✅ Configuré',
+        color: 'bg-green-100 text-green-800',
+        icon: CheckCircle
+      };
+    }
 
+    // Fallback sur le stripe_connect_status du profil
+    const stripeConnectStatus = user?.stripe_connect_status;
+    
     if (stripeConnectStatus === 'complete') {
       return {
         status: 'complete',
-        label: 'Configuration terminée',
+        label: '✅ Configuré',
         color: 'bg-green-100 text-green-800',
         icon: CheckCircle
       };
@@ -160,21 +170,25 @@ const AccountSetupSection = () => {
   const handleRefreshConnectStatus = async () => {
     try {
       setIsRefreshingConnect(true);
+      console.log('🔄 Refreshing Stripe Connect status...');
       
       // Utiliser la fonction dédiée pour vérifier et synchroniser le statut
       checkConnectStatus(undefined, {
-        onSuccess: () => {
-          // Rafraîchir le profil utilisateur après la synchronisation
-          setTimeout(async () => {
-            await refreshUser();
-          }, 1000);
+        onSuccess: async (data) => {
+          console.log('✅ Status refreshed successfully:', data);
+          // Le hook useCheckStripeConnectStatus gère déjà le rafraîchissement du profil
+        },
+        onError: (error) => {
+          console.error('❌ Refresh failed:', error);
+        },
+        onSettled: () => {
+          setIsRefreshingConnect(false);
         }
       });
       
     } catch (error: any) {
-      console.error('Refresh status error:', error);
+      console.error('❌ Refresh status error:', error);
       toast.error(error.message || 'Erreur lors de l\'actualisation du statut');
-    } finally {
       setIsRefreshingConnect(false);
     }
   };
@@ -185,7 +199,7 @@ const AccountSetupSection = () => {
       return;
     }
     
-    await updateBankDetails(bankForm);
+    await updateBankDetails();
     setShowBankForm(false);
     setBankForm({ iban: '', accountHolder: '', country: 'FR' });
   };
@@ -198,16 +212,16 @@ const AccountSetupSection = () => {
   const isStripeConnectComplete = stripeConnectStatus.status === 'complete';
   const bothValidated = isIdentityVerified && isStripeConnectComplete;
 
-  // Si les deux sont validés depuis plus de 24h, ne pas afficher la section
-  if (bothValidated && user?.created_at) {
-    const createdAt = new Date(user.created_at);
-    const now = new Date();
-    const timeDiff = now.getTime() - createdAt.getTime();
-    const hoursDiff = timeDiff / (1000 * 3600);
-    
-    if (hoursDiff > 24) {
-      return null;
-    }
+  // Attendre que les données soient complètement chargées avant d'afficher la section
+  // Évite le flash pendant le chargement initial
+  if (isLoadingStatus || !user || stripeConnectStatus.status === 'loading') {
+    return null; // Ne rien afficher pendant le chargement
+  }
+
+  // Si les deux sont complètement validés, ne plus afficher la section
+  // L'utilisateur a terminé la configuration, pas besoin d'afficher quoi que ce soit
+  if (bothValidated) {
+    return null;
   }
 
   // Si les deux ne sont pas encore validés, afficher la section
@@ -430,22 +444,8 @@ const AccountSetupSection = () => {
     );
   }
 
-  // Si les deux sont validés mais depuis moins de 24h, afficher un message de confirmation
-  return (
-    <Card className="border-0 shadow-lg bg-green-50 rounded-xl mb-6">
-      <CardContent className="p-6">
-        <div className="flex items-center gap-3 text-green-800">
-          <CheckCircle className="w-6 h-6" />
-          <div>
-            <h3 className="text-lg font-semibold">Configuration terminée !</h3>
-            <p className="text-sm text-green-700">
-              Votre compte est maintenant entièrement configuré et prêt à recevoir des paiements.
-            </p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
+  // Si aucune condition n'est remplie, ne rien afficher
+  return null;
 };
 
 export default AccountSetupSection;

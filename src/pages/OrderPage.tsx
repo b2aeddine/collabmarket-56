@@ -17,6 +17,7 @@ import { FileUploadSection } from "@/components/order/FileUploadSection";
 import { PaymentMethodSection } from "@/components/order/PaymentMethodSection";
 import { useOrderData } from "@/hooks/useOrderData";
 import PaymentButton from "@/components/PaymentButton";
+import { orderPaymentSchema } from "@/utils/validation";
 
 const OrderPage = () => {
   const params = useParams();
@@ -25,15 +26,27 @@ const OrderPage = () => {
   const { offerId, influencerId } = useMemo(() => {
     const offerId = params.serviceId;
     const influencerId = searchParams.get("influencer");
-    console.log("OrderPage: URL params extracted", { offerId, influencerId });
     return { offerId, influencerId };
   }, [params.serviceId, searchParams]);
 
   const directPayment = useDirectPayment();
-  const { orderData, handleInputChange, handlePaymentMethodChange, handleCheckboxChange } = useOrderData();
+  const { orderData, handleInputChange, handlePaymentMethodChange, handleCheckboxChange, handleFilesChange } = useOrderData();
 
-  const [offer, setOffer] = useState<any>(null);
-  const [influencer, setInfluencer] = useState<any>(null);
+  const [offer, setOffer] = useState<{
+    id: string;
+    price: number;
+    title: string;
+    description: string;
+    delivery_time: string;
+    influencer_id: string;
+  } | null>(null);
+  const [influencer, setInfluencer] = useState<{
+    id: string;
+    first_name: string;
+    last_name: string;
+    avatar_url?: string;
+    custom_username?: string;
+  } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,8 +69,6 @@ const OrderPage = () => {
     }
 
     try {
-      console.log("Starting data fetch for", { offerId, influencerId });
-      
       const [offerResponse, influencerResponse] = await Promise.all([
         supabase
           .from('offers')
@@ -91,13 +102,11 @@ const OrderPage = () => {
         throw new Error('Cette offre ne correspond pas à cet influenceur');
       }
 
-      console.log("Data fetched successfully");
       setOffer(offerResponse.data);
       setInfluencer(influencerResponse.data);
       setError(null);
 
     } catch (error) {
-      console.error('Error fetching data:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erreur lors du chargement des données';
       setError(errorMessage);
       toast.error(errorMessage);
@@ -113,13 +122,12 @@ const OrderPage = () => {
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!orderData.acceptTerms) {
-      toast.error("Vous devez accepter les conditions générales");
-      return;
-    }
-
-    if (!orderData.brandName || !orderData.productName || !orderData.brief) {
-      toast.error("Veuillez remplir tous les champs obligatoires");
+    // Validate form data with Zod schema
+    const validationResult = orderPaymentSchema.safeParse(orderData);
+    
+    if (!validationResult.success) {
+      const firstError = validationResult.error.errors[0];
+      toast.error(firstError.message);
       return;
     }
 
@@ -129,23 +137,20 @@ const OrderPage = () => {
     }
 
     try {
-      console.log("Creating direct payment with data:", orderData);
-      
       // Direct payment with authorization (no order creation first)
       await directPayment.mutateAsync({
         influencerId: influencerId || "",
         offerId: offerId || "",
         amount: pricingData.finalTotal,
-        brandName: orderData.brandName,
-        productName: orderData.productName,
-        brief: orderData.brief,
-        deadline: orderData.deadline,
-        specialInstructions: `Marque: ${orderData.brandName}\nProduit: ${orderData.productName}\nBrief: ${orderData.brief}`,
+        brandName: validationResult.data.brandName,
+        productName: validationResult.data.productName,
+        brief: validationResult.data.brief,
+        deadline: validationResult.data.deadline,
+        specialInstructions: validationResult.data.specialInstructions,
       });
 
     } catch (error) {
-      console.error("Error creating payment:", error);
-      toast.error("Erreur lors de la création du paiement");
+      // Error handling is done in the hook
     }
   }, [orderData, offer, influencer, pricingData, influencerId, offerId, directPayment]);
 
@@ -264,7 +269,10 @@ const OrderPage = () => {
                       onInputChange={handleInputChange}
                     />
 
-                    <FileUploadSection />
+                    <FileUploadSection
+                      files={orderData.files}
+                      onFilesChange={handleFilesChange}
+                    />
 
                     <PaymentMethodSection
                       paymentMethod={orderData.paymentMethod}

@@ -1,10 +1,8 @@
-import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useStripeConnect } from "@/hooks/useStripeConnect";
-import { toast } from "sonner";
+import { Landmark, ExternalLink, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface EditStripeAccountModalProps {
   isOpen: boolean;
@@ -17,116 +15,95 @@ interface EditStripeAccountModalProps {
 }
 
 const EditStripeAccountModal = ({ isOpen, onClose, currentAccount }: EditStripeAccountModalProps) => {
-  const { updateBankDetails } = useStripeConnect();
-  const [formData, setFormData] = useState({
-    iban: "",
-    accountHolder: "",
-    country: "FR",
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { updateBankDetails, isLoading } = useStripeConnect();
 
-  useEffect(() => {
-    if (currentAccount) {
-      setFormData({
-        iban: currentAccount.iban || "",
-        accountHolder: currentAccount.account_holder || "",
-        country: "FR",
-      });
-    }
-  }, [currentAccount]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.iban || !formData.accountHolder) {
-      toast.error("L'IBAN et le nom du titulaire sont obligatoires");
-      return;
-    }
-
-    // Valider le format IBAN français
-    const ibanRegex = /^FR\d{2}\s?\d{4}\s?\d{4}\s?\d{4}\s?\d{4}\s?\d{4}\s?\d{3}$/;
-    const cleanIban = formData.iban.replace(/\s/g, '');
-    
-    if (!ibanRegex.test(cleanIban)) {
-      toast.error("Format IBAN invalide. Utilisez le format FR suivi de 25 chiffres");
-      return;
-    }
-
-    setIsSubmitting(true);
+  const handleOpenStripeDashboard = async () => {
     try {
-      await updateBankDetails({
-        iban: cleanIban,
-        accountHolder: formData.accountHolder,
-        country: formData.country,
-      });
-      
-      toast.success("Compte bancaire mis à jour avec succès !");
-      onClose();
-      
-      // Recharger la page pour refléter les changements
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
-    } catch (error: any) {
-      console.error("Error updating bank account:", error);
-      toast.error(error?.message || "Erreur lors de la mise à jour du compte bancaire");
-    } finally {
-      setIsSubmitting(false);
+      console.log('🔗 Opening Stripe Express Dashboard...');
+      await updateBankDetails();
+      // La redirection se fait automatiquement dans le hook
+    } catch (error) {
+      console.error('❌ Error opening Stripe dashboard:', error);
+      // L'erreur est déjà gérée dans le hook avec un toast
     }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Modifier le compte bancaire Stripe</DialogTitle>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader className="space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-br from-pink-500 to-orange-500 rounded-lg">
+              <Landmark className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <DialogTitle className="text-xl">Modifier votre compte bancaire</DialogTitle>
+              <DialogDescription className="text-sm">
+                Mettre à jour vos informations bancaires Stripe Connect
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="iban">IBAN *</Label>
-            <Input
-              id="iban"
-              value={formData.iban}
-              onChange={(e) => setFormData({ ...formData, iban: e.target.value })}
-              placeholder="FR76 1234 5678 9012 3456 7890 123"
-              required
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Ce changement sera répercuté sur votre compte Stripe Connect
-            </p>
-          </div>
+        <Alert className="bg-blue-50 border-blue-200">
+          <AlertCircle className="h-4 w-4 text-blue-600" />
+          <AlertDescription className="text-sm text-blue-800">
+            <strong>Modification sécurisée :</strong> Vous allez être redirigé vers le tableau de bord Stripe Express pour modifier vos informations bancaires de manière sécurisée.
+          </AlertDescription>
+        </Alert>
 
-          <div>
-            <Label htmlFor="account_holder">Nom du titulaire *</Label>
-            <Input
-              id="account_holder"
-              value={formData.accountHolder}
-              onChange={(e) => setFormData({ ...formData, accountHolder: e.target.value })}
-              placeholder="Prénom Nom"
-              required
-            />
+        {currentAccount && (
+          <div className="bg-gray-50 p-4 rounded-lg border space-y-2">
+            <p className="text-sm font-medium text-gray-700">Compte bancaire actuel :</p>
+            <div className="space-y-1">
+              <p className="text-sm text-gray-900 font-mono">
+                {currentAccount.iban}
+              </p>
+              <p className="text-sm text-gray-600">
+                {currentAccount.account_holder}
+              </p>
+              {currentAccount.bank_name && (
+                <p className="text-xs text-gray-500">
+                  {currentAccount.bank_name}
+                </p>
+              )}
+            </div>
           </div>
+        )}
 
-          <div className="flex gap-2 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              className="flex-1"
-              disabled={isSubmitting}
-            >
-              Annuler
-            </Button>
-            <Button
-              type="submit"
-              className="flex-1 bg-gradient-to-r from-pink-500 to-orange-500 hover:from-pink-600 hover:to-orange-600"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "Mise à jour..." : "Mettre à jour"}
-            </Button>
-          </div>
-        </form>
+        <div className="space-y-3 pt-2">
+          <Button
+            onClick={handleOpenStripeDashboard}
+            className="w-full bg-gradient-to-r from-pink-500 to-orange-500 hover:from-pink-600 hover:to-orange-600 text-white font-medium"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <span className="animate-pulse">●</span>
+                <span className="ml-2">Connexion à Stripe...</span>
+              </>
+            ) : (
+              <>
+                <ExternalLink className="w-4 h-4 mr-2" />
+                Accéder au tableau de bord Stripe
+              </>
+            )}
+          </Button>
+          
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            className="w-full"
+            disabled={isLoading}
+          >
+            Annuler
+          </Button>
+          
+          <p className="text-xs text-gray-500 text-center">
+            Vous serez redirigé vers Stripe pour effectuer vos modifications de manière sécurisée.
+          </p>
+        </div>
       </DialogContent>
     </Dialog>
   );

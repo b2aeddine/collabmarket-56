@@ -16,14 +16,31 @@ serve(async (req) => {
     const { orderId } = await req.json();
     console.log('Completing order and paying influencer:', orderId);
 
-    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
-      apiVersion: '2023-10-16',
-    });
+    // SECURITY: Verify authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error('Unauthorized: Missing authentication');
+    }
 
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
+
+    // Get authenticated user
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
+    
+    if (authError || !user) {
+      console.error('Auth error:', authError);
+      throw new Error('Unauthorized: Invalid token');
+    }
+
+    console.log('Authenticated user:', user.id);
+
+    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
+      apiVersion: '2023-10-16',
+    });
 
     // Récupérer la commande
     const { data: order, error: orderError } = await supabaseClient
@@ -35,6 +52,12 @@ serve(async (req) => {
     if (orderError) {
       console.error('Error fetching order:', orderError);
       throw orderError;
+    }
+
+    // SECURITY: Verify authorization - only participants can complete
+    if (order.merchant_id !== user.id && order.influencer_id !== user.id) {
+      console.error('Unauthorized attempt by user', user.id, 'for order with merchant', order.merchant_id, 'and influencer', order.influencer_id);
+      throw new Error('Unauthorized: You are not authorized to complete this order');
     }
 
     console.log('Order found:', order);

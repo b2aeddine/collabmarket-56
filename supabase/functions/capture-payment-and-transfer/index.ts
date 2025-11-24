@@ -1,48 +1,45 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { getCorsHeaders } from "../_shared/cors.ts";
+import { handleError } from "../_shared/errorHandler.ts";
 
 serve(async (req) => {
+  const origin = req.headers.get('origin');
+  const corsHeaders = getCorsHeaders(origin);
+  
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const { orderId } = await req.json();
-    console.log('Capturing payment and transferring for order:', orderId);
 
-    // Initialize Stripe
-    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
-      apiVersion: '2023-10-16',
-    });
+    // SECURITY: Verify authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error('unauthorized');
+    }
 
-    // Initialize Supabase
+    // Initialize Supabase with service role for auth verification
     const supabaseService = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
       { auth: { persistSession: false } }
     );
 
-    // Initialize Supabase Client for Auth
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
-    );
-
     // Get authenticated user
-    const authHeader = req.headers.get("Authorization")!;
-    const token = authHeader.replace("Bearer ", "");
-    const { data: authData } = await supabaseClient.auth.getUser(token);
-    const user = authData.user;
-
-    if (!user) {
-      throw new Error("User not authenticated");
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabaseService.auth.getUser(token);
+    
+    if (authError || !user) {
+      throw new Error('unauthorized');
     }
+
+    // Initialize Stripe
+    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
+      apiVersion: '2023-10-16',
+    });
 
     // Get order details
     const { data: order, error: orderError } = await supabaseService
@@ -55,9 +52,9 @@ serve(async (req) => {
       throw new Error('Order not found');
     }
 
-    // Verify user is the influencer for this order
-    if (order.influencer_id !== user.id) {
-      throw new Error("Unauthorized: You are not the influencer for this order");
+    // SECURITY: Verify user authorization - only merchant or influencer can capture payment
+    if (order.merchant_id !== user.id && order.influencer_id !== user.id) {
+      throw new Error('insufficient_permissions');
     }
 
     if (!order.stripe_payment_intent_id) {
@@ -65,7 +62,6 @@ serve(async (req) => {
     }
 
     if (order.payment_captured) {
-      console.log('Payment already captured for order:', orderId);
       return new Response(JSON.stringify({ 
         success: true,
         message: 'Payment already captured'
@@ -84,8 +80,6 @@ serve(async (req) => {
 
     // Capture the payment
     const capturedPayment = await stripe.paymentIntents.capture(order.stripe_payment_intent_id);
-    
-    console.log('Payment captured successfully:', capturedPayment.id);
 
     // Calculate amounts
     const totalAmount = capturedPayment.amount;
@@ -104,8 +98,33 @@ serve(async (req) => {
       .eq('id', orderId);
 
     if (updateError) {
-      console.error('Error updating order:', updateError);
       throw new Error('Failed to update order status');
+    }
+
+    // Check if revenue already exists (avoid duplicates)
+    const { data: existingRevenue } = await supabaseService
+      .from('influencer_revenues')
+      .select('id')
+      .eq('order_id', orderId)
+      .maybeSingle();
+
+    if (!existingRevenue) {
+      // Create revenue record ONLY if it doesn't exist
+      const { error: revenueError } = await supabaseService
+        .from('influencer_revenues')
+        .insert({
+          influencer_id: order.influencer_id,
+          order_id: orderId,
+          amount: totalAmount / 100, // Convert to euros
+          commission: platformFee / 100,
+          net_amount: influencerAmount / 100,
+          status: 'available',
+          created_at: new Date().toISOString()
+        });
+
+      if (revenueError) {
+        throw revenueError;
+      }
     }
 
     // Create transfer record
@@ -126,27 +145,8 @@ serve(async (req) => {
       });
 
     if (transferError) {
-      console.error('Error creating transfer record:', transferError);
+      throw transferError;
     }
-
-    // Update influencer revenues
-    const { error: revenueError } = await supabaseService
-      .from('influencer_revenues')
-      .insert({
-        influencer_id: order.influencer_id,
-        order_id: orderId,
-        amount: totalAmount / 100, // Convert to euros
-        commission: platformFee / 100,
-        net_amount: influencerAmount / 100,
-        status: 'available',
-        created_at: new Date().toISOString()
-      });
-
-    if (revenueError) {
-      console.error('Error creating revenue record:', revenueError);
-    }
-
-    console.log('Payment captured and transfer completed for order:', orderId);
 
     return new Response(JSON.stringify({ 
       success: true,
@@ -160,12 +160,6 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('Error in capture-payment-and-transfer:', error);
-    return new Response(JSON.stringify({ 
-      error: error.message 
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 500,
-    });
+    return handleError(error, 'capture-payment-and-transfer');
   }
 });

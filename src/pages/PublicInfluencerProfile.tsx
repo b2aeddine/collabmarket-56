@@ -1,58 +1,109 @@
-
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import snapchatLogo from "@/assets/snapchat-logo.png";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import SocialNetworkCard from "@/components/SocialNetworkCard";
 import ReviewsSection from "@/components/ReviewsSection";
+import AllServicesModal from "@/components/AllServicesModal";
+import AllSocialNetworksModal from "@/components/AllSocialNetworksModal";
+import AllPortfolioModal from "@/components/AllPortfolioModal";
 import { Users, Heart, Star, MapPin, Eye, ExternalLink } from "lucide-react";
 import { InfluencerProfileSkeleton } from "@/components/common/InfluencerProfileSkeleton";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { ServicesCarousel } from "@/components/common/ServicesCarousel";
 import { SocialNetworksCarousel } from "@/components/common/SocialNetworksCarousel";
+import { PortfolioSection } from "@/components/PortfolioSection";
 
 const PublicInfluencerProfile = () => {
   const { username } = useParams();
   const [profile, setProfile] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showAllServices, setShowAllServices] = useState(false);
+  const [showAllNetworks, setShowAllNetworks] = useState(false);
+  const [showAllPortfolio, setShowAllPortfolio] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
       if (!username) return;
 
       try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select(`
-            *,
-            social_links(*),
-            offers(*),
-            profile_categories(
-              categories(*)
-            )
-          `)
-          .eq('custom_username', username)
-          .eq('is_profile_public', true)
-          .single();
+      // Récupérer d'abord le profil
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select(`
+          id,
+          first_name,
+          last_name,
+          avatar_url,
+          bio,
+          city,
+          profile_views,
+          profile_share_count,
+          created_at,
+          custom_username,
+          is_verified,
+          role,
+          social_links(*),
+          offers(*)
+        `)
+        .eq('custom_username', username)
+        .eq('is_profile_public', true)
+        .maybeSingle();
 
-        if (error) {
+        console.log('🔍 Profile data fetched:', profileData);
+
+        if (profileError) {
+          console.error('❌ Error fetching profile:', profileError);
           setError('Profil non trouvé ou privé');
           return;
         }
 
-        setProfile(data);
+        if (!profileData) {
+          setError('Profil non trouvé');
+          return;
+        }
+
+        // Récupérer les catégories séparément
+        const { data: categoriesData, error: categoriesError } = await supabase
+          .from('profile_categories')
+          .select(`
+            category_id,
+            categories (
+              id,
+              name,
+              slug
+            )
+          `)
+          .eq('profile_id', profileData.id);
+
+        console.log('📊 Categories data:', categoriesData);
+
+        if (categoriesError) {
+          console.error('❌ Error fetching categories:', categoriesError);
+        }
+
+        // Combiner les données
+        const combinedData = {
+          ...profileData,
+          profile_categories: categoriesData || []
+        };
+
+        console.log('✅ Combined data:', combinedData);
+        setProfile(combinedData);
         
         // Incrémenter le compteur de partages
         await supabase
           .from('profiles')
           .update({ 
-            profile_share_count: (data.profile_share_count || 0) + 1 
+            profile_share_count: (profileData.profile_share_count || 0) + 1 
           })
-          .eq('id', data.id);
+          .eq('id', profileData.id);
 
       } catch (err) {
         console.error('Erreur:', err);
@@ -90,24 +141,24 @@ const PublicInfluencerProfile = () => {
     switch (platformName) {
       case 'instagram':
         return (
-          <div className="w-12 h-12 rounded-lg bg-gradient-to-tr from-purple-500 via-pink-500 to-orange-500 flex items-center justify-center">
-            <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
+          <div className="w-10 h-10 rounded-lg bg-gradient-to-tr from-purple-500 via-pink-500 to-orange-500 flex items-center justify-center">
+            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
             </svg>
           </div>
         );
       case 'tiktok':
         return (
-          <div className="w-12 h-12 rounded-lg bg-black flex items-center justify-center">
-            <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
+          <div className="w-10 h-10 rounded-lg bg-black flex items-center justify-center">
+            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
               <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
             </svg>
           </div>
         );
       case 'youtube':
         return (
-          <div className="w-12 h-12 rounded-lg bg-red-600 flex items-center justify-center">
-            <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
+          <div className="w-10 h-10 rounded-lg bg-red-600 flex items-center justify-center">
+            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
               <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
             </svg>
           </div>
@@ -115,40 +166,38 @@ const PublicInfluencerProfile = () => {
       case 'x':
       case 'twitter':
         return (
-          <div className="w-12 h-12 rounded-lg bg-black flex items-center justify-center">
-            <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
+          <div className="w-10 h-10 rounded-lg bg-black flex items-center justify-center">
+            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
               <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
             </svg>
           </div>
         );
       case 'facebook':
         return (
-          <div className="w-12 h-12 rounded-lg bg-blue-600 flex items-center justify-center">
-            <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
+          <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center">
+            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
               <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
             </svg>
           </div>
         );
       case 'linkedin':
         return (
-          <div className="w-12 h-12 rounded-lg bg-blue-700 flex items-center justify-center">
-            <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
+          <div className="w-10 h-10 rounded-lg bg-blue-700 flex items-center justify-center">
+            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
               <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
             </svg>
           </div>
         );
       case 'snapchat':
         return (
-          <div className="w-12 h-12 rounded-xl bg-yellow-400 flex items-center justify-center">
-            <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12.206 2.024c-1.018 0-6.683.585-6.683 7.728 0 1.374.336 2.591.611 3.415-.317.132-.675.278-1.026.423-1.322.546-1.93 1.004-1.93 1.65 0 .697.644 1.278 1.415 1.278.212 0 .433-.042.664-.126.87-.322 1.576-.48 2.098-.48.284 0 .474.066.632.169-.349.679-1.09 2.148-3.167 2.802-.133.042-.197.13-.197.245 0 .228.28.413.56.413.076 0 .152-.013.226-.04 2.638-.914 3.694-2.871 4.094-3.679.136.007.274.011.414.011.138 0 .276-.004.412-.011.4.808 1.456 2.765 4.094 3.679.074.027.15.04.226.04.28 0 .56-.185.56-.413 0-.115-.064-.203-.197-.245-2.077-.654-2.818-2.123-3.167-2.802.158-.103.348-.169.632-.169.522 0 1.228.158 2.098.48.231.084.452.126.664.126.771 0 1.415-.581 1.415-1.278 0-.646-.608-1.104-1.93-1.65-.351-.145-.709-.291-1.026-.423.275-.824.611-2.041.611-3.415 0-7.143-5.665-7.728-6.683-7.728l-.081.001-.081-.001z"/>
-            </svg>
+          <div className="w-10 h-10 rounded-xl overflow-hidden">
+            <img src={snapchatLogo} alt="Snapchat" className="w-full h-full object-cover" />
           </div>
         );
       default:
         return (
-          <div className="w-12 h-12 rounded-lg bg-gray-500 flex items-center justify-center">
-            <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
+          <div className="w-10 h-10 rounded-lg bg-gray-500 flex items-center justify-center">
+            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
             </svg>
           </div>
@@ -169,14 +218,31 @@ const PublicInfluencerProfile = () => {
   };
 
   // Transformer les données pour l'affichage
-  console.log('Profile categories data:', profile.profile_categories);
+  console.log('🔄 Transforming profile categories:', profile.profile_categories);
+  
+  // S'assurer que profile_categories est bien un tableau
+  const categoriesArray = Array.isArray(profile.profile_categories) 
+    ? profile.profile_categories 
+    : [];
+  
+  console.log('📦 Categories array:', categoriesArray);
+  
+  const categoriesNames = categoriesArray
+    .map(pc => {
+      console.log('🏷️ Processing category:', pc);
+      return pc?.categories?.name;
+    })
+    .filter((name): name is string => Boolean(name));
+  
+  console.log('✅ Final categories names:', categoriesNames);
+  
   const influencer = {
     id: profile.id,
     username: `@${profile.custom_username}`,
     fullName: `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Utilisateur',
     city: profile.city || "France",
     avatar: profile.avatar_url || "/placeholder.svg",
-    categories: profile.profile_categories?.map(pc => pc.categories?.name).filter(Boolean) || ["Lifestyle"],
+    categories: categoriesNames.length > 0 ? categoriesNames : ["Lifestyle"],
     bio: profile.bio || "Passionné de création de contenu.",
     followers: profile.social_links?.reduce((sum, link) => sum + (link.followers || 0), 0) || 0,
     engagement: profile.social_links?.length > 0 
@@ -237,7 +303,11 @@ const PublicInfluencerProfile = () => {
                       
                       <div className="flex flex-wrap gap-2 justify-center mb-4">
                         {influencer.categories.map((category, index) => (
-                          <Badge key={index} variant={index === 0 ? "default" : "secondary"}>
+                          <Badge 
+                            key={index} 
+                            className={index === 0 ? "bg-gradient-primary text-white" : ""}
+                            variant={index === 0 ? "default" : "secondary"}
+                          >
                             {category}
                           </Badge>
                         ))}
@@ -285,7 +355,18 @@ const PublicInfluencerProfile = () => {
               {influencer.services.length > 0 && (
                 <Card className="shadow-xl border-0 animate-fade-in">
                   <CardContent className="p-6">
-                    <h2 className="text-2xl font-bold mb-6">Prestations disponibles</h2>
+                    <div className="flex justify-between items-center mb-6">
+                      <h2 className="text-2xl font-bold">Mes prestations</h2>
+                      {influencer.services.length > 1 && (
+                        <Button
+                          variant="outline"
+                          onClick={() => setShowAllServices(true)}
+                          className="text-sm"
+                        >
+                          Voir tout
+                        </Button>
+                      )}
+                    </div>
                     <ServicesCarousel 
                       services={influencer.services}
                       showOrderButton={false}
@@ -300,7 +381,18 @@ const PublicInfluencerProfile = () => {
               {influencer.socialNetworks.length > 0 && (
                 <Card className="shadow-xl border-0 animate-fade-in">
                   <CardContent className="p-6">
-                    <h2 className="text-2xl font-bold mb-4">Réseaux sociaux</h2>
+                    <div className="flex justify-between items-center mb-4">
+                      <h2 className="text-2xl font-bold">Réseaux sociaux</h2>
+                      {influencer.socialNetworks.length > 1 && (
+                        <Button
+                          variant="outline"
+                          onClick={() => setShowAllNetworks(true)}
+                          className="text-sm"
+                        >
+                          Voir tout
+                        </Button>
+                      )}
+                    </div>
                     <SocialNetworksCarousel 
                       networks={influencer.socialNetworks}
                     />
@@ -308,12 +400,44 @@ const PublicInfluencerProfile = () => {
                 </Card>
               )}
 
+              {/* Portfolio Section */}
+              <Card className="shadow-xl border-0 animate-fade-in">
+                <CardContent className="p-6">
+                  <h2 className="text-2xl font-bold mb-6">Portfolio</h2>
+                  <PortfolioSection 
+                    influencerId={profile.id} 
+                    onViewAll={() => setShowAllPortfolio(true)}
+                  />
+                </CardContent>
+              </Card>
+
               {/* Reviews Section */}
               <ReviewsSection influencerId={profile.id} />
             </div>
           </div>
         </div>
       </div>
+
+      {/* Modals */}
+      <AllServicesModal
+        isOpen={showAllServices}
+        onClose={() => setShowAllServices(false)}
+        services={influencer.services}
+        getPlatformLogo={getPlatformLogo}
+        getPlatformFromTitle={getPlatformFromTitle}
+      />
+
+      <AllSocialNetworksModal
+        isOpen={showAllNetworks}
+        onClose={() => setShowAllNetworks(false)}
+        networks={influencer.socialNetworks}
+      />
+
+      <AllPortfolioModal
+        open={showAllPortfolio}
+        onOpenChange={setShowAllPortfolio}
+        influencerId={profile.id}
+      />
     </div>
   );
 };

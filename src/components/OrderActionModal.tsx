@@ -45,7 +45,6 @@ const OrderActionModal = ({ order, isOpen, onClose, userRole }: OrderActionModal
       onClose();
     },
     onError: (error) => {
-      console.error('Error capturing payment:', error);
       toast.error('Erreur lors de la capture du paiement');
     },
   });
@@ -65,7 +64,6 @@ const OrderActionModal = ({ order, isOpen, onClose, userRole }: OrderActionModal
       onClose();
     },
     onError: (error) => {
-      console.error('Error canceling payment:', error);
       toast.error('Erreur lors de l\'annulation du paiement');
     },
   });
@@ -228,13 +226,7 @@ const OrderActionModal = ({ order, isOpen, onClose, userRole }: OrderActionModal
   const canContest = userRole === 'influenceur' && order.status === 'delivered' && canContestOrder(order);
   const canMerchantContest = userRole === 'commercant' && order.status === 'delivered';
 
-  // Debug logs
-  console.log('OrderActionModal Debug:', {
-    userRole,
-    orderStatus: order.status,
-    canMerchantContest,
-    canConfirmCompletion
-  });
+  // Debug logs removed for performance
 
   if (!isOpen) return null;
 
@@ -251,7 +243,7 @@ const OrderActionModal = ({ order, isOpen, onClose, userRole }: OrderActionModal
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="text-sm text-gray-600">
-            <p><strong>Service:</strong> {order.offers?.title}</p>
+            <p><strong>Service:</strong> {order.offer_title}</p>
             <p><strong>Montant:</strong> {order.total_amount}€</p>
             <p><strong>Commande:</strong> #{order.id.slice(0, 8)}</p>
           </div>
