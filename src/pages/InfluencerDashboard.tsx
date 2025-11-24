@@ -255,12 +255,13 @@ const InfluencerDashboard = () => {
 
   const handleDeleteOffer = async (offerId: string) => {
     try {
+      toast.loading("Suppression en cours...", { id: 'delete-offer' });
       await deleteOfferMutation.mutateAsync(offerId);
-      toast.success("Offre supprimée avec succès !");
+      toast.success("Offre supprimée avec succès !", { id: 'delete-offer' });
     } catch (error: any) {
       console.error("Error deleting offer:", error);
       const errorMessage = error?.message || "Erreur lors de la suppression de l'offre";
-      toast.error(errorMessage);
+      toast.error(errorMessage, { id: 'delete-offer' });
     }
   };
 
