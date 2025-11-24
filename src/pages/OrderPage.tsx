@@ -30,7 +30,7 @@ const OrderPage = () => {
   }, [params.serviceId, searchParams]);
 
   const directPayment = useDirectPayment();
-  const { orderData, handleInputChange, handlePaymentMethodChange, handleCheckboxChange } = useOrderData();
+  const { orderData, handleInputChange, handlePaymentMethodChange, handleCheckboxChange, handleFilesChange } = useOrderData();
 
   const [offer, setOffer] = useState<any>(null);
   const [influencer, setInfluencer] = useState<any>(null);
@@ -264,7 +264,10 @@ const OrderPage = () => {
                       onInputChange={handleInputChange}
                     />
 
-                    <FileUploadSection />
+                    <FileUploadSection
+                      files={orderData.files}
+                      onFilesChange={handleFilesChange}
+                    />
 
                     <PaymentMethodSection
                       paymentMethod={orderData.paymentMethod}

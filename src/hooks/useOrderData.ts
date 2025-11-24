@@ -8,6 +8,7 @@ export interface OrderData {
   deadline: string;
   paymentMethod: string;
   acceptTerms: boolean;
+  files: File[];
 }
 
 export const useOrderData = () => {
@@ -18,6 +19,7 @@ export const useOrderData = () => {
     deadline: "",
     paymentMethod: "stripe",
     acceptTerms: false,
+    files: [],
   });
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -41,10 +43,18 @@ export const useOrderData = () => {
     }));
   }, []);
 
+  const handleFilesChange = useCallback((files: File[]) => {
+    setOrderData(prev => ({
+      ...prev,
+      files,
+    }));
+  }, []);
+
   return {
     orderData,
     handleInputChange,
     handlePaymentMethodChange,
     handleCheckboxChange,
+    handleFilesChange,
   };
 };
