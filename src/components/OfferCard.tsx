@@ -164,7 +164,10 @@ const OfferCard = ({
           <Button
             variant="outline"
             size="sm"
-            onClick={onDelete}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
             className="flex-1 text-red-600 border-red-200 hover:bg-red-50 text-xs sm:text-sm min-h-[32px] sm:min-h-[36px]"
           >
             <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1" />
