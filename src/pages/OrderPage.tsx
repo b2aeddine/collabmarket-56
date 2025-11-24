@@ -107,7 +107,6 @@ const OrderPage = () => {
       setError(null);
 
     } catch (error) {
-      console.error('Error fetching data:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erreur lors du chargement des données';
       setError(errorMessage);
       toast.error(errorMessage);
