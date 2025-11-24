@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import { User, FileEdit, Search, Handshake, Star, Briefcase, Target, Zap, BarChart3 } from "lucide-react";
 import ScrollReveal from "@/components/common/ScrollReveal";
+import { TrustBadgeSection } from "@/components/common";
 
 const HowItWorks = () => {
   return (
@@ -314,6 +315,9 @@ const HowItWorks = () => {
           </div>
         </div>
       </section>
+
+      {/* Trust Badge Section */}
+      <TrustBadgeSection withAnimation />
 
       {/* FAQ Section */}
       <section className="py-12 px-4">

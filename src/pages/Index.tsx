@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Header from "@/components/Header";
 import { User, HandHeart, Building2, Target, Zap, BarChart3, Star, Users } from "lucide-react";
+import { TrustBadgeSection } from "@/components/common";
 
 const Index = memo(() => {
   return <div className="min-h-screen bg-white flex flex-col">
@@ -140,6 +141,9 @@ Collaborations</span>
           </div>
         </div>
       </section>
+
+      {/* Trust Badge Section */}
+      <TrustBadgeSection />
 
       {/* CTA Section */}
       <section className="py-12 sm:py-16 md:py-20 px-4 bg-gradient-hero">
