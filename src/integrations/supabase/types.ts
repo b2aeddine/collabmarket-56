@@ -567,6 +567,7 @@ export type Database = {
           id: string
           influencer_id: string
           is_active: boolean | null
+          is_deleted: boolean | null
           is_popular: boolean | null
           price: number
           title: string
@@ -579,6 +580,7 @@ export type Database = {
           id?: string
           influencer_id: string
           is_active?: boolean | null
+          is_deleted?: boolean | null
           is_popular?: boolean | null
           price: number
           title: string
@@ -591,6 +593,7 @@ export type Database = {
           id?: string
           influencer_id?: string
           is_active?: boolean | null
+          is_deleted?: boolean | null
           is_popular?: boolean | null
           price?: number
           title?: string

@@ -26,12 +26,13 @@ export const useOffers = (influencerId?: string) => {
             avatar_url
           )
         `)
-        .eq('is_active', true) // Only active offers by default
+        .eq('is_active', true)
+        .or('is_deleted.is.null,is_deleted.eq.false') // Exclude soft-deleted offers
         .order('created_at', { ascending: false })
-        .limit(influencerId ? 50 : 20); // More for specific user, less for general
+        .limit(influencerId ? 50 : 20);
 
       if (influencerId) {
-        // For specific influencer, get all their offers (including inactive)
+        // For specific influencer, get all their non-deleted offers (including inactive)
         query = supabase
           .from('offers')
           .select(`
@@ -53,6 +54,7 @@ export const useOffers = (influencerId?: string) => {
             )
           `)
           .eq('influencer_id', influencerId)
+          .or('is_deleted.is.null,is_deleted.eq.false') // Exclude soft-deleted offers
           .order('created_at', { ascending: false })
           .limit(50);
       }
@@ -110,12 +112,16 @@ export const useDeleteOffer = () => {
   
   return useMutation({
     mutationFn: async (offerId: string) => {
+      // Soft delete: mark as deleted instead of actually deleting
       const { error } = await supabase
         .from('offers')
-        .delete()
+        .update({ is_deleted: true })
         .eq('id', offerId);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Delete offer error:', error);
+        throw new Error('Impossible de supprimer l\'offre. Veuillez réessayer.');
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['offers'] });

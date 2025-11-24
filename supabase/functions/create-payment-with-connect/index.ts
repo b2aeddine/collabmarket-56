@@ -59,7 +59,11 @@ serve(async (req) => {
 
     // Get offer and influencer details (optimized: only select needed fields)
     const [offerResponse, influencerResponse] = await Promise.all([
-      supabaseService.from('offers').select('id, title, price, delivery_time, influencer_id').eq('id', offerId).single(),
+      supabaseService.from('offers')
+        .select('id, title, price, delivery_time, influencer_id')
+        .eq('id', offerId)
+        .or('is_deleted.is.null,is_deleted.eq.false') // Exclude soft-deleted offers
+        .single(),
       supabaseService.from('profiles').select('id, first_name, last_name, email').eq('id', influencerId).single()
     ]);
 
