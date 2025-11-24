@@ -16,4 +16,3 @@ export { ProfileSkeleton } from './ProfileSkeleton';
 export { StatsSkeleton } from './StatsSkeleton';
 export { GlobalLoader } from './GlobalLoader';
 export { PageTransition } from './PageTransition';
-export { TrustBadgeSection } from './TrustBadgeSection';
