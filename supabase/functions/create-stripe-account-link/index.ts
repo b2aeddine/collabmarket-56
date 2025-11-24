@@ -13,16 +13,29 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Creating Stripe account link for bank account update...');
+    console.log('🔗 Creating Stripe account link for bank account update...');
     
     const { type = 'account_update' } = await req.json();
 
+    // Vérifier la présence de la clé Stripe
+    const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY');
+    if (!stripeSecretKey) {
+      console.error('❌ STRIPE_SECRET_KEY not found in environment');
+      return new Response(JSON.stringify({ 
+        error: 'Configuration Stripe manquante - contactez le support',
+        code: 'MISSING_STRIPE_KEY'
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500,
+      });
+    }
+
     // Initialize Stripe
-    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
+    const stripe = new Stripe(stripeSecretKey, {
       apiVersion: '2023-10-16',
     });
 
-    // Initialize Supabase
+    // Initialize Supabase clients (both anon and service role)
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? ''
@@ -35,7 +48,17 @@ serve(async (req) => {
     );
 
     // Get authenticated user
-    const authHeader = req.headers.get('Authorization')!;
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(JSON.stringify({ 
+        error: 'Non authentifié',
+        code: 'UNAUTHORIZED'
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401,
+      });
+    }
+
     const token = authHeader.replace('Bearer ', '');
     const { data } = await supabaseClient.auth.getUser(token);
     const user = data.user;
@@ -44,7 +67,7 @@ serve(async (req) => {
       throw new Error('User not authenticated');
     }
 
-    console.log('User authenticated:', user.email);
+    console.log('✅ User authenticated:', user.email);
 
     // Get user's Stripe account
     const { data: stripeAccountData, error: fetchError } = await supabaseService
@@ -54,7 +77,7 @@ serve(async (req) => {
       .single();
 
     if (fetchError || !stripeAccountData?.stripe_account_id) {
-      console.error('No Stripe account found:', fetchError);
+      console.error('❌ No Stripe account found:', fetchError);
       return new Response(JSON.stringify({ 
         error: 'Aucun compte Stripe Connect trouvé. Veuillez d\'abord configurer votre compte.',
         code: 'NO_STRIPE_ACCOUNT'
@@ -65,11 +88,11 @@ serve(async (req) => {
     }
 
     const stripeAccountId = stripeAccountData.stripe_account_id;
-    console.log('Found Stripe account:', stripeAccountId);
+    console.log('📋 Found Stripe account:', stripeAccountId);
 
     // Vérifier le statut du compte
     const account = await stripe.accounts.retrieve(stripeAccountId);
-    console.log('Account details:', {
+    console.log('📊 Account details:', {
       charges_enabled: account.charges_enabled,
       details_submitted: account.details_submitted,
       payouts_enabled: account.payouts_enabled,
@@ -83,102 +106,91 @@ serve(async (req) => {
     const returnUrl = `${origin}/influencer-dashboard`;
 
     // Déterminer automatiquement le type de lien approprié
-    // Si le compte a des requirements en attente ou n'est pas complètement configuré, utiliser account_onboarding
-    // Sinon, tenter account_update
     let linkType = type;
     
-    // Si des informations sont requises ou si l'onboarding n'est pas terminé, forcer account_onboarding
+    // Si des informations sont requises, utiliser account_onboarding
     if (account.requirements?.currently_due && account.requirements.currently_due.length > 0) {
-      console.log('Requirements pending, using account_onboarding instead of account_update');
-      linkType = 'account_onboarding';
-    } else if (!account.charges_enabled || !account.payouts_enabled) {
-      console.log('Account not fully enabled, using account_onboarding');
+      console.log('⚠️  Requirements pending, forcing account_onboarding');
       linkType = 'account_onboarding';
     }
 
-    console.log(`Creating account link with type: ${linkType}`);
+    console.log(`🔄 Attempting to create ${linkType} link...`);
 
-    // Créer le lien pour mettre à jour le compte (y compris le compte bancaire)
-    const accountLink = await stripe.accountLinks.create({
-      account: stripeAccountId,
-      refresh_url: refreshUrl,
-      return_url: returnUrl,
-      type: linkType, // Utiliser le type détecté automatiquement
-      collect: 'currently_due', // Collecter uniquement les informations manquantes
-    });
+    try {
+      // Créer le lien pour mettre à jour le compte
+      const accountLink = await stripe.accountLinks.create({
+        account: stripeAccountId,
+        refresh_url: refreshUrl,
+        return_url: returnUrl,
+        type: linkType,
+        collect: 'currently_due',
+      });
 
-    console.log('Account link created successfully');
+      console.log('✅ Account link created successfully');
 
-    return new Response(JSON.stringify({ 
-      url: accountLink.url,
-      expiresAt: accountLink.expires_at,
-      message: 'Lien créé avec succès'
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200,
-    });
+      return new Response(JSON.stringify({ 
+        url: accountLink.url,
+        expiresAt: accountLink.expires_at,
+        message: 'Lien créé avec succès'
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      });
 
-  } catch (error: any) {
-    console.error('Error creating account link:', error);
-    
-    // Gérer spécifiquement l'erreur de type de lien invalide
-    if (error.raw?.param === 'type' && error.message?.includes('account_onboarding')) {
-      console.log('Retrying with account_onboarding type...');
-      
-      try {
-        // Récupérer à nouveau les données du compte
-        const { data: retryAccountData } = await supabaseService
-          .from('stripe_accounts')
-          .select('stripe_account_id')
-          .eq('user_id', user.id)
-          .single();
+    } catch (linkError: any) {
+      // Si l'erreur est liée au type de lien, réessayer avec account_onboarding
+      if (linkError.raw?.param === 'type' && linkError.message?.includes('account_onboarding')) {
+        console.log('🔄 Retrying with account_onboarding type...');
         
-        if (!retryAccountData?.stripe_account_id) {
-          throw new Error('Compte Stripe introuvable');
-        }
-
-        const origin = req.headers.get('origin') || 'https://preview--collabmarket-56.lovable.app';
-        const refreshUrl = `${origin}/onboarding/refresh`;
-        const returnUrl = `${origin}/influencer-dashboard`;
-        
-        // Réessayer avec account_onboarding
-        const accountLink = await stripe.accountLinks.create({
-          account: retryAccountData.stripe_account_id,
+        const retryAccountLink = await stripe.accountLinks.create({
+          account: stripeAccountId,
           refresh_url: refreshUrl,
           return_url: returnUrl,
           type: 'account_onboarding',
           collect: 'currently_due',
         });
 
-        console.log('Account link created successfully with account_onboarding type');
+        console.log('✅ Account link created successfully with account_onboarding');
 
         return new Response(JSON.stringify({ 
-          url: accountLink.url,
-          expiresAt: accountLink.expires_at,
+          url: retryAccountLink.url,
+          expiresAt: retryAccountLink.expires_at,
           message: 'Lien créé avec succès (onboarding requis)'
         }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 200,
         });
-      } catch (retryError: any) {
-        console.error('Retry failed:', retryError);
-        return new Response(
-          JSON.stringify({ 
-            error: retryError.message || 'Impossible de créer le lien Stripe',
-            code: 'RETRY_FAILED'
-          }),
-          {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 500,
-          }
-        );
       }
+      
+      // Pour toute autre erreur Stripe, la propager
+      throw linkError;
+    }
+
+  } catch (error: any) {
+    console.error('❌ Error creating account link:', {
+      message: error.message,
+      type: error.type,
+      code: error.code,
+      param: error.raw?.param,
+      statusCode: error.statusCode
+    });
+    
+    // Déterminer le message d'erreur approprié
+    let errorMessage = error.message || 'Une erreur est survenue';
+    let errorCode = error.code || 'INTERNAL_ERROR';
+    
+    if (error.type === 'StripeInvalidRequestError') {
+      errorMessage = 'Impossible de créer le lien Stripe. Votre compte nécessite une reconfiguration.';
+      errorCode = 'STRIPE_INVALID_REQUEST';
+    } else if (error.statusCode === 401) {
+      errorMessage = 'Authentification Stripe échouée. Vérifiez vos clés API.';
+      errorCode = 'STRIPE_AUTH_ERROR';
     }
     
     return new Response(
       JSON.stringify({ 
-        error: error.message || 'Une erreur est survenue lors de la création du lien Stripe',
-        code: error.code || 'INTERNAL_ERROR',
+        error: errorMessage,
+        code: errorCode,
         details: error.raw?.message || null
       }),
       {
