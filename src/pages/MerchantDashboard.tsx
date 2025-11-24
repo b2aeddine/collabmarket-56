@@ -8,7 +8,6 @@ import FavoriteInfluencersCard from "@/components/merchant/FavoriteInfluencersCa
 import { PaymentStatusAlert } from "@/components/PaymentStatusAlert";
 import { ProfileSkeleton } from "@/components/common/ProfileSkeleton";
 import { StatsSkeleton } from "@/components/common/StatsSkeleton";
-import { User } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { useUnreadMessagesCount } from "@/hooks/useMessages";
 import { useAuth } from "@/hooks/useAuth";
