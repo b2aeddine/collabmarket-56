@@ -247,7 +247,7 @@ const OrdersManagement = () => {
     pending: userOrders.filter(o => ["pending", "en_attente_confirmation_influenceur", "payment_authorized"].includes(o.status)).length,
     inProgress: userOrders.filter(o => ["en_cours", "delivered", "accepted"].includes(o.status)).length,
     disputed: userOrders.filter(o => ["disputed", "en_contestation"].includes(o.status)).length,
-    refused: userOrders.filter(o => ["refused", "refusée_par_influenceur", "cancelled", "annulée"].includes(o.status)).length
+    refused: userOrders.filter(o => ["refused", "refusée_par_influenceur"].includes(o.status)).length
   };
 
   const getFilteredOrders = (tab: string) => {
@@ -261,7 +261,7 @@ const OrdersManagement = () => {
       case "disputed":
         return userOrders.filter(o => ["disputed", "en_contestation"].includes(o.status));
       case "refused":
-        return userOrders.filter(o => ["refused", "refusée_par_influenceur", "cancelled", "annulée"].includes(o.status));
+        return userOrders.filter(o => ["refused", "refusée_par_influenceur"].includes(o.status));
       default:
         return userOrders;
     }
