@@ -30,7 +30,7 @@ Collaborations</span>
                   Je suis influenceur
                 </Link>
               </Button>
-              <Button size="lg" asChild className="bg-white text-accent border-2 border-accent/20 text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 rounded-full hover:bg-accent hover:text-white w-full sm:flex-1">
+              <Button size="lg" variant="outline" asChild className="border-2 border-accent text-accent text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 rounded-full hover:bg-accent hover:text-white w-full sm:flex-1">
                 <Link to="/signup?role=merchant">
                   <Building2 className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                   Je suis commerçant
