@@ -17,12 +17,11 @@ const AccountSetupSection = () => {
     isLoadingStatus, 
     isLoading: stripeConnectLoading, 
     startOnboarding, 
-    updateBankDetails, 
-    refetchAccountStatus,
+    updateBankDetails
   } = useStripeConnect();
   const { createIdentitySession, isLoading: identityLoading } = useStripeIdentity();
-  const { mutate: checkIdentityStatus, isPending: isCheckingIdentityStatus } = useCheckStripeIdentityStatus();
-  const { mutate: checkConnectStatus, isPending: isCheckingConnectStatus } = useCheckStripeConnectStatus();
+  const { mutate: checkIdentityStatus, isPending: _isCheckingIdentityStatus } = useCheckStripeIdentityStatus();
+  const { mutate: checkConnectStatus, isPending: _isCheckingConnectStatus } = useCheckStripeConnectStatus();
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showBankForm, setShowBankForm] = useState(false);

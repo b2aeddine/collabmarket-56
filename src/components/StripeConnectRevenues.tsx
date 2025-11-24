@@ -156,7 +156,7 @@ const StripeConnectRevenues = () => {
                       Client: {order.profiles?.first_name} {order.profiles?.last_name}
                     </p>
                     <p className="text-xs text-gray-500">
-                      {format(new Date(order.created_at), 'dd MMMM yyyy à HH:mm', { locale: fr })}
+                      {order.created_at ? format(new Date(order.created_at), 'dd MMMM yyyy à HH:mm', { locale: fr }) : 'N/A'}
                     </p>
                   </div>
                   <div className="text-right">

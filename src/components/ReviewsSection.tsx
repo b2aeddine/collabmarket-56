@@ -105,7 +105,7 @@ const ReviewsSection = ({ influencerId }: ReviewsSectionProps) => {
                   <div className="flex items-center gap-3">
                     <Avatar className="w-10 h-10">
                       <AvatarImage 
-                        src={review.merchant?.avatar_url} 
+                        src={review.merchant?.avatar_url ?? undefined} 
                         alt={`${review.merchant?.first_name} ${review.merchant?.last_name}`} 
                       />
                       <AvatarFallback>
@@ -151,8 +151,19 @@ const ReviewsSection = ({ influencerId }: ReviewsSectionProps) => {
         <AllReviewsModal
           isOpen={showAllReviews}
           onClose={() => setShowAllReviews(false)}
-          reviews={reviews || []}
-          reviewStats={reviewStats}
+          reviews={(reviews || []).map(r => ({ 
+            ...r, 
+            comment: r.comment ?? undefined,
+            is_public: r.is_public ?? false,
+            is_verified: r.is_verified ?? false,
+            merchant: r.merchant ? {
+              ...r.merchant,
+              first_name: r.merchant.first_name ?? undefined,
+              last_name: r.merchant.last_name ?? undefined,
+              avatar_url: r.merchant.avatar_url ?? undefined
+            } : undefined
+          }))}
+          reviewStats={reviewStats ?? undefined}
         />
       </CardContent>
     </Card>
