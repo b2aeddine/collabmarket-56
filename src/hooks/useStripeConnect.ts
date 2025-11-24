@@ -56,57 +56,90 @@ export const useStripeConnect = () => {
   // Open Stripe Express Dashboard for bank account update
   const updateBankAccount = useMutation({
     mutationFn: async () => {
-      console.log('Opening Stripe Express Dashboard for bank update...');
+      console.log('🔗 Opening Stripe Express Dashboard for bank update...');
       
-      const session = await supabase.auth.getSession();
-      const token = session.data.session?.access_token;
-      if (!token) throw new Error('Non authentifié');
+      try {
+        const session = await supabase.auth.getSession();
+        const token = session.data.session?.access_token;
+        
+        if (!token) {
+          throw new Error('Vous devez être connecté pour accéder à Stripe');
+        }
 
-      const { data, error } = await supabase.functions.invoke('create-stripe-account-link', {
-        body: { type: 'account_update' },
-        headers: { Authorization: `Bearer ${token}` }
-      });
+        console.log('📡 Calling edge function...');
+        
+        const { data, error } = await supabase.functions.invoke('create-stripe-account-link', {
+          body: { type: 'account_update' },
+          headers: { Authorization: `Bearer ${token}` }
+        });
 
-      if (error) {
-        console.error('Error from edge function:', error);
-        throw new Error(error.message || 'Erreur lors de la création du lien Stripe');
-      }
-      
-      if (data?.error) {
-        console.error('Error in response data:', data);
-        throw new Error(data.error);
-      }
+        console.log('📩 Edge function response:', { data, error });
 
-      if (!data?.url) {
-        console.error('No URL in response:', data);
-        throw new Error('Aucune URL de redirection reçue de Stripe');
+        if (error) {
+          console.error('❌ Edge function error:', error);
+          throw new Error(error.message || 'Erreur lors de la connexion à Stripe');
+        }
+        
+        if (data?.error) {
+          console.error('❌ Error in response data:', data);
+          throw new Error(data.error);
+        }
+
+        if (!data?.url) {
+          console.error('❌ No URL in response:', data);
+          throw new Error('Aucune URL de redirection reçue de Stripe');
+        }
+
+        console.log('✅ Stripe link created successfully');
+        return data;
+        
+      } catch (err: any) {
+        console.error('❌ Exception in updateBankAccount:', err);
+        throw err;
       }
-      
-      return data;
     },
     onSuccess: (data) => {
-      console.log('Redirecting to Stripe Express Dashboard:', data);
+      console.log('✅ Redirecting to Stripe Express Dashboard:', data);
       if (data?.url) {
-        window.location.href = data.url;
+        toast.success('Redirection vers Stripe...', {
+          description: 'Vous allez être redirigé vers le tableau de bord Stripe',
+          duration: 2000
+        });
+        setTimeout(() => {
+          window.location.href = data.url;
+        }, 500);
       } else {
+        console.error('❌ No URL in success data');
         toast.error('Aucune URL de redirection reçue');
       }
     },
     onError: (error: any) => {
-      console.error('Bank account link error:', error);
+      console.error('❌ Bank account link error:', error);
       
       let errorMessage = error.message || 'Erreur lors de la création du lien Stripe';
+      let errorTitle = 'Erreur de configuration';
       
       // Gérer les erreurs spécifiques
-      if (error.message?.includes('non-2xx')) {
-        errorMessage = 'Erreur de connexion à Stripe. Veuillez réessayer dans quelques instants.';
+      if (error.message?.includes('MISSING_STRIPE_KEY')) {
+        errorMessage = 'Configuration Stripe manquante. Contactez le support technique.';
+        errorTitle = 'Erreur de configuration serveur';
+      } else if (error.message?.includes('NO_STRIPE_ACCOUNT')) {
+        errorMessage = 'Aucun compte Stripe Connect trouvé. Veuillez d\'abord configurer votre compte.';
+        errorTitle = 'Compte Stripe manquant';
+      } else if (error.message?.includes('non-2xx') || error.message?.includes('FunctionsHttpError')) {
+        errorMessage = 'Impossible de se connecter à Stripe. Vérifiez votre connexion et réessayez.';
+        errorTitle = 'Erreur de connexion';
       } else if (error.message?.includes('account_onboarding')) {
-        errorMessage = 'Votre compte nécessite une configuration supplémentaire. Vous allez être redirigé vers Stripe.';
+        errorMessage = 'Configuration supplémentaire requise sur Stripe.';
+        errorTitle = 'Configuration incomplète';
+      } else if (error.message?.includes('Non authentifié')) {
+        errorMessage = 'Votre session a expiré. Veuillez vous reconnecter.';
+        errorTitle = 'Session expirée';
       }
       
-      toast.error('❌ Erreur de configuration', {
+      toast.error(errorTitle, {
         description: errorMessage,
-        duration: 6000
+        duration: 8000
       });
     },
   });
