@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import SocialNetworkCard from "./SocialNetworkCard";
 import AddSocialNetworkModal from "./AddSocialNetworkModal";
 import EditSocialNetworkModal from "./EditSocialNetworkModal";
-import { useSocialLinks, useCreateSocialLink, useUpdateSocialLink, useDeleteSocialLink } from "@/hooks/useSocialLinks";
-import { Plus, ExternalLink, Loader2 } from "lucide-react";
+import { useSocialLinks, useUpdateSocialLink, useDeleteSocialLink } from "@/hooks/useSocialLinks";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface SocialNetworkManagerProps {
@@ -13,12 +12,11 @@ interface SocialNetworkManagerProps {
 }
 
 const SocialNetworkManager = ({ userId }: SocialNetworkManagerProps) => {
-  const { socialLinks, isLoading, refetch } = useSocialLinks(userId);
-  const createSocialLink = useCreateSocialLink();
+  const { socialLinks, isLoading } = useSocialLinks(userId);
   const updateSocialLink = useUpdateSocialLink();
   const deleteSocialLink = useDeleteSocialLink();
   
-  const [editingLink, setEditingLink] = useState<any>(null);
+  const [editingLink, setEditingLink] = useState<{ id?: string; platform: string; username: string; profile_url: string; followers: number; engagement_rate: number } | null>(null);
 
   const validateAndFormatUrl = (url: string): string | null => {
     if (!url || url.trim() === '') return null;
@@ -59,7 +57,7 @@ const SocialNetworkManager = ({ userId }: SocialNetworkManagerProps) => {
     return baseUrl + cleanUsername;
   };
 
-  const handleEditNetwork = async (data: any) => {
+  const handleEditNetwork = async (data: { profile_url?: string; username?: string; platform?: string; followers?: number; engagement_rate?: number }) => {
     if (!editingLink) return;
 
     try {
@@ -107,7 +105,7 @@ const SocialNetworkManager = ({ userId }: SocialNetworkManagerProps) => {
     }
   };
 
-  const handleVisitProfile = (url: string) => {
+  const _handleVisitProfile = (url: string) => {
     const validatedUrl = validateAndFormatUrl(url);
     if (validatedUrl) {
       window.open(validatedUrl, '_blank', 'noopener,noreferrer');

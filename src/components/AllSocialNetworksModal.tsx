@@ -32,7 +32,7 @@ const AllSocialNetworksModal = ({
   onToggleActive,
   onDelete,
   onUpdateNetwork,
-  showActions = false
+  showActions: _showActions = false
 }: AllSocialNetworksModalProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

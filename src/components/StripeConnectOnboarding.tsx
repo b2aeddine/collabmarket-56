@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,10 +11,7 @@ import {
   AlertCircle, 
   Clock,
   ExternalLink,
-  Building,
   Loader2,
-  Euro,
-  Info,
   RefreshCcw
 } from 'lucide-react';
 import { useStripeConnect } from '@/hooks/useStripeConnect';

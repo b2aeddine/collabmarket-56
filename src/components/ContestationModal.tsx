@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Order } from '@/types';
 import { AlertTriangle, Upload } from "lucide-react";
 import { useCreateContestation } from "@/hooks/useContestations";
 import {
@@ -13,10 +14,12 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 
+import { Order } from '@/types';
+
 interface ContestationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  order: any;
+  order: Order;
 }
 
 const ContestationModal = ({ isOpen, onClose, order }: ContestationModalProps) => {

@@ -24,7 +24,7 @@ export const usePortfolio = (influencerId?: string) => {
       const { data, error } = await supabase
         .from("portfolio_items")
         .select("*")
-        .eq("influencer_id", influencerId!)
+        .eq("influencer_id", influencerId || '')
         .eq("is_active", true)
         .order("display_order", { ascending: true });
 
@@ -38,7 +38,7 @@ export const usePortfolio = (influencerId?: string) => {
     const fileExt = file.name.split(".").pop();
     const fileName = `${userId}/${Math.random()}.${fileExt}`;
 
-    const { error: uploadError, data } = await supabase.storage
+    const { error: uploadError, data: _data } = await supabase.storage
       .from("portfolio")
       .upload(fileName, file);
 

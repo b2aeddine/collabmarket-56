@@ -1,7 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Dispute } from '@/types';
+import { Dispute, Order } from '@/types';
 
 export const useDisputes = () => {
   const { data: disputes, isLoading, error } = useQuery({
@@ -41,7 +41,7 @@ export const useDisputes = () => {
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data as (Dispute & { order: any })[];
+      return data as (Dispute & { order: Order })[];
     },
     staleTime: 30000,
     refetchOnWindowFocus: false,
@@ -129,7 +129,7 @@ export const useResolveDispute = () => {
         .single();
 
       if (dispute) {
-        const updateData: any = { status: orderStatus };
+        const updateData: { status: string; date_completed?: string } = { status: orderStatus };
         if (orderStatus === 'completed') {
           updateData.date_completed = new Date().toISOString();
         }

@@ -35,7 +35,7 @@ const OnboardingRefresh = () => {
     }, 1000); // Attendre 1 seconde après l'arrivée sur la page
 
     return () => clearTimeout(timer);
-  }, [navigate]);
+  }, [navigate, checkStatus]);
 
   const handleRetry = () => {
     setStatus('checking');

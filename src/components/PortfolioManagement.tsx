@@ -34,7 +34,7 @@ export const PortfolioManagement = ({ userId }: PortfolioManagementProps) => {
     }
   };
 
-  const handleUpdate = async (updatedItem: any) => {
+  const handleUpdate = async (updatedItem: { id: string; title: string; description: string | null; image_url: string; link_url: string | null }) => {
     try {
       const { error } = await supabase
         .from('portfolio_items')

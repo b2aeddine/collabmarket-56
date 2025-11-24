@@ -16,7 +16,6 @@ import { CampaignDetailsSection } from "@/components/order/CampaignDetailsSectio
 import { FileUploadSection } from "@/components/order/FileUploadSection";
 import { PaymentMethodSection } from "@/components/order/PaymentMethodSection";
 import { useOrderData } from "@/hooks/useOrderData";
-import PaymentButton from "@/components/PaymentButton";
 import { orderPaymentSchema } from "@/utils/validation";
 
 const OrderPage = () => {
@@ -106,7 +105,7 @@ const OrderPage = () => {
       setInfluencer(influencerResponse.data);
       setError(null);
 
-    } catch (error) {
+    } catch (_error) {
       const errorMessage = error instanceof Error ? error.message : 'Erreur lors du chargement des données';
       setError(errorMessage);
       toast.error(errorMessage);
@@ -149,7 +148,7 @@ const OrderPage = () => {
         specialInstructions: validationResult.data.specialInstructions,
       });
 
-    } catch (error) {
+    } catch (_error) {
       // Error handling is done in the hook
     }
   }, [orderData, offer, influencer, pricingData, influencerId, offerId, directPayment]);

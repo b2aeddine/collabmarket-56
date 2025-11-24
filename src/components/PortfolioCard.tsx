@@ -12,7 +12,7 @@ interface PortfolioCardProps {
   influencer_id: string;
   created_at: string | null;
   onDelete: () => void;
-  onUpdate: (item: any) => void;
+  onUpdate: (item: { id: string; title: string; description: string | null; image_url: string; link_url: string | null }) => void;
 }
 
 const PortfolioCard = ({

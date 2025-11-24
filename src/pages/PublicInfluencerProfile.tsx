@@ -21,7 +21,7 @@ import { PortfolioSection } from "@/components/PortfolioSection";
 
 const PublicInfluencerProfile = () => {
   const { username } = useParams();
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<{ id: string; first_name?: string; last_name?: string; avatar_url?: string; bio?: string; custom_username?: string; is_profile_public?: boolean } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAllServices, setShowAllServices] = useState(false);

@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Edit, Trash2, Check } from "lucide-react";
+import { ExternalLink, Trash2, Check } from "lucide-react";
 import EditSocialNetworkModal from "./EditSocialNetworkModal";
 import snapchatLogo from "@/assets/snapchat-logo.png";
 
@@ -14,7 +14,7 @@ interface SocialNetworkCardProps {
   is_active?: boolean;
   onDelete?: () => void;
   onToggleActive?: () => void;
-  onUpdateNetwork?: (network: any) => void;
+  onUpdateNetwork?: (network: { id?: string; platform: string; username: string; profile_url: string; followers: number; engagement_rate: number }) => void;
   user_id?: string;
   created_at?: string;
 }
@@ -29,7 +29,7 @@ const SocialNetworkCard = ({
   is_connected,
   is_active = true,
   onDelete,
-  onToggleActive,
+  onToggleActive: _onToggleActive,
   onUpdateNetwork,
   user_id,
   created_at

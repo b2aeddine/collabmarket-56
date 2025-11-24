@@ -13,7 +13,7 @@ export const useDirectPayment = () => {
 
   return useMutation({
     mutationFn: async (params: StripeConnectPaymentParams) => {
-      return await createPaymentAsync({
+      return createPaymentAsync({
         influencerId: params.influencerId,
         offerId: params.offerId,
         amount: params.amount,

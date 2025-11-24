@@ -106,7 +106,7 @@ export const useCreateSocialLink = () => {
       console.log("Social link inserted successfully:", data);
       return data;
     },
-    onSuccess: (data) => {
+    onSuccess: (_data) => {
       console.log("Social link creation successful, invalidating queries");
       // Invalidate all social-links queries
       queryClient.invalidateQueries({ 

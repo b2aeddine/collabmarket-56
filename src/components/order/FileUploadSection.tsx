@@ -1,8 +1,7 @@
 
 import { Upload, X, FileIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useRef } from "react";
 import { toast } from "sonner";
 
 interface FileUploadSectionProps {
@@ -14,7 +13,6 @@ const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'ap
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 export const FileUploadSection = ({ files, onFilesChange }: FileUploadSectionProps) => {
-  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const validateFile = (file: File): boolean => {

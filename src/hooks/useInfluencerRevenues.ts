@@ -20,7 +20,7 @@ export const useInfluencerRevenues = () => {
     refetchOnWindowFocus: false,
   });
 
-  const { data: revenues, isLoading: isLoadingRevenues, refetch: refetchRevenues } = useQuery({
+  const { data: revenues, isLoading: isLoadingRevenues } = useQuery({
     queryKey: ['influencer-revenues'],
     queryFn: async () => {
       const { data: user } = await supabase.auth.getUser();
@@ -51,7 +51,7 @@ export const useInfluencerRevenues = () => {
       
       // Filter out revenues for orders without captured payments
       const validRevenues = (data || []).filter(revenue => {
-        const order = revenue.orders as any;
+        const order = revenue.orders as { status: string };
         return order?.payment_captured === true && order?.stripe_payment_intent_id;
       });
       

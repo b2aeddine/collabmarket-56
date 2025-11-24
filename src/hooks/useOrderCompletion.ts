@@ -1,6 +1,5 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useStripeConnectPayment } from './useStripeConnectPayment';
 
@@ -10,9 +9,9 @@ export const useCompleteOrderPayment = () => {
   
   return useMutation({
     mutationFn: async (orderId: string) => {
-      return await capturePaymentAsync({ orderId });
+      return capturePaymentAsync({ orderId });
     },
-    onSuccess: (data, orderId) => {
+    onSuccess: () => {
       toast.success('Prestation confirmée ! Les fonds ont été distribués.');
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       queryClient.invalidateQueries({ queryKey: ['influencer-revenues'] });
@@ -20,7 +19,7 @@ export const useCompleteOrderPayment = () => {
       queryClient.invalidateQueries({ queryKey: ['stripe-transfers'] });
       queryClient.invalidateQueries({ queryKey: ['pending-orders'] });
     },
-    onError: (error) => {
+    onError: (_error) => {
       toast.error('Erreur lors de la confirmation de la prestation');
     },
   });

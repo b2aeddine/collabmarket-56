@@ -1,31 +1,27 @@
-import { useState, useMemo, Suspense, useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import Header from "@/components/Header";
-import SocialNetworkCard from "@/components/SocialNetworkCard";
 import AddOfferModal from "@/components/AddOfferModal";
 import AddSocialNetworkModal from "@/components/AddSocialNetworkModal";
-import EditOfferModal from "@/components/EditOfferModal";
 import EditProfileModal from "@/components/EditProfileModal";
 import ProfileShareButton from "@/components/ProfileShareButton";
 import ProfileSettingsModal from "@/components/ProfileSettingsModal";
-import { TrendingUp, Eye, ShoppingBag, DollarSign, Instagram, MessageCircle, Bell, User, Trash2, Camera, Play, Zap, Megaphone, Edit, MoreVertical, Euro, ExternalLink, MapPin, Building, Settings } from "lucide-react";
+import { TrendingUp, Eye, ShoppingBag, Instagram, MessageCircle, Camera, Zap, Megaphone, Euro, MapPin, Settings } from "lucide-react";
 
 import { SocialNetwork } from "@/types";
 import { Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useOrders } from "@/hooks/useOrders";
 import { useOffers, useCreateOffer, useUpdateOffer, useDeleteOffer } from "@/hooks/useOffers";
-import { useSocialLinks, useCreateSocialLink, useUpdateSocialLink, useDeleteSocialLink } from "@/hooks/useSocialLinks";
+import { useSocialLinks, useUpdateSocialLink, useDeleteSocialLink } from "@/hooks/useSocialLinks";
 import { useProfileCategories } from "@/hooks/useCategories";
 import { useInfluencerRevenues } from "@/hooks/useInfluencerRevenues";
 import { useUnreadMessagesCount } from "@/hooks/useMessages";
 import { toast } from "sonner";
 import AccountSetupSection from "@/components/AccountSetupSection";
-import OfferCard from "@/components/OfferCard";
 import { DashboardSkeleton } from "@/components/common/DashboardSkeleton";
 import { OffersSkeleton } from "@/components/common/OffersSkeleton";
 import { SocialNetworksSkeleton } from "@/components/common/SocialNetworksSkeleton";
@@ -33,14 +29,13 @@ import InfluencerOnboardingModal from "@/components/InfluencerOnboardingModal";
 import { useStripeConnect } from "@/hooks/useStripeConnect";
 import { SocialNetworksCarousel } from "@/components/common/SocialNetworksCarousel";
 import { OffersCarousel } from "@/components/common/OffersCarousel";
-import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { PortfolioManagement } from "@/components/PortfolioManagement";
 
 const InfluencerDashboard = () => {
   const { user, updateProfile, refetchUser, loading: authLoading } = useAuth();
-  const { orders, isLoading: ordersLoading } = useOrders('influenceur');
+  const { orders } = useOrders('influenceur');
   const { offers, isLoading: offersLoading } = useOffers(user?.id);
-  const { socialLinks, isLoading: socialLinksLoading, refetch: refetchSocialLinks } = useSocialLinks(user?.id);
+  const { socialLinks, isLoading: socialLinksLoading } = useSocialLinks(user?.id);
   const { profileCategories, isLoading: categoriesLoading } = useProfileCategories(user?.id);
   const { revenues } = useInfluencerRevenues();
   const unreadMessagesCount = useUnreadMessagesCount();
@@ -93,7 +88,7 @@ const InfluencerDashboard = () => {
     };
   }, [user, orders, revenues, unreadMessagesCount]);
 
-  const [profileViews, setProfileViews] = useState(user?.profile_views || 0);
+  const [profileViews] = useState(user?.profile_views || 0);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
@@ -113,7 +108,7 @@ const InfluencerDashboard = () => {
     })) || [];
   }, [socialLinks]);
 
-  const getPlatformIcon = (platform: string) => {
+  const _getPlatformIcon = (platform: string) => {
     switch (platform) {
       case "instagram": return <Instagram className="w-5 h-5" />;
       case "tiktok": return <span className="text-lg">🎵</span>;
@@ -130,7 +125,7 @@ const InfluencerDashboard = () => {
     }
   };
 
-  const getOfferTypeIcon = (type: string) => {
+  const _getOfferTypeIcon = (type: string) => {
     switch (type.toLowerCase()) {
       case "publication": case "post": return <Camera className="w-4 h-4" />;
       case "story": return <Zap className="w-4 h-4" />;
@@ -140,7 +135,7 @@ const InfluencerDashboard = () => {
     }
   };
 
-  const handleAddOffer = async (newOffer: any) => {
+  const handleAddOffer = async (newOffer: { type: string; price: number; platform: string; description?: string; deliveryTime?: string }) => {
     if (!user?.id) {
       toast.error("Vous devez être connecté pour créer une offre");
       return;
@@ -166,12 +161,12 @@ const InfluencerDashboard = () => {
       });
       
       toast.success("Offre créée avec succès !");
-    } catch (error) {
+    } catch (_error) {
       toast.error("Erreur lors de la création de l'offre");
     }
   };
 
-  const handleToggleNetwork = async (networkId: string) => {
+  const _handleToggleNetwork = async (networkId: string) => {
     const network = socialNetworks.find(n => n.id === networkId);
     if (!network) return;
 
@@ -186,7 +181,7 @@ const InfluencerDashboard = () => {
       });
       
       toast.success(`Réseau social ${newActiveState ? 'activé' : 'désactivé'} avec succès !`);
-    } catch (error) {
+    } catch (_error) {
       toast.error("Erreur lors de la modification du réseau social");
     }
   };
@@ -206,7 +201,7 @@ const InfluencerDashboard = () => {
         engagement_rate: newNetwork.engagement_rate || 0,
       });
       toast.success("Réseau social ajouté avec succès !");
-    } catch (error) {
+    } catch (_error) {
       toast.error("Erreur lors de l'ajout du réseau social");
     }
   };
@@ -231,7 +226,7 @@ const InfluencerDashboard = () => {
         }
       });
       toast.success("Réseau social mis à jour avec succès !");
-    } catch (error) {
+    } catch (_error) {
       toast.error("Erreur lors de la mise à jour du réseau social");
     }
   };
@@ -240,7 +235,7 @@ const InfluencerDashboard = () => {
     try {
       await deleteSocialLinkMutation.mutateAsync(networkId);
       toast.success("Réseau social supprimé avec succès !");
-    } catch (error) {
+    } catch (_error) {
       toast.error("Erreur lors de la suppression du réseau social");
     }
   };
@@ -250,13 +245,13 @@ const InfluencerDashboard = () => {
       toast.loading("Suppression en cours...", { id: 'delete-offer' });
       await deleteOfferMutation.mutateAsync(offerId);
       toast.success("Offre supprimée avec succès !", { id: 'delete-offer' });
-    } catch (error: any) {
+    } catch (_error: unknown) {
       const errorMessage = error?.message || "Erreur lors de la suppression de l'offre";
       toast.error(errorMessage, { id: 'delete-offer' });
     }
   };
 
-  const handleSaveProfile = async (updatedUser: any) => {
+  const handleSaveProfile = async (updatedUser: { firstName?: string; lastName?: string; email?: string; phone?: string; city?: string; bio?: string; avatar?: string; companyName?: string }) => {
     try {
       const updateData = {
         first_name: updatedUser.firstName,
@@ -277,12 +272,12 @@ const InfluencerDashboard = () => {
 
       await refetchUser();
       toast.success("Profil mis à jour avec succès !");
-    } catch (error) {
+    } catch (_error) {
       toast.error("Erreur lors de la mise à jour du profil");
     }
   };
 
-  const handleSaveOffer = async (updatedOffer: any) => {
+  const handleSaveOffer = async (updatedOffer: { id: string; type: string; platform: string; price: number; deliveryTime: string; active: boolean }) => {
     try {
       await updateOfferMutation.mutateAsync({
         offerId: updatedOffer.id,
@@ -296,7 +291,7 @@ const InfluencerDashboard = () => {
         }
       });
       toast.success("Offre mise à jour avec succès !");
-    } catch (error) {
+    } catch (_error) {
       toast.error("Erreur lors de la mise à jour de l'offre");
     }
   };
@@ -314,7 +309,7 @@ const InfluencerDashboard = () => {
         }
       });
       toast.success(`Offre ${offer.is_active ? 'désactivée' : 'activée'} avec succès !`);
-    } catch (error) {
+    } catch (_error) {
       toast.error("Erreur lors de la modification de l'offre");
     }
   };
@@ -397,7 +392,7 @@ const InfluencerDashboard = () => {
                                 Chargement des niches...
                               </Badge>
                             ) : profileCategories && profileCategories.length > 0 ? (
-                              profileCategories.map((categoryItem: any) => (
+                              profileCategories.map((categoryItem: { id: string; categories?: { name: string } }) => (
                                 <Badge 
                                   key={categoryItem.id} 
                                   className="bg-gradient-to-r from-pink-500 to-orange-500 text-white text-xs"
@@ -567,7 +562,7 @@ const InfluencerDashboard = () => {
                         onToggleActive={(network) => handleUpdateNetwork({
                           ...network,
                           is_active: !network.is_active
-                        } as any)}
+                        } as SocialNetwork)}
                         onDelete={handleDeleteNetwork}
                         onUpdateNetwork={handleUpdateNetwork}
                         showActions={true}

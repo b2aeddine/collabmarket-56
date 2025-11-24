@@ -35,7 +35,7 @@ const InfluencerOnboardingModal = ({ isOpen, onClose }: InfluencerOnboardingModa
     onClose();
   };
 
-  const isConfigurationComplete = accountStatus?.onboardingCompleted && accountStatus?.payoutsEnabled;
+  const _isConfigurationComplete = accountStatus?.onboardingCompleted && accountStatus?.payoutsEnabled;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

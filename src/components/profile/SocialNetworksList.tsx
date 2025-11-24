@@ -1,6 +1,4 @@
 
-import SocialNetworkCard from "../SocialNetworkCard";
-import AddSocialNetworkModal from "../AddSocialNetworkModal";
 import { SocialNetwork } from "@/types";
 import { SocialNetworksCarousel } from "../common/SocialNetworksCarousel";
 
@@ -13,7 +11,7 @@ interface SocialNetworksListProps {
 
 export const SocialNetworksList = ({ 
   networks, 
-  onAddNetwork, 
+  onAddNetwork: _onAddNetwork, 
   onUpdateNetwork, 
   onDeleteNetwork 
 }: SocialNetworksListProps) => {

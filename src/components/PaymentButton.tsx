@@ -1,4 +1,4 @@
-import { useState, useCallback, memo } from "react";
+import { useCallback, memo } from "react";
 import { Button } from "@/components/ui/button";
 import { CreditCard, Loader2 } from "lucide-react";
 import { useStripePayment } from "@/hooks/useStripePayment";
@@ -14,7 +14,7 @@ interface PaymentButtonProps {
   className?: string;
 }
 
-const PaymentButton = memo(({ orderId, amount, influencerId, description, disabled, className }: PaymentButtonProps) => {
+const PaymentButton = memo(({ orderId, amount, influencerId: _influencerId, description, disabled, className }: PaymentButtonProps) => {
   const stripePayment = useStripePayment();
 
   const handlePayment = useCallback(async () => {
@@ -41,7 +41,7 @@ const PaymentButton = memo(({ orderId, amount, influencerId, description, disabl
         successUrl: `${window.location.origin}/payment-success?order_id=${orderId}`,
         cancelUrl: `${window.location.origin}/payment-cancel?order_id=${orderId}`,
       });
-    } catch (error) {
+    } catch (_error) {
       toast.error("Erreur lors de l'initialisation du paiement");
     }
   }, [orderId, amount, description, stripePayment]);

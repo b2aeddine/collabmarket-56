@@ -58,13 +58,15 @@ export const useStripeConnect = () => {
         toast.error('Aucune URL de configuration reçue');
       }
     },
-    onError: (error: any) => {
-      const message = error?.message || error?.name || 'Erreur inconnue';
-      const serverErr = error?.error || error?.context?.error || error?.context?.response || null;
-      const step = error?.context?.step || error?.step;
+    onError: (error: unknown) => {
+      const message = errorObj?.message || errorObj?.name || 'Erreur inconnue';
+      const serverErr = errorObj?.error || errorObj?.context?.error || errorObj?.context?.response || null;
+      const step = errorObj?.context?.step || errorObj?.step;
       let details = message;
       if (serverErr) {
-        try { details += ` | ${typeof serverErr === 'string' ? serverErr : JSON.stringify(serverErr)}`; } catch {}
+        try { details += ` | ${typeof serverErr === 'string' ? serverErr : JSON.stringify(serverErr)}`; } catch (_e) {
+          // Ignore JSON stringify errors
+        }
       }
       if (step) details += ` | étape: ${step}`;
       toast.error(`Erreur lors de la création de la session d'intégration: ${details}`);
@@ -111,7 +113,7 @@ export const useStripeConnect = () => {
         console.log('✅ Stripe link created successfully:', data.type);
         return data;
         
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('❌ Exception in updateBankAccount:', err);
         throw err;
       }
@@ -131,10 +133,10 @@ export const useStripeConnect = () => {
         toast.error('Aucune URL de redirection reçue');
       }
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       console.error('❌ Bank account link error:', error);
-      
-      let errorMessage = error.message || 'Erreur lors de la création du lien Stripe';
+      const errorObj = error as { message?: string };
+      let errorMessage = errorObj?.message || 'Erreur lors de la création du lien Stripe';
       let errorTitle = 'Erreur de configuration';
       
       // Gérer les erreurs spécifiques
@@ -181,7 +183,7 @@ export const useStripeConnect = () => {
       toast.info('Actualisation du statut Stripe Connect...');
       
       const result = await refetchAccountStatus();
-      const data = result.data as any;
+      const data = result.data as { onboardingCompleted?: boolean; chargesEnabled?: boolean; needsOnboarding?: boolean } | undefined;
       
       console.log('📊 Refreshed status:', data);
       
@@ -195,9 +197,10 @@ export const useStripeConnect = () => {
       } else {
         toast.success('Statut mis à jour');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Erreur lors de l\'actualisation du statut';
       console.error('❌ Refresh status error:', error);
-      toast.error(error.message || 'Erreur lors de l\'actualisation du statut');
+      toast.error(errorMessage);
     }
   };
 

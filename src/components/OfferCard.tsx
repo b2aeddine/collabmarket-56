@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, Edit, Trash2, Play, Pause } from "lucide-react";
+import { ExternalLink, Trash2 } from "lucide-react";
 import EditOfferModal from "./EditOfferModal";
 import snapchatLogo from "@/assets/snapchat-logo.png";
 
@@ -13,12 +13,12 @@ interface OfferCardProps {
   active: boolean;
   onToggleActive: () => void;
   onDelete: () => void;
-  onSave: (updatedOffer: any) => void;
-  offer: any;
+  onSave: (updatedOffer: { id: string; type: string; platform: string; price: number; deliveryTime: string; active: boolean }) => void;
+  offer: { id: string; type: string; platform: string; price: number; deliveryTime: string; active: boolean };
 }
 
 const OfferCard = ({ 
-  id,
+  id: _id,
   type, 
   platform,
   price, 

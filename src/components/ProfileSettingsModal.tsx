@@ -8,11 +8,12 @@ import { Switch } from "@/components/ui/switch";
 import { Loader2, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { User } from '@/hooks/useAuth';
 
 interface ProfileSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  profile: any;
+  profile: User | null;
   onProfileUpdate: () => void;
 }
 
@@ -60,7 +61,7 @@ const ProfileSettingsModal = ({ isOpen, onClose, profile, onProfileUpdate }: Pro
         // Un résultat trouvé, le nom d'utilisateur est pris
         setIsUsernameAvailable(false);
       }
-    } catch (error) {
+    } catch (_error) {
       console.error('Erreur lors de la vérification:', error);
       setIsUsernameAvailable(false);
     } finally {
@@ -78,13 +79,13 @@ const ProfileSettingsModal = ({ isOpen, onClose, profile, onProfileUpdate }: Pro
     }, 500);
 
     return () => clearTimeout(timeoutId);
-  }, [customUsername, profile?.custom_username]);
+  }, [customUsername, profile?.custom_username, checkUsernameAvailability]);
 
   const handleSave = async () => {
     setIsSaving(true);
     
     try {
-      const updates: any = {
+      const updates: { is_profile_public: boolean; custom_username?: string } = {
         is_profile_public: isPublic,
       };
 
@@ -105,7 +106,7 @@ const ProfileSettingsModal = ({ isOpen, onClose, profile, onProfileUpdate }: Pro
       toast.success("Paramètres mis à jour avec succès ✅");
       onProfileUpdate();
       onClose();
-    } catch (error) {
+    } catch (_error) {
       console.error('Erreur lors de la sauvegarde:', error);
       toast.error("Erreur lors de la sauvegarde");
     } finally {

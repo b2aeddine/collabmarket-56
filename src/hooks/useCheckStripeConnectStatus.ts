@@ -56,10 +56,11 @@ export const useCheckStripeConnectStatus = () => {
         });
       }
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      const errorMessage = error instanceof Error ? error.message : 'Une erreur est survenue';
       console.error('❌ Stripe Connect status check error:', error);
       toast.error('Erreur lors de la vérification du statut Stripe Connect', {
-        description: error.message || 'Une erreur est survenue'
+        description: errorMessage
       });
     },
   });

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, AlertCircle } from "lucide-react";
@@ -8,10 +8,14 @@ import { toast } from "sonner";
 
 export const PaymentStatusAlert = () => {
   const { user } = useAuth();
-  const [pendingPaymentOrders, setPendingPaymentOrders] = useState<any[]>([]);
+  const [pendingPaymentOrders, setPendingPaymentOrders] = useState<Array<{
+    id: string;
+    offer_title?: string;
+    influencer?: { first_name?: string; last_name?: string };
+  }>>([]);
   const [isRecovering, setIsRecovering] = useState(false);
 
-  const checkPendingPayments = async () => {
+  const checkPendingPayments = useCallback(async () => {
     if (!user) return;
 
     const { data: orders, error } = await supabase
@@ -28,7 +32,7 @@ export const PaymentStatusAlert = () => {
     if (!error && orders) {
       setPendingPaymentOrders(orders);
     }
-  };
+  }, [user]);
 
   const handleRecoverPayments = async () => {
     setIsRecovering(true);
@@ -43,8 +47,8 @@ export const PaymentStatusAlert = () => {
       } else {
         toast.info("Aucune commande à récupérer trouvée.");
       }
-    } catch (error) {
-      console.error("Error recovering payments:", error);
+    } catch (_error) {
+      console.error("Error recovering payments:", _error);
       toast.error("Erreur lors de la récupération des paiements");
     } finally {
       setIsRecovering(false);
@@ -58,7 +62,7 @@ export const PaymentStatusAlert = () => {
     const interval = setInterval(checkPendingPayments, 30000);
     
     return () => clearInterval(interval);
-  }, [user]);
+  }, [user, checkPendingPayments]);
 
   if (pendingPaymentOrders.length === 0) return null;
 

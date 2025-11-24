@@ -37,10 +37,11 @@ export const useCheckStripeIdentityStatus = () => {
         toast.info(`Statut: ${data.status}`);
       }
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      const errorMessage = error instanceof Error ? error.message : 'Une erreur est survenue';
       console.error('Status check error:', error);
       toast.error('Erreur lors de la vérification du statut', {
-        description: error.message || 'Une erreur est survenue'
+        description: errorMessage
       });
     },
   });

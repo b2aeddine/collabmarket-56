@@ -5,9 +5,11 @@ import { CheckCircle, Loader2 } from "lucide-react";
 import { useCompleteOrderPayment } from "@/hooks/useOrderCompletion";
 import ReviewModal from "./ReviewModal";
 
+import { Order } from '@/types';
+
 interface OrderCompletionButtonProps {
   orderId: string;
-  order?: any;
+  order?: Order;
   disabled?: boolean;
   className?: string;
 }

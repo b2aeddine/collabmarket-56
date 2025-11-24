@@ -13,7 +13,7 @@ const isProduction = import.meta.env.PROD || import.meta.env.MODE === 'productio
 /**
  * Sanitizes data before logging to prevent sensitive information leakage
  */
-function sanitizeData(data: any): any {
+function sanitizeData(data: unknown): unknown {
   if (data === null || data === undefined) {
     return data;
   }
@@ -43,7 +43,7 @@ function sanitizeData(data: any): any {
   }
 
   if (typeof data === 'object') {
-    const sanitized: any = {};
+    const sanitized: Record<string, unknown> = {};
     const sensitiveKeys = ['password', 'token', 'key', 'secret', 'authorization', 'apiKey', 'api_key'];
     
     for (const [key, value] of Object.entries(data)) {
@@ -61,7 +61,7 @@ function sanitizeData(data: any): any {
 }
 
 class Logger {
-  private log(level: LogLevel, message: string, ...args: any[]): void {
+  private log(level: LogLevel, message: string, ...args: unknown[]): void {
     // In production, only log errors and warnings
     if (isProduction && (level === 'debug' || level === 'info')) {
       return;
@@ -93,19 +93,19 @@ class Logger {
     }
   }
 
-  debug(message: string, ...args: any[]): void {
+  debug(message: string, ...args: unknown[]): void {
     this.log('debug', message, ...args);
   }
 
-  info(message: string, ...args: any[]): void {
+  info(message: string, ...args: unknown[]): void {
     this.log('info', message, ...args);
   }
 
-  warn(message: string, ...args: any[]): void {
+  warn(message: string, ...args: unknown[]): void {
     this.log('warn', message, ...args);
   }
 
-  error(message: string, ...args: any[]): void {
+  error(message: string, ...args: unknown[]): void {
     this.log('error', message, ...args);
   }
 }

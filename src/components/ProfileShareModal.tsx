@@ -29,7 +29,7 @@ const ProfileShareModal = ({ isOpen, onClose, profileId, customUsername, isPubli
       setCopied(true);
       toast.success("Lien copié ✅");
       setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
+    } catch (_error) {
       toast.error("Erreur lors de la copie du lien");
     }
   };

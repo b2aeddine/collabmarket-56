@@ -25,7 +25,7 @@ const SignUp = () => {
   const defaultRole = searchParams.get("role") || "influencer";
   const [selectedRole, setSelectedRole] = useState(defaultRole);
   const [currentStep, setCurrentStep] = useState(1);
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
   const [formData, setFormData] = useState({

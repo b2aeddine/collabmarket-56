@@ -17,7 +17,7 @@ const MessagesPage = () => {
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [newMessage, setNewMessage] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<{ id: string } | null>(null);
   const [isMobile, setIsMobile] = useState(false);
 
   const { conversations, isLoading: conversationsLoading } = useConversations();
@@ -60,7 +60,7 @@ const MessagesPage = () => {
         receiverId: otherUser.id,
       });
       setNewMessage("");
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Erreur",
         description: "Impossible d'envoyer le message",

@@ -4,7 +4,7 @@
  * SECURITY: Prevents information disclosure by hiding technical details
  */
 
-interface ErrorResponse {
+interface _ErrorResponse {
   message: string;
   code?: string;
 }

@@ -7,13 +7,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Euro, User, CreditCard, Calendar, FileText, Check, X, Clock } from "lucide-react";
+import { Euro, Check, X, Clock } from "lucide-react";
 import { useAdminWithdrawals } from "@/hooks/useWithdrawals";
 import { toast } from "sonner";
 
 const WithdrawalManagementSection = () => {
   const { withdrawalRequests, isLoading, updateWithdrawalStatus } = useAdminWithdrawals();
-  const [selectedRequest, setSelectedRequest] = useState<any>(null);
+  const [selectedRequest, setSelectedRequest] = useState<{ id: string; amount: number; status: string; influencer_id: string } | null>(null);
   const [processingStatus, setProcessingStatus] = useState<'approved' | 'rejected' | 'paid'>('approved');
   const [adminNotes, setAdminNotes] = useState('');
 
@@ -65,7 +65,7 @@ const WithdrawalManagementSection = () => {
     }
   };
 
-  const openProcessDialog = (request: any) => {
+  const openProcessDialog = (request: { id: string; amount: number; status: string; influencer_id: string; admin_notes?: string }) => {
     setSelectedRequest(request);
     setAdminNotes(request.admin_notes || '');
     setProcessingStatus(request.status === 'pending' ? 'approved' : request.status);
@@ -210,7 +210,7 @@ const WithdrawalManagementSection = () => {
                               <Label htmlFor="status">Nouveau statut</Label>
                               <Select 
                                 value={processingStatus} 
-                                onValueChange={(value: any) => setProcessingStatus(value)}
+                                onValueChange={(value: 'approved' | 'rejected' | 'paid') => setProcessingStatus(value)}
                               >
                                 <SelectTrigger>
                                   <SelectValue />

@@ -53,7 +53,7 @@ const EditProfileModal = ({
   useEffect(() => {
     if (isOpen && profileCategories) {
       const categoryIds = profileCategories
-        .map((pc: any) => pc.categories?.id)
+        .map((pc: { categories?: { id: string } }) => pc.categories?.id)
         .filter(Boolean) as string[];
       setSelectedCategories(categoryIds);
     }
@@ -100,7 +100,7 @@ const EditProfileModal = ({
       onSave(updatedUser);
       
       if (onClose) onClose();
-    } catch (error) {
+    } catch (_error) {
       // Error already handled in hook
     }
   }, [formData, selectedCategories, user.id, updateProfileMutation, onSave, onClose]);

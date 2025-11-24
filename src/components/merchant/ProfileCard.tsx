@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -8,19 +8,18 @@ import EditProfileModal from "@/components/EditProfileModal";
 import { User, Building, Mail, MapPin } from "lucide-react";
 import { useProfileCategories, useCreateProfileCategory } from "@/hooks/useCategories";
 import { toast } from "sonner";
-import { useQueryClient } from '@tanstack/react-query';
+import { User as UserType } from '@/hooks/useAuth';
 
 interface ProfileCardProps {
-  profile: any;
-  user: any;
-  onSaveProfile: (updatedUser: any) => Promise<void>;
+  profile: UserType | null;
+  user: UserType | null;
+  onSaveProfile: (updatedUser: UserType) => Promise<void>;
 }
 
 const ProfileCard = ({ profile, user, onSaveProfile }: ProfileCardProps) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const { profileCategories, isLoading: categoriesLoading, refetch: refetchCategories } = useProfileCategories(profile?.id);
   const createProfileCategoryMutation = useCreateProfileCategory();
-  const queryClient = useQueryClient();
 
   const modalUser = user ? {
     id: user.id,
@@ -35,7 +34,7 @@ const ProfileCard = ({ profile, user, onSaveProfile }: ProfileCardProps) => {
     companyName: user.company_name || '',
   } : null;
 
-  const handleSaveProfile = async (updatedUser: any) => {
+  const handleSaveProfile = async (updatedUser: UserType & { selectedCategories?: string[] }) => {
     try {
       // La fonction parent gère la sauvegarde du profil de base et affiche le toast
       await onSaveProfile(updatedUser);
@@ -50,8 +49,8 @@ const ProfileCard = ({ profile, user, onSaveProfile }: ProfileCardProps) => {
         // Recharger uniquement les catégories (l'invalidation est déjà gérée par la mutation)
         await refetchCategories();
       }
-    } catch (error) {
-      console.error("Erreur lors de la sauvegarde du profil:", error);
+    } catch (_error) {
+      console.error("Erreur lors de la sauvegarde du profil:", _error);
       toast.error("Erreur lors de la mise à jour du profil");
     }
   };
@@ -77,7 +76,7 @@ const ProfileCard = ({ profile, user, onSaveProfile }: ProfileCardProps) => {
                   Chargement des niches...
                 </Badge>
               ) : profileCategories && profileCategories.length > 0 ? (
-                profileCategories.map((categoryItem: any) => (
+                profileCategories.map((categoryItem: { id: string; categories?: { name: string } }) => (
                   <Badge 
                     key={categoryItem.id} 
                     className="bg-gradient-to-r from-pink-500 to-orange-500 text-white text-xs"

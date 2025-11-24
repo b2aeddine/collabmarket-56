@@ -2,10 +2,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { FileText } from "lucide-react";
+import { Offer, User } from "@/types";
 
 interface OrderSummaryProps {
-  offer: any;
-  influencer: any;
+  offer: Offer;
+  influencer: User;
   pricingData: {
     totalPrice: number;
     serviceFee: number;

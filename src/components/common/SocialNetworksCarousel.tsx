@@ -34,7 +34,7 @@ export const SocialNetworksCarousel = ({
   onToggleActive,
   onDelete,
   onUpdateNetwork,
-  showActions = false
+  showActions: _showActions = false
 }: SocialNetworksCarouselProps) => {
   if (networks.length === 0) {
     return (

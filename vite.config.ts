@@ -4,7 +4,7 @@ import path from "path";
 import { securityHeaders } from "./vite-plugin-security-headers";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
+export default defineConfig(({ mode: _mode }) => ({
   server: {
     host: "::",
     port: 8080,

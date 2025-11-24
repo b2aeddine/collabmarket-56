@@ -1,9 +1,11 @@
-import { Clock, AlertCircle, CheckCircle, XCircle } from "lucide-react";
+import { Clock, AlertCircle, CheckCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
+import { Order } from '@/types';
+
 interface OrderTimelineInfoProps {
-  order: any;
+  order: Order;
   userRole: 'influenceur' | 'commercant';
 }
 

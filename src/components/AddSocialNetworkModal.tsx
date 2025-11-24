@@ -62,7 +62,7 @@ const AddSocialNetworkModal = ({ onAddNetwork: _onAddNetwork }: AddSocialNetwork
         engagement_rate: formData.engagement_rate ? parseFloat(formData.engagement_rate) : 0,
       };
 
-      const result = await createSocialLinkMutation.mutateAsync(socialData);
+      await createSocialLinkMutation.mutateAsync(socialData);
       
       toast.success("Réseau social ajouté avec succès !");
       
@@ -70,7 +70,7 @@ const AddSocialNetworkModal = ({ onAddNetwork: _onAddNetwork }: AddSocialNetwork
       resetForm();
       setIsOpen(false);
 
-    } catch (error) {
+    } catch (_error) {
       toast.error("Erreur lors de l'ajout du réseau social");
     }
   };

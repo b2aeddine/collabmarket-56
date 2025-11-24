@@ -3,7 +3,7 @@
 /**
  * Debounce function to limit the rate at which a function can fire
  */
-export const debounce = <T extends (...args: any[]) => any>(
+export const debounce = <T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number
 ): ((...args: Parameters<T>) => void) => {
@@ -18,7 +18,7 @@ export const debounce = <T extends (...args: any[]) => any>(
 /**
  * Throttle function to ensure a function is called at most once in a specified time period
  */
-export const throttle = <T extends (...args: any[]) => any>(
+export const throttle = <T extends (...args: unknown[]) => unknown>(
   func: T,
   limit: number
 ): ((...args: Parameters<T>) => void) => {
@@ -36,7 +36,7 @@ export const throttle = <T extends (...args: any[]) => any>(
 /**
  * RequestAnimationFrame throttle for smooth animations
  */
-export const rafThrottle = <T extends (...args: any[]) => any>(
+export const rafThrottle = <T extends (...args: unknown[]) => unknown>(
   func: T
 ): ((...args: Parameters<T>) => void) => {
   let rafId: number | null = null;

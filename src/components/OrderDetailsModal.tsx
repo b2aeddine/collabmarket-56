@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Calendar, MapPin, Clock, Euro, CheckCircle, XCircle, Loader2, AlertTriangle } from "lucide-react";
+import { Calendar, Clock, Euro, CheckCircle, XCircle, Loader2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import OrderTimelineInfo from "./OrderTimelineInfo";
 import { useAcceptOrder, useRefuseOrder, useMarkOrderAsDelivered, useConfirmOrderCompletion } from "@/hooks/useOrders";
@@ -42,7 +42,7 @@ interface OrderDetailsModalProps {
   };
 }
 
-const OrderActions = ({ order, userRole, onClose }: { order: any, userRole: string, onClose: () => void }) => {
+const OrderActions = ({ order, userRole, onClose }: { order: OrderDetailsModalProps['order'], userRole: string, onClose: () => void }) => {
   const queryClient = useQueryClient();
   const [showContestationModal, setShowContestationModal] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -101,7 +101,7 @@ const OrderActions = ({ order, userRole, onClose }: { order: any, userRole: stri
         toast.success('Commande acceptée avec succès');
         onClose();
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error('Erreur lors de l\'acceptation de la commande');
     }
   };
@@ -115,7 +115,7 @@ const OrderActions = ({ order, userRole, onClose }: { order: any, userRole: stri
         toast.success('Commande refusée');
         onClose();
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error('Erreur lors du refus de la commande');
     }
   };
@@ -125,7 +125,7 @@ const OrderActions = ({ order, userRole, onClose }: { order: any, userRole: stri
       await markAsDelivered.mutateAsync(order.id);
       toast.success('Prestation marquée comme livrée');
       onClose();
-    } catch (error) {
+    } catch (_error) {
       toast.error('Erreur lors du marquage de la prestation');
     }
   };
@@ -136,12 +136,12 @@ const OrderActions = ({ order, userRole, onClose }: { order: any, userRole: stri
       toast.success('Commande confirmée avec succès');
       // Afficher le modal d'avis après confirmation réussie
       setShowReviewModal(true);
-    } catch (error) {
+    } catch (_error) {
       toast.error('Erreur lors de la confirmation');
     }
   };
 
-  const canContestOrder = (order: any) => {
+  const canContestOrder = (order: OrderDetailsModalProps['order']) => {
     if (order.status !== 'delivered' && order.status !== 'terminée') return false;
     if (!order.updated_at) return false;
     const deliveredAt = new Date(order.updated_at);
@@ -285,7 +285,7 @@ const OrderActions = ({ order, userRole, onClose }: { order: any, userRole: stri
 };
 
 const OrderDetailsModal = ({ isOpen, onClose, order, userRole = 'commercant' }: OrderDetailsModalProps) => {
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [_currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [effectiveUserRole, setEffectiveUserRole] = useState<string>(userRole);
   
   useEffect(() => {

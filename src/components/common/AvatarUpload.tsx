@@ -63,9 +63,10 @@ export const AvatarUpload = ({ currentAvatarUrl, onAvatarUpdated, userInitials =
       setSelectedFile(null);
       setPreviewUrl(null);
       setShowUploadOptions(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Erreur lors de l'upload";
       console.error('Error uploading avatar:', error);
-      toast.error("Erreur lors de l'upload: " + error.message);
+      toast.error(errorMessage);
     } finally {
       setUploading(false);
     }

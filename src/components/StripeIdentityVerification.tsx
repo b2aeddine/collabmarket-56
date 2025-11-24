@@ -1,7 +1,7 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Shield, AlertCircle, CheckCircle, ExternalLink, Loader2, Clock, RefreshCw } from "lucide-react";
+import { Shield, AlertCircle, CheckCircle, ExternalLink, Loader2, Clock } from "lucide-react";
 import { useStripeIdentity } from "@/hooks/useStripeIdentity";
 import { useCheckStripeIdentityStatus } from "@/hooks/useCheckStripeIdentityStatus";
 import { useAuth } from "@/hooks/useAuth";
@@ -9,7 +9,7 @@ import { useEffect } from "react";
 
 const StripeIdentityVerification = () => {
   const { createIdentitySession, isLoading } = useStripeIdentity();
-  const { mutate: checkStatus, isPending: isCheckingStatus } = useCheckStripeIdentityStatus();
+  const { mutate: _checkStatus, isPending: _isCheckingStatus } = useCheckStripeIdentityStatus();
   const { user, refreshUser } = useAuth();
 
   // Vérifier le statut de vérification au retour de Stripe
@@ -21,7 +21,7 @@ const StripeIdentityVerification = () => {
         await refreshUser();
       }, 2000); // Attendre 2 secondes que le webhook soit traité
     }
-  }, [refreshUser]);
+  }, [refreshUser, user]);
 
   // Rafraîchir les données utilisateur périodiquement pour détecter les changements
   useEffect(() => {
@@ -86,8 +86,8 @@ const StripeIdentityVerification = () => {
     }
   };
 
-  const handleCheckStatus = () => {
-    checkStatus(undefined, {
+  const _handleCheckStatus = () => {
+    _checkStatus(undefined, {
       onSuccess: () => {
         // Rafraîchir les données utilisateur après vérification du statut
         refreshUser();
@@ -96,7 +96,7 @@ const StripeIdentityVerification = () => {
   };
 
   const identityStatus = getIdentityStatus();
-  const StatusIcon = identityStatus.icon;
+  const _StatusIcon = identityStatus.icon;
 
   return (
     <Card className="border-0 shadow-lg bg-white rounded-xl">

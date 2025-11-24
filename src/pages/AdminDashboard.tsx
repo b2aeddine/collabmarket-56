@@ -8,7 +8,6 @@ import Header from "@/components/Header";
 import { ContactMessagesSection } from "@/components/admin/ContactMessagesSection";
 import { InfluencerManagementSection } from "@/components/admin/InfluencerManagementSection";
 import WithdrawalManagementSection from "@/components/admin/WithdrawalManagementSection";
-import WithdrawalDashboard from "@/components/admin/WithdrawalDashboard";
 import ContestationsManagement from "@/components/admin/ContestationsManagement";
 import OrderContestationManagement from "@/components/admin/OrderContestationManagement";
 import { useQuery } from "@tanstack/react-query";

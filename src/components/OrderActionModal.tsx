@@ -2,18 +2,18 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, CheckCircle, XCircle, Clock, AlertTriangle, Loader2 } from "lucide-react";
+import { CheckCircle, XCircle, Clock, AlertTriangle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAcceptOrder, useRefuseOrder, useMarkOrderAsDelivered, useConfirmOrderCompletion, useContestOrder } from "@/hooks/useOrders";
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import ContestationModal from "./ContestationModal";
 import ReviewModal from "./ReviewModal";
+import { Order } from '@/types';
 
 interface OrderActionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  order: any;
+  order: Order;
   userRole: 'commercant' | 'influenceur';
 }
 
@@ -79,7 +79,7 @@ const OrderActionModal = ({ order, isOpen, onClose, userRole }: OrderActionModal
         toast.success('Commande acceptée avec succès');
         onClose();
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error('Erreur lors de l\'acceptation de la commande');
     }
   };
@@ -95,7 +95,7 @@ const OrderActionModal = ({ order, isOpen, onClose, userRole }: OrderActionModal
         toast.success('Commande refusée');
         onClose();
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error('Erreur lors du refus de la commande');
     }
   };
@@ -105,7 +105,7 @@ const OrderActionModal = ({ order, isOpen, onClose, userRole }: OrderActionModal
       await markAsDelivered.mutateAsync(order.id);
       toast.success('Prestation marquée comme livrée');
       onClose();
-    } catch (error) {
+    } catch (_error) {
       toast.error('Erreur lors du marquage de la prestation');
     }
   };
@@ -117,7 +117,7 @@ const OrderActionModal = ({ order, isOpen, onClose, userRole }: OrderActionModal
       // Afficher le modal d'avis après confirmation réussie
       setShowReviewModal(true);
       // Ne pas fermer le modal principal ici, attendre que l'avis soit publié
-    } catch (error) {
+    } catch (_error) {
       toast.error('Erreur lors de la confirmation');
     }
   };
@@ -197,7 +197,7 @@ const OrderActionModal = ({ order, isOpen, onClose, userRole }: OrderActionModal
       setShowContestationModal(false);
       setPreuveInfluenceur('');
       onClose();
-    } catch (error) {
+    } catch (_error) {
       toast.error('Erreur lors de l\'envoi de la contestation');
     }
   };
@@ -214,7 +214,7 @@ const OrderActionModal = ({ order, isOpen, onClose, userRole }: OrderActionModal
       setShowMerchantContestModal(false);
       setPreuveMerchant('');
       onClose();
-    } catch (error) {
+    } catch (_error) {
       toast.error('Erreur lors de l\'envoi de la contestation');
     }
   };

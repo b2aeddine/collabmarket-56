@@ -78,9 +78,10 @@ export const useProfileUpdate = () => {
       queryClient.invalidateQueries({ queryKey: ['profile-categories'] });
       toast.success('Profil mis à jour avec succès !');
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      const errorMessage = error instanceof Error ? error.message : 'Une erreur est survenue';
       console.error('Error updating profile:', error);
-      toast.error(`Erreur lors de la mise à jour : ${error.message}`);
+      toast.error(`Erreur lors de la mise à jour : ${errorMessage}`);
     },
   });
 };

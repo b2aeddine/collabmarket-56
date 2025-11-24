@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,12 +11,11 @@ import OrderActionModal from "@/components/OrderActionModal";
 import MessagingModal from "@/components/MessagingModal";
 import ReviewModal from "@/components/ReviewModal";
 import { ShoppingBag, Calendar, MessageCircle, Settings, AlertTriangle, CheckCircle, Clock, XCircle, Star } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
 import { useOrders } from "@/hooks/useOrders";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { Order } from "@/types";
 import { PaymentStatusAlert } from "@/components/PaymentStatusAlert";
 
 const OrdersManagement = () => {
@@ -28,8 +27,6 @@ const OrdersManagement = () => {
   const [selectedOrderForMessage, setSelectedOrderForMessage] = useState(null);
   const [selectedOrderForReview, setSelectedOrderForReview] = useState(null);
   const [activeTab, setActiveTab] = useState("all");
-  const { toast } = useToast();
-  const navigate = useNavigate();
 
   // Hook pour vérifier les avis existants
   const { data: existingReviews = [] } = useQuery({
@@ -134,7 +131,7 @@ const OrdersManagement = () => {
     }
   };
 
-  const getActionMessage = (order: any, userRole: 'influenceur' | 'commercant') => {
+  const getActionMessage = (order: Order, userRole: 'influenceur' | 'commercant') => {
     if (userRole === 'influenceur') {
       switch (order.status) {
         case 'payment_authorized':
@@ -207,7 +204,7 @@ const OrdersManagement = () => {
     setSelectedOrderForAction(order);
   };
 
-  const hasActionAvailable = (order: any, userRole: 'influenceur' | 'commercant') => {
+  const hasActionAvailable = (order: Order, userRole: 'influenceur' | 'commercant') => {
     if (userRole === 'influenceur') {
       return ['pending', 'payment_authorized', 'en_attente_confirmation_influenceur', 'en_cours', 'accepted', 'delivered'].includes(order.status);
     } else if (userRole === 'commercant') {
@@ -216,7 +213,7 @@ const OrdersManagement = () => {
     return false;
   };
 
-  const hasReviewAvailable = (order: any) => {
+  const hasReviewAvailable = (order: Order) => {
     return user?.role === 'commercant' && 
            order.status === 'completed' && 
            !existingReviews.includes(order.id);

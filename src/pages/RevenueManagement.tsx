@@ -3,7 +3,6 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Header from "@/components/Header";
 import WithdrawalModal from "@/components/WithdrawalModal";
@@ -14,17 +13,18 @@ import { useAuth } from "@/hooks/useAuth";
 import { useInfluencerRevenues } from "@/hooks/useInfluencerRevenues";
 import { useBankAccounts } from "@/hooks/useBankAccounts";
 import { useStripeConnect } from "@/hooks/useStripeConnect";
+import { Revenue, WithdrawalRequest } from "@/types";
 import StripeConnectRevenues from "@/components/StripeConnectRevenues";
 import StripeConnectOnboarding from "@/components/StripeConnectOnboarding";
-import { Euro, TrendingUp, Clock, CheckCircle, AlertCircle, CreditCard, Download, Plus, Edit, Wallet, History } from "lucide-react";
+import { Euro, TrendingUp, Clock, CheckCircle, AlertCircle, CreditCard, Download, Edit, Wallet, History } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
 const RevenueManagement = () => {
   const { user } = useAuth();
   const { balance, revenues, withdrawalRequests, isLoading } = useInfluencerRevenues();
-  const { bankAccounts, addBankAccount } = useBankAccounts();
-  const { accountStatus, updateBankDetails } = useStripeConnect();
+  const { bankAccounts } = useBankAccounts();
+  const { accountStatus } = useStripeConnect();
   const [isWithdrawalModalOpen, setIsWithdrawalModalOpen] = useState(false);
   const [isAddBankModalOpen, setIsAddBankModalOpen] = useState(false);
   const [isEditBankModalOpen, setIsEditBankModalOpen] = useState(false);
@@ -407,7 +407,8 @@ const RevenueManagement = () => {
                     <div className="space-y-4">
                       {/* Fusion des revenus et retraits triés par date */}
                       {(() => {
-                        const allTransactions = [
+                        type Transaction = (Revenue & { type: 'revenue' }) | (WithdrawalRequest & { type: 'withdrawal' });
+                        const allTransactions: Transaction[] = [
                           ...(revenues || []).map(r => ({ ...r, type: 'revenue' as const })),
                           ...(withdrawalRequests || []).map(w => ({ ...w, type: 'withdrawal' as const }))
                         ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
@@ -422,7 +423,7 @@ const RevenueManagement = () => {
                                   <p className="font-semibold text-lg">
                                     {transaction.type === 'revenue' ? '+' : '-'}
                                     {transaction.type === 'revenue' 
-                                      ? (transaction as any).net_amount 
+                                      ? transaction.net_amount 
                                       : transaction.amount
                                     }€
                                   </p>
@@ -435,9 +436,9 @@ const RevenueManagement = () => {
                                 <p className="text-sm text-gray-600">
                                   {transaction.type === 'revenue' ? 'Revenu' : 'Retrait'} - {format(new Date(transaction.created_at), 'dd MMMM yyyy à HH:mm', { locale: fr })}
                                 </p>
-                                {transaction.type === 'revenue' && (transaction as any).order_id && (
+                                {transaction.type === 'revenue' && transaction.order_id && (
                                   <p className="text-xs text-gray-500">
-                                    Commande #{(transaction as any).order_id.slice(0, 8)}...
+                                    Commande #{transaction.order_id.slice(0, 8)}...
                                   </p>
                                 )}
                               </div>

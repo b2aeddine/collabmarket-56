@@ -73,7 +73,7 @@ export const PortfolioSection = ({ influencerId, showAll = false, onViewAll }: P
               <Button
                 variant="outline"
                 size="sm"
-                onClick={(e) => handleVisitLink(item.link_url!, e)}
+                onClick={(e) => item.link_url && handleVisitLink(item.link_url, e)}
                 className="w-full text-orange-500 border-orange-200 hover:bg-orange-50 text-xs"
               >
                 <ExternalLink className="w-3 h-3 mr-2" />

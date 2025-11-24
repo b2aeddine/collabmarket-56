@@ -1,4 +1,3 @@
-import { memo } from "react";
 import Header from "@/components/Header";
 import AdvancedFilters from "@/components/catalog/AdvancedFilters";
 import InfluencerCard from "@/components/catalog/InfluencerCard";

@@ -54,7 +54,8 @@ export const useCreateReview = () => {
       queryClient.invalidateQueries({ queryKey: ['reviews'] });
       queryClient.invalidateQueries({ queryKey: ['orders'] });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      const errorMessage = error instanceof Error ? error.message : 'Une erreur est survenue';
       console.error('Error creating review:', error);
       toast({
         title: "Erreur",

@@ -12,7 +12,7 @@ import { fr } from "date-fns/locale";
 const ContestationsManagement = () => {
   const { contestations, isLoading } = useContestations(true); // Vue admin
   const updateContestationStatus = useUpdateContestationStatus();
-  const [selectedContestation, setSelectedContestation] = useState<any>(null);
+  const [selectedContestation, setSelectedContestation] = useState<{ id: string; order_id: string; raison: string; statut: string } | null>(null);
   const [adminDecision, setAdminDecision] = useState("");
 
   const getStatutColor = (statut: string) => {

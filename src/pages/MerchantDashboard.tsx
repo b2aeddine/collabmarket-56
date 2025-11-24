@@ -50,7 +50,7 @@ const MerchantDashboard = memo(() => {
         title: "Profil mis à jour",
         description: "Vos informations ont été enregistrées avec succès.",
       });
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Erreur",
         description: "Erreur lors de la mise à jour du profil",

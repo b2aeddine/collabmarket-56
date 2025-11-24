@@ -24,12 +24,12 @@ const Header = memo(() => {
   const handleSignOut = useCallback(async () => {
     try {
       await signOut();
-    } catch (error) {
+    } catch (_error) {
       // Error is logged by auth context
     }
   }, [signOut]);
   
-  const toggleMenu = useCallback(() => {
+  const _toggleMenu = useCallback(() => {
     setIsMenuOpen(prev => !prev);
   }, []);
 

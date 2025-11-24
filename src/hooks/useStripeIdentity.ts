@@ -53,9 +53,10 @@ export const useStripeIdentity = () => {
       }
 
       return data;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Erreur lors de la création de la session de vérification";
       console.error('Identity verification error:', error);
-      toast.error(error.message || "Erreur lors de la création de la session de vérification");
+      toast.error(errorMessage);
       throw error;
     } finally {
       setIsLoading(false);

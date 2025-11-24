@@ -9,11 +9,12 @@ import { Label } from "@/components/ui/label";
 import { AlertTriangle, CheckCircle, XCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useResolveDispute } from "@/hooks/useDisputes";
+import { Dispute } from '@/types';
 
 interface DisputeManagementModalProps {
   isOpen: boolean;
   onClose: () => void;
-  dispute: any;
+  dispute: Dispute;
 }
 
 const DisputeManagementModal = ({ isOpen, onClose, dispute }: DisputeManagementModalProps) => {
@@ -46,7 +47,7 @@ const DisputeManagementModal = ({ isOpen, onClose, dispute }: DisputeManagementM
         description: "Le litige a été résolu avec succès.",
       });
       onClose();
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Erreur",
         description: "Impossible de résoudre le litige.",

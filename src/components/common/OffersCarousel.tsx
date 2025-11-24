@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Carousel,
@@ -22,7 +21,7 @@ interface OffersCarouselProps {
   offers: Offer[];
   onToggleActive: (id: string) => void;
   onDelete: (id: string) => void;
-  onSave: (updatedOffer: any) => void;
+  onSave: (updatedOffer: Offer) => void;
 }
 
 export const OffersCarousel = ({ 

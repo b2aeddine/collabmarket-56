@@ -7,10 +7,12 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { Order } from '@/types';
+
 interface ReviewModalProps {
   isOpen: boolean;
   onClose: () => void;
-  order: any;
+  order: Order;
 }
 
 const ReviewModal = ({ isOpen, onClose, order }: ReviewModalProps) => {

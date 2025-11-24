@@ -4,13 +4,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useCreateBankAccount } from "@/hooks/useRevenues";
 import { supabase } from "@/integrations/supabase/client";
 import { BankAccount } from "@/types";
-import { Euro, CreditCard, Plus } from "lucide-react";
+import { Euro, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 
 interface WithdrawalModalProps {
@@ -20,9 +19,9 @@ interface WithdrawalModalProps {
   bankAccounts: BankAccount[];
 }
 
-const WithdrawalModal = ({ isOpen, onClose, availableBalance, bankAccounts }: WithdrawalModalProps) => {
+const WithdrawalModal = ({ isOpen, onClose, availableBalance, bankAccounts: _bankAccounts }: WithdrawalModalProps) => {
   const [amount, setAmount] = useState("");
-  const [selectedBankAccount, setSelectedBankAccount] = useState("");
+  const [_selectedBankAccount, setSelectedBankAccount] = useState("");
   const [showAddBank, setShowAddBank] = useState(false);
   const [newBankAccount, setNewBankAccount] = useState({
     iban: "",
@@ -55,7 +54,7 @@ const WithdrawalModal = ({ isOpen, onClose, availableBalance, bankAccounts }: Wi
     setIsProcessing(true);
     try {
       // Appeler directement la fonction process-withdrawal pour créer un payout Stripe
-      const { data, error } = await supabase.functions.invoke('process-withdrawal', {
+      const { data: _data, error } = await supabase.functions.invoke('process-withdrawal', {
         body: { amount: withdrawalAmount }
       });
 
@@ -67,9 +66,10 @@ const WithdrawalModal = ({ isOpen, onClose, availableBalance, bankAccounts }: Wi
       setAmount("");
       setSelectedBankAccount("");
       onClose();
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Erreur lors du traitement du retrait";
       console.error("Error processing withdrawal:", error);
-      toast.error(error.message || "Erreur lors du traitement du retrait");
+      toast.error(errorMessage);
     } finally {
       setIsProcessing(false);
     }

@@ -9,7 +9,7 @@ import { CheckCircle, ArrowLeft } from "lucide-react";
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get('session_id');
-  const [loading, setLoading] = useState(true);
+  const [_loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Simulate loading delay for better UX

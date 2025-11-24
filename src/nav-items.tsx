@@ -1,4 +1,3 @@
-import { HomeIcon, Building2, Users, MessageSquare, ShoppingCart, Euro, Settings, Star } from "lucide-react";
 import Index from "./pages/Index";
 import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";

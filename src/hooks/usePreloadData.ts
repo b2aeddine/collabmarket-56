@@ -37,5 +37,5 @@ export const usePreloadData = () => {
       const timeoutId = setTimeout(preloadData, 100);
       return () => clearTimeout(timeoutId);
     }
-  }, [user?.id, queryClient]);
+  }, [user, queryClient]);
 };
