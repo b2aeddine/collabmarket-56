@@ -125,21 +125,19 @@ const StripeConnectOnboarding = () => {
           </Badge>
         </div>
 
-        {/* Description */}
+        {/* Description - Show different message based on actual status */}
         <div className="text-gray-600">
-          {!accountStatus?.hasAccount && (
-            <p>Votre compte Stripe Connect est créé mais la configuration n'est pas terminée. Finalisez la configuration pour recevoir des paiements.</p>
-          )}
-          {accountStatus?.hasAccount && !accountStatus.onboardingCompleted && (
-            <p>Votre compte Stripe Connect est créé mais la configuration n'est pas terminée. Finalisez la configuration pour recevoir des paiements.</p>
-          )}
-          {accountStatus?.onboardingCompleted && accountStatus.chargesEnabled && (
-            <p>Votre compte Stripe Connect est entièrement configuré et prêt à recevoir des paiements.</p>
+          {accountStatus?.onboardingCompleted && accountStatus?.chargesEnabled ? (
+            <p>✅ Votre compte Stripe Connect est entièrement configuré et prêt à recevoir des paiements.</p>
+          ) : !accountStatus?.hasAccount ? (
+            <p>⚠️ Votre compte Stripe Connect n'est pas encore créé. Cliquez sur "Finaliser la configuration" pour commencer.</p>
+          ) : (
+            <p>⚠️ Votre compte Stripe Connect nécessite une configuration supplémentaire. Finalisez la configuration pour recevoir des paiements.</p>
           )}
         </div>
 
-        {/* Action Button */}
-        {(!accountStatus?.hasAccount || !accountStatus?.onboardingCompleted) && (
+        {/* Action Button - Only show if not complete */}
+        {(!accountStatus?.onboardingCompleted || !accountStatus?.chargesEnabled) && (
           <div className="space-y-3">
             <Button 
               onClick={handleStartOnboarding}
@@ -165,15 +163,19 @@ const StripeConnectOnboarding = () => {
           </div>
         )}
 
-        {accountStatus?.hasAccount && accountStatus?.onboardingCompleted && !showBankForm && (
-          <Button 
-            onClick={() => setShowBankForm(true)}
-            variant="outline"
-            className="w-full"
-          >
-            <Building className="w-4 h-4 mr-2" />
-            {accountStatus.hasExternalAccount ? 'Modifier l\'IBAN' : 'Ajouter un IBAN'}
-          </Button>
+        {/* Bank account modification - Only show if complete */}
+        {accountStatus?.onboardingCompleted && accountStatus?.chargesEnabled && (
+          <div className="space-y-3">
+            <Button 
+              onClick={handleRefresh}
+              variant="outline"
+              disabled={isRefreshing || isLoadingStatus}
+              className="w-full"
+            >
+              <RefreshCcw className="w-4 h-4 mr-2" />
+              {isRefreshing ? 'Actualisation...' : 'Actualiser le statut'}
+            </Button>
+          </div>
         )}
 
         {/* Bank Account Form */}

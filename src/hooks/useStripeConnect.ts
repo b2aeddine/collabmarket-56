@@ -12,12 +12,18 @@ export const useStripeConnect = () => {
   const { data: accountStatus, refetch: refetchAccountStatus, isLoading: isLoadingStatus } = useQuery({
     queryKey: ['stripe-connect-status'],
     queryFn: async () => {
+      console.log('🔍 Fetching Stripe Connect status...');
       const { data, error } = await supabase.functions.invoke('check-stripe-account-status');
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Error fetching status:', error);
+        throw error;
+      }
+      console.log('✅ Stripe status fetched:', data);
       return data;
     },
-    refetchOnMount: true,
-    refetchOnWindowFocus: false,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+    staleTime: 0, // Always fetch fresh data
   });
 
   // Create onboarding session
@@ -159,24 +165,26 @@ export const useStripeConnect = () => {
 
   const handleRefreshConnectStatus = async () => {
     try {
+      console.log('🔄 Refreshing Stripe Connect status...');
       toast.info('Actualisation du statut Stripe Connect...');
+      
       const result = await refetchAccountStatus();
       const data = result.data as any;
       
-      // Forcer le rafraîchissement du profil utilisateur après la mise à jour du statut
-      setTimeout(async () => {
-        await refreshUser();
-      }, 1000);
+      console.log('📊 Refreshed status:', data);
+      
+      // Forcer le rafraîchissement du profil utilisateur
+      await refreshUser();
       
       if (data?.onboardingCompleted && data?.chargesEnabled) {
-        toast.success('Compte Stripe configuré et activé ✅');
+        toast.success('✅ Compte Stripe configuré et activé');
       } else if (data?.needsOnboarding || !data?.onboardingCompleted) {
-        toast.warning('Configuration incomplète — poursuivez l\'onboarding Stripe');
+        toast.warning('⚠️ Configuration incomplète — poursuivez l\'onboarding Stripe');
       } else {
         toast.success('Statut mis à jour');
       }
     } catch (error: any) {
-      console.error('Refresh status error:', error);
+      console.error('❌ Refresh status error:', error);
       toast.error(error.message || 'Erreur lors de l\'actualisation du statut');
     }
   };
