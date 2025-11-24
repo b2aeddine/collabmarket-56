@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import SocialNetworkCard from "./SocialNetworkCard";
 import AddSocialNetworkModal from "./AddSocialNetworkModal";
-import EditSocialNetworkModal from "./EditSocialNetworkModal";
 import { useSocialLinks, useUpdateSocialLink, useDeleteSocialLink } from "@/hooks/useSocialLinks";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";

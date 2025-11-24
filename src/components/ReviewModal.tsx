@@ -52,11 +52,12 @@ const ReviewModal = ({ isOpen, onClose, order }: ReviewModalProps) => {
       setComment("");
       onClose();
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      const errorMessage = error instanceof Error ? error.message : '';
       console.error('Error creating review:', error);
       toast({
         title: "Erreur",
-        description: error.message?.includes('duplicate') 
+        description: errorMessage?.includes('duplicate') 
           ? "Vous avez déjà laissé un avis pour cette commande."
           : "Impossible de publier l'avis. Veuillez réessayer.",
         variant: "destructive",

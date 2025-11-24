@@ -36,7 +36,7 @@ const StripeIdentityVerification = () => {
     }, 3000); // Vérifier toutes les 3 secondes
 
     return () => clearInterval(interval);
-  }, [user?.identity_status, refreshUser]);
+  }, [user, refreshUser]);
 
   const getIdentityStatus = () => {
     const identityStatus = user?.identity_status || 'pending';

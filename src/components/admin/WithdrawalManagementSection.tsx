@@ -9,7 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Euro, Check, X, Clock } from "lucide-react";
 import { useAdminWithdrawals } from "@/hooks/useWithdrawals";
-import { toast } from "sonner";
 
 const WithdrawalManagementSection = () => {
   const { withdrawalRequests, isLoading, updateWithdrawalStatus } = useAdminWithdrawals();
