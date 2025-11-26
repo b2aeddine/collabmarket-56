@@ -1,0 +1,1 @@
+La clé API Stripe (STRIPE_SECRET_KEY) est invalide (Erreur 401). Il faut impérativement en générer une nouvelle sur le dashboard Stripe et la mettre à jour dans les secrets Supabase avant tout déploiement.

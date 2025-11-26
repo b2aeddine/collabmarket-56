@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run clean:logs && vite build",
+    "build": "node scripts/remove-console-logs.js && vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "lint:security": "eslint .",
