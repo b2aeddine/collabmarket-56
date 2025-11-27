@@ -54,8 +54,8 @@ export const useOrders = (userRole?: string) => {
             company_name
           )
         `)
-      .not('status', 'in', '("annulée","cancelled")')
-      .order('created_at', { ascending: false });
+        .not('status', 'in', '("annulée","cancelled")')
+        .order('created_at', { ascending: false });
 
       // Filter by user role to only get relevant orders
       if (userRole === 'influenceur') {
@@ -69,14 +69,14 @@ export const useOrders = (userRole?: string) => {
         console.log('🎯 Filtering orders for user (both roles):', user.id);
         query = query.or(`influencer_id.eq.${user.id},merchant_id.eq.${user.id}`);
       }
-      
+
       const { data, error } = await query;
-      
+
       if (error) {
         console.error('❌ useOrders error:', error);
         throw error;
       }
-      
+
       console.log('✅ useOrders result:', { count: data?.length, userRole, userId: user.id });
       return data || [];
     },
@@ -89,7 +89,7 @@ export const useOrders = (userRole?: string) => {
 
 export const useCreateOrder = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (orderData: {
       influencer_id: string;
@@ -114,7 +114,7 @@ export const useCreateOrder = () => {
         }])
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -126,13 +126,13 @@ export const useCreateOrder = () => {
 
 export const useUpdateOrder = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: async ({ 
-      orderId, 
-      updates 
-    }: { 
-      orderId: string; 
+    mutationFn: async ({
+      orderId,
+      updates
+    }: {
+      orderId: string;
       updates: Partial<{
         status: string;
         delivery_date: string;
@@ -172,7 +172,7 @@ export const useUpdateOrder = () => {
         .eq('id', orderId)
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -184,24 +184,29 @@ export const useUpdateOrder = () => {
 
 export const useAcceptOrderAndPay = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (orderId: string) => {
-      // D'abord, accepter la commande
-      const { data: order, error: acceptError } = await supabase
+      // D'abord, accepter la commande via RPC sécurisé
+      const { error: rpcError } = await supabase.rpc('safe_update_order_status', {
+        p_order_id: orderId,
+        p_new_status: 'accepted',
+        p_date_accepted: new Date().toISOString()
+      });
+
+      if (rpcError) throw rpcError;
+
+      // Récupérer la commande mise à jour
+      const { data: order, error: fetchError } = await supabase
         .from('orders')
-        .update({ 
-          status: 'accepted',
-          date_accepted: new Date().toISOString()
-        })
-        .eq('id', orderId)
         .select(`
           *,
           influencer:profiles!orders_influencer_id_fkey(first_name, last_name)
         `)
+        .eq('id', orderId)
         .single();
-      
-      if (acceptError) throw acceptError;
+
+      if (fetchError) throw fetchError;
 
       // Ensuite, créer la session de paiement Stripe
       const { data: stripeData, error: stripeError } = await supabase.functions.invoke('create-stripe-session', {
@@ -215,7 +220,7 @@ export const useAcceptOrderAndPay = () => {
       });
 
       if (stripeError) throw stripeError;
-      
+
       // Rediriger vers Stripe
       if (stripeData.url) {
         window.location.href = stripeData.url;
@@ -231,21 +236,17 @@ export const useAcceptOrderAndPay = () => {
 
 export const useAcceptOrder = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (orderId: string) => {
-      const { data, error } = await supabase
-        .from('orders')
-        .update({ 
-          status: 'en_cours',
-          date_accepted: new Date().toISOString()
-        })
-        .eq('id', orderId)
-        .select()
-        .single();
-      
+      const { error } = await supabase.rpc('safe_update_order_status', {
+        p_order_id: orderId,
+        p_new_status: 'en_cours',
+        p_date_accepted: new Date().toISOString()
+      });
+
       if (error) throw error;
-      return data;
+      return { id: orderId, status: 'en_cours' };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
@@ -255,18 +256,16 @@ export const useAcceptOrder = () => {
 
 export const useRefuseOrder = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (orderId: string) => {
-      const { data, error } = await supabase
-        .from('orders')
-        .update({ status: 'refusée_par_influenceur' })
-        .eq('id', orderId)
-        .select()
-        .single();
-      
+      const { error } = await supabase.rpc('safe_update_order_status', {
+        p_order_id: orderId,
+        p_new_status: 'refusée_par_influenceur'
+      });
+
       if (error) throw error;
-      return data;
+      return { id: orderId, status: 'refusée_par_influenceur' };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
@@ -276,18 +275,16 @@ export const useRefuseOrder = () => {
 
 export const useMarkOrderAsDelivered = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (orderId: string) => {
-      const { data, error } = await supabase
-        .from('orders')
-        .update({ status: 'delivered' })
-        .eq('id', orderId)
-        .select()
-        .single();
-      
+      const { error } = await supabase.rpc('safe_update_order_status', {
+        p_order_id: orderId,
+        p_new_status: 'delivered'
+      });
+
       if (error) throw error;
-      return data;
+      return { id: orderId, status: 'delivered' };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
@@ -297,7 +294,7 @@ export const useMarkOrderAsDelivered = () => {
 
 export const useConfirmOrderCompletion = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (orderId: string) => {
       const { data, error } = await supabase.functions.invoke('complete-order-and-pay', {
@@ -320,22 +317,18 @@ export const useConfirmOrderCompletion = () => {
 // Hook pour contester une commande
 export const useContestOrder = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async ({ orderId, preuveInfluenceur }: { orderId: string; preuveInfluenceur: string }) => {
-      const { data, error } = await supabase
-        .from('orders')
-        .update({ 
-          status: 'en_contestation',
-          date_contestation: new Date().toISOString(),
-          preuve_influenceur: preuveInfluenceur
-        })
-        .eq('id', orderId)
-        .select()
-        .single();
-      
+      const { error } = await supabase.rpc('safe_update_order_status', {
+        p_order_id: orderId,
+        p_new_status: 'en_contestation',
+        p_date_contestation: new Date().toISOString(),
+        p_dispute_evidence: preuveInfluenceur
+      });
+
       if (error) throw error;
-      return data;
+      return { id: orderId, status: 'en_contestation' };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
