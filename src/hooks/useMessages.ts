@@ -11,11 +11,11 @@ export const useConversations = () => {
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        console.warn('⚠️ useConversations: No authenticated user');
+        // console.warn('⚠️ useConversations: No authenticated user');
         return [];
       }
 
-      console.log('💬 Fetching conversations for user:', user.id);
+      // console.log('💬 Fetching conversations for user:', user.id);
 
       const { data, error } = await supabase
         .from('conversations')
@@ -32,7 +32,7 @@ export const useConversations = () => {
         throw error;
       }
 
-      console.log('✅ Conversations loaded:', data?.length || 0);
+      // console.log('✅ Conversations loaded:', data?.length || 0);
       return data;
     },
     staleTime: 30 * 1000,
@@ -128,6 +128,17 @@ export const useSendMessage = () => {
     }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
+
+      // Vérifier d'abord que la conversation existe
+      const { data: conversation, error: conversationError } = await supabase
+        .from('conversations')
+        .select('id')
+        .eq('id', conversationId)
+        .single();
+
+      if (conversationError || !conversation) {
+        throw new Error('Conversation introuvable');
+      }
 
       const { data, error } = await supabase
         .from('messages')

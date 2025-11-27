@@ -19,7 +19,21 @@ import { PortfolioSection } from "@/components/PortfolioSection";
 
 const PublicInfluencerProfile = () => {
   const { username } = useParams();
-  const [profile, setProfile] = useState<{ id: string; first_name?: string; last_name?: string; avatar_url?: string; bio?: string; custom_username?: string; is_profile_public?: boolean } | null>(null);
+  const [profile, setProfile] = useState<{
+    id: string;
+    first_name?: string;
+    last_name?: string;
+    avatar_url?: string;
+    bio?: string;
+    city?: string;
+    custom_username?: string;
+    is_profile_public?: boolean;
+    profile_views?: number;
+    profile_share_count?: number;
+    social_links?: any[];
+    offers?: any[];
+    profile_categories?: any[];
+  } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAllServices, setShowAllServices] = useState(false);
@@ -53,7 +67,7 @@ const PublicInfluencerProfile = () => {
           .eq('custom_username', username)
           .maybeSingle();
 
-        console.log('🔍 Profile data fetched:', profileData);
+        // console.log('🔍 Profile data fetched:', profileData);
 
         if (profileError) {
           console.error('❌ Error fetching profile:', profileError);
@@ -79,7 +93,7 @@ const PublicInfluencerProfile = () => {
           `)
           .eq('profile_id', profileData.id);
 
-        console.log('📊 Categories data:', categoriesData);
+        // console.log('📊 Categories data:', categoriesData);
 
         if (categoriesError) {
           console.error('❌ Error fetching categories:', categoriesError);
@@ -91,16 +105,21 @@ const PublicInfluencerProfile = () => {
           profile_categories: categoriesData || []
         };
 
-        console.log('✅ Combined data:', combinedData);
+        // console.log('✅ Combined data:', combinedData);
         setProfile(combinedData);
 
-        // Incrémenter le compteur de partages
-        await supabase
-          .from('profiles')
-          .update({
-            profile_share_count: (profileData.profile_share_count || 0) + 1
-          })
-          .eq('id', profileData.id);
+        // Incrémenter le compteur de partages de manière sécurisée
+        try {
+          await supabase
+            .from('profiles')
+            .update({
+              profile_share_count: (profileData.profile_share_count || 0) + 1
+            })
+            .eq('id', profileData.id);
+        } catch (shareError) {
+          // Ignorer l'erreur si l'utilisateur n'a pas les droits (ex: non connecté)
+          console.warn('Could not update share count:', shareError);
+        }
 
       } catch (err) {
         console.error('Erreur:', err);
@@ -215,23 +234,23 @@ const PublicInfluencerProfile = () => {
   };
 
   // Transformer les données pour l'affichage
-  console.log('🔄 Transforming profile categories:', profile.profile_categories);
+  // console.log('🔄 Transforming profile categories:', profile.profile_categories);
 
   // S'assurer que profile_categories est bien un tableau
   const categoriesArray = Array.isArray(profile.profile_categories)
     ? profile.profile_categories
     : [];
 
-  console.log('📦 Categories array:', categoriesArray);
+  // console.log('📦 Categories array:', categoriesArray);
 
   const categoriesNames = categoriesArray
     .map(pc => {
-      console.log('🏷️ Processing category:', pc);
+      // console.log('🏷️ Processing category:', pc);
       return pc?.categories?.name;
     })
     .filter((name): name is string => Boolean(name));
 
-  console.log('✅ Final categories names:', categoriesNames);
+  // console.log('✅ Final categories names:', categoriesNames);
 
   const influencer = {
     id: profile.id,
@@ -242,8 +261,8 @@ const PublicInfluencerProfile = () => {
     categories: categoriesNames.length > 0 ? categoriesNames : ["Lifestyle"],
     bio: profile.bio || "Passionné de création de contenu.",
     followers: profile.social_links?.reduce((sum, link) => sum + (link.followers || 0), 0) || 0,
-    engagement: profile.social_links?.length > 0
-      ? Number((profile.social_links.reduce((sum, link) => sum + (link.engagement_rate || 0), 0) / profile.social_links.length).toFixed(1))
+    engagement: profile.social_links && profile.social_links.length > 0
+      ? Number((profile.social_links.reduce((sum: number, link: any) => sum + (link.engagement_rate || 0), 0) / profile.social_links.length).toFixed(1))
       : 0,
     profileViews: profile.profile_views || 0,
     shareCount: profile.profile_share_count || 0,
@@ -257,9 +276,9 @@ const PublicInfluencerProfile = () => {
       is_connected: link.is_connected || false,
     })) || [],
     services: (() => {
-      console.log('Public profile offers:', profile.offers);
+      // console.log('Public profile offers:', profile.offers);
       const activeOffers = profile.offers?.filter(offer => offer.is_active);
-      console.log('Public active offers:', activeOffers);
+      // console.log('Public active offers:', activeOffers);
       return activeOffers?.map(offer => ({
         id: offer.id,
         type: offer.title,

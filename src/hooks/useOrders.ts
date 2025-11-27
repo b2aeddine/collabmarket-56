@@ -9,11 +9,11 @@ export const useOrders = (userRole?: string) => {
       // Get current user for filtering
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        console.warn('⚠️ useOrders: No authenticated user');
+        // console.warn('⚠️ useOrders: No authenticated user');
         return [];
       }
 
-      console.log('📦 useOrders: Fetching orders', { userId: user.id, userRole });
+      // console.log('📦 useOrders: Fetching orders', { userId: user.id, userRole });
 
       let query = supabase
         .from('orders')
@@ -33,9 +33,12 @@ export const useOrders = (userRole?: string) => {
           influencer_id,
           merchant_id,
           offer_id,
-          offer_title,
-          offer_description,
-          offer_delivery_time,
+          offer_id,
+          offer:offers(
+            title,
+            description,
+            delivery_time
+          ),
           payment_captured,
           stripe_payment_intent_id,
           stripe_session_id,
@@ -59,14 +62,14 @@ export const useOrders = (userRole?: string) => {
 
       // Filter by user role to only get relevant orders
       if (userRole === 'influenceur') {
-        console.log('🎯 Filtering orders for influencer:', user.id);
+        // console.log('🎯 Filtering orders for influencer:', user.id);
         query = query.eq('influencer_id', user.id);
       } else if (userRole === 'commercant') {
-        console.log('🎯 Filtering orders for merchant:', user.id);
+        // console.log('🎯 Filtering orders for merchant:', user.id);
         query = query.eq('merchant_id', user.id);
       } else {
         // For admin or unspecified role, get all user's orders
-        console.log('🎯 Filtering orders for user (both roles):', user.id);
+        // console.log('🎯 Filtering orders for user (both roles):', user.id);
         query = query.or(`influencer_id.eq.${user.id},merchant_id.eq.${user.id}`);
       }
 
@@ -77,7 +80,7 @@ export const useOrders = (userRole?: string) => {
         throw error;
       }
 
-      console.log('✅ useOrders result:', { count: data?.length, userRole, userId: user.id });
+      // console.log('✅ useOrders result:', { count: data?.length, userRole, userId: user.id });
       return data || [];
     },
     staleTime: 2 * 60 * 1000, // 2 minutes cache
@@ -143,7 +146,6 @@ export const useUpdateOrder = () => {
       }>
     }) => {
       // SECURITY: Verify that the authenticated user can only update their own orders
-      // This prevents unauthorized order modifications (IDOR - Insecure Direct Object Reference)
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         throw new Error('User not authenticated');
@@ -166,15 +168,43 @@ export const useUpdateOrder = () => {
         throw new Error('Unauthorized: You can only update your own orders');
       }
 
-      const { data, error } = await supabase
-        .from('orders')
-        .update(updates)
-        .eq('id', orderId)
-        .select()
-        .single();
+      // CRITICAL: Use RPC for status updates to ensure state machine validity
+      if (updates.status) {
+        const { error: rpcError } = await supabase.rpc('safe_update_order_status', {
+          p_order_id: orderId,
+          p_new_status: updates.status,
+          // Pass other relevant fields if the RPC supports them, otherwise they might need a separate update
+          // Assuming RPC handles status transitions primarily.
+          // If we have other updates along with status, we might need to do them separately or check if RPC supports them.
+          // For now, let's assume status update is the primary action when status is present.
+        });
 
-      if (error) throw error;
-      return data;
+        if (rpcError) throw rpcError;
+
+        // If there are other updates besides status, apply them
+        const { status, ...otherUpdates } = updates;
+        if (Object.keys(otherUpdates).length > 0) {
+          const { error: updateError } = await supabase
+            .from('orders')
+            .update(otherUpdates)
+            .eq('id', orderId);
+
+          if (updateError) throw updateError;
+        }
+
+        return { id: orderId, ...updates };
+      } else {
+        // Standard update for non-status fields
+        const { data, error } = await supabase
+          .from('orders')
+          .update(updates)
+          .eq('id', orderId)
+          .select()
+          .single();
+
+        if (error) throw error;
+        return data;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
@@ -190,8 +220,8 @@ export const useAcceptOrderAndPay = () => {
       // D'abord, accepter la commande via RPC sécurisé
       const { error: rpcError } = await supabase.rpc('safe_update_order_status', {
         p_order_id: orderId,
-        p_new_status: 'accepted',
-        p_date_accepted: new Date().toISOString()
+        p_new_status: 'accepted'
+        // p_date_accepted removed as it's not in the RPC signature
       });
 
       if (rpcError) throw rpcError;
@@ -201,6 +231,7 @@ export const useAcceptOrderAndPay = () => {
         .from('orders')
         .select(`
           *,
+          offer:offers(title),
           influencer:profiles!orders_influencer_id_fkey(first_name, last_name)
         `)
         .eq('id', orderId)
@@ -213,7 +244,7 @@ export const useAcceptOrderAndPay = () => {
         body: {
           orderId: order.id,
           amount: order.total_amount,
-          description: `${order.offer_title || 'Prestation'} - ${order.influencer?.first_name || ''} ${order.influencer?.last_name || ''}`,
+          description: `${order.offer?.title || 'Prestation'} - ${order.influencer?.first_name || ''} ${order.influencer?.last_name || ''}`,
           successUrl: `${window.location.origin}/payment-success?order_id=${order.id}`,
           cancelUrl: `${window.location.origin}/payment-cancel?order_id=${order.id}`,
         }
@@ -241,8 +272,8 @@ export const useAcceptOrder = () => {
     mutationFn: async (orderId: string) => {
       const { error } = await supabase.rpc('safe_update_order_status', {
         p_order_id: orderId,
-        p_new_status: 'en_cours',
-        p_date_accepted: new Date().toISOString()
+        p_new_status: 'en_cours'
+        // p_date_accepted removed as it's not in the RPC signature
       });
 
       if (error) throw error;
@@ -319,12 +350,11 @@ export const useContestOrder = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ orderId, preuveInfluenceur }: { orderId: string; preuveInfluenceur: string }) => {
+    mutationFn: async ({ orderId }: { orderId: string }) => {
       const { error } = await supabase.rpc('safe_update_order_status', {
         p_order_id: orderId,
-        p_new_status: 'en_contestation',
-        p_date_contestation: new Date().toISOString(),
-        p_dispute_evidence: preuveInfluenceur
+        p_new_status: 'en_contestation'
+        // p_date_contestation and p_dispute_evidence removed as they are not in the RPC signature
       });
 
       if (error) throw error;
