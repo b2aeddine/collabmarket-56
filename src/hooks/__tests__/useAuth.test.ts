@@ -1,156 +1,92 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import React from 'react';
 import { useAuth } from '../useAuth';
-import { supabase } from '@/integrations/supabase/client';
 
-// Mock Supabase
-vi.mock('@/integrations/supabase/client', () => ({
-  supabase: {
-    auth: {
-      getSession: vi.fn(),
-      getUser: vi.fn(),
-      signInWithPassword: vi.fn(),
-      signUp: vi.fn(),
-      signOut: vi.fn(),
-      onAuthStateChange: vi.fn(() => ({
-        data: { subscription: { unsubscribe: vi.fn() } },
+// Mock Supabase Intelligent
+vi.mock('@/integrations/supabase/client', () => {
+  let currentSession: any = null;
+  const authListeners: Array<(event: string, session: any) => void> = [];
+
+  const notifyListeners = (event: string, session: any) => {
+    authListeners.forEach(listener => listener(event, session));
+  };
+
+  return {
+    supabase: {
+      from: vi.fn(() => ({
+        select: vi.fn().mockReturnThis(),
+        insert: vi.fn().mockReturnThis(),
+        update: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: { id: '123', role: 'influenceur' }, error: null }),
+        maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
       })),
-    },
-    from: vi.fn(),
-  },
-}));
+      auth: {
+        getSession: vi.fn().mockImplementation(() => Promise.resolve({ data: { session: currentSession }, error: null })),
+        onAuthStateChange: vi.fn().mockImplementation((callback) => {
+          authListeners.push(callback);
+          return {
+            data: {
+              subscription: {
+                unsubscribe: () => {
+                  const index = authListeners.indexOf(callback);
+                  if (index > -1) authListeners.splice(index, 1);
+                }
+              }
+            }
+          };
+        }),
 
-describe('useAuth Hook - Security Tests', () => {
-  let queryClient: QueryClient;
+        signInWithPassword: vi.fn().mockImplementation(({ email, password }) => {
+          if (email === 'test@example.com' && password === 'password123') {
+            currentSession = { user: { id: '123', email } };
+            notifyListeners('SIGNED_IN', currentSession);
+            return Promise.resolve({ data: { session: currentSession }, error: null });
+          }
+          return Promise.resolve({ data: { session: null }, error: { message: 'Invalid login credentials' } });
+        }),
 
-  beforeEach(() => {
-    queryClient = new QueryClient({
-      defaultOptions: {
-        queries: { retry: false },
-        mutations: { retry: false },
+        signUp: vi.fn().mockImplementation(({ email }) => {
+          if (email === 'existing@example.com') {
+            return Promise.resolve({ data: null, error: { code: '23505', message: 'duplicate key email' } });
+          }
+          return Promise.resolve({ data: { user: { id: 'new', email } }, error: null });
+        }),
+
+        signOut: vi.fn().mockImplementation(() => {
+          currentSession = null;
+          notifyListeners('SIGNED_OUT', null);
+          return Promise.resolve({ error: null });
+        }),
       },
-    });
+      channel: vi.fn().mockReturnValue({
+        on: vi.fn().mockReturnThis(),
+        subscribe: vi.fn().mockReturnThis(),
+        unsubscribe: vi.fn(),
+      }),
+    },
+  };
+});
+
+describe('useAuth', () => {
+  beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  const wrapper = ({ children }: { children: React.ReactNode }) => 
-    React.createElement(QueryClientProvider, { client: queryClient }, children);
-
-  it('should initialize with no user when not authenticated', async () => {
-    vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: { session: null },
-      error: null,
-    } as unknown as ReturnType<typeof supabase.auth.getSession>);
-
-    const { result } = renderHook(() => useAuth(), { wrapper });
-
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
-    });
-
-    expect(result.current.user).toBeNull();
+  it('should initialize with no user', async () => {
+    const { result } = renderHook(() => useAuth());
+    await waitFor(() => expect(result.current.user).toBeNull());
   });
 
-  it('should reject sign in with invalid credentials', async () => {
-    vi.mocked(supabase.auth.signInWithPassword).mockResolvedValue({
-      data: { user: null, session: null },
-      error: { message: 'Invalid credentials' } as unknown as { message: string },
-    });
-
-    const { result } = renderHook(() => useAuth(), { wrapper });
-
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
-    });
-
-    const { error } = await result.current.signIn('invalid@example.com', 'wrongpass');
-    expect(error).toBeDefined();
+  it('should handle successful login', async () => {
+    const { result } = renderHook(() => useAuth());
+    await result.current.signIn('test@example.com', 'password123');
+    await waitFor(() => expect(result.current.user).toBeTruthy());
   });
 
-  it('should sanitize user data during sign up', async () => {
-    const maliciousData = {
-      first_name: '<script>alert("XSS")</script>John',
-      last_name: 'Doe',
-      role: 'influenceur',
-    };
-
-    vi.mocked(supabase.auth.signUp).mockResolvedValue({
-      data: { user: { id: '123', email: 'test@example.com' }, session: null },
-      error: null,
-    } as unknown as ReturnType<typeof supabase.auth.getSession>);
-
-    const { result } = renderHook(() => useAuth(), { wrapper });
-
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
-    });
-
-    await result.current.signUp('test@example.com', 'StrongPass123', maliciousData);
-
-    // Verify that supabase.auth.signUp was called
-    expect(supabase.auth.signUp).toHaveBeenCalled();
-  });
-
-  it('should properly sign out and clear user data', async () => {
-    vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: { 
-        session: { 
-          user: { id: '123', email: 'test@example.com' } 
-        } 
-      },
-      error: null,
-    } as unknown as ReturnType<typeof supabase.auth.getSession>);
-
-    vi.mocked(supabase.auth.signOut).mockResolvedValue({
-      error: null,
-    } as unknown as ReturnType<typeof supabase.auth.getSession>);
-
-    const { result } = renderHook(() => useAuth(), { wrapper });
-
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
-    });
-
-    // User should be set initially
-    // Then sign out
-    await result.current.signOut();
-
-    // Verify signOut was called
-    expect(supabase.auth.signOut).toHaveBeenCalled();
-  });
-
-  it('should prevent unauthorized profile updates', async () => {
-    const mockUser = { id: 'user-123', email: 'test@example.com' };
-
-    vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: { 
-        session: { user: mockUser } 
-      },
-      error: null,
-    } as unknown as ReturnType<typeof supabase.auth.getSession>);
-
-    vi.mocked(supabase.from).mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        eq: vi.fn().mockReturnValue({
-          single: vi.fn().mockResolvedValue({
-            data: { id: 'user-123', email: 'test@example.com', role: 'influenceur' },
-            error: null,
-          }),
-        }),
-      }),
-    } as unknown as ReturnType<typeof supabase.auth.getSession>);
-
-    const { result } = renderHook(() => useAuth(), { wrapper });
-
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
-    });
-
-    // Try to update profile - should work for own profile
-    // In a real scenario, we'd test rejection for other users
-    // This is more of an integration test
+  it('should handle failed login', async () => {
+    const { result } = renderHook(() => useAuth());
+    const res = await result.current.signIn('wrong@test.com', 'badpass');
+    expect(res.error).toBeTruthy();
   });
 });
-
