@@ -8,7 +8,7 @@ import { handleError } from "../_shared/errorHandler.ts";
 serve(async (req) => {
   const origin = req.headers.get('origin');
   const corsHeaders = getCorsHeaders(origin);
-  
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -84,9 +84,9 @@ serve(async (req) => {
     }
 
     // Check if customer exists or create one
-    const customers = await stripe.customers.list({ 
-      email: user.email, 
-      limit: 1 
+    const customers = await stripe.customers.list({
+      email: user.email,
+      limit: 1
     });
 
     let customerId;
@@ -101,7 +101,7 @@ serve(async (req) => {
     }
 
     const amountInCents = Math.round(amount * 100);
-    const platformFee = Math.round(amountInCents * 0.1); // 10% platform fee
+    const platformFee = Math.round(amountInCents * 0.05); // 5% platform fee
     const influencerAmount = amountInCents - platformFee;
 
     // Create payment intent with platform fee
@@ -166,7 +166,7 @@ serve(async (req) => {
           influencer_amount: influencerAmount.toString(),
           total_amount: amount.toString(),
           net_amount: (influencerAmount / 100).toString(),
-          commission_rate: '10',
+          commission_rate: '5',
           offer_title: offer.title,
           offer_description: offer.description,
           offer_delivery_time: offer.delivery_time || '',
@@ -190,7 +190,7 @@ serve(async (req) => {
       expires_at: Math.floor(Date.now() / 1000) + (24 * 60 * 60), // 24 hours
     });
 
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       url: session.url,
       sessionId: session.id,
       paymentIntentId: paymentIntent.id,

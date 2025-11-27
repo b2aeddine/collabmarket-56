@@ -30,7 +30,7 @@ serve(async (req) => {
     // Get authenticated user
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
-    
+
     if (authError || !user) {
       console.error('Auth error:', authError);
       throw new Error('Unauthorized: Invalid token');
@@ -76,7 +76,7 @@ serve(async (req) => {
 
     // Calculer les montants
     const totalAmount = order.total_amount;
-    const platformFeePercentage = 0.10; // 10%
+    const platformFeePercentage = 0.05; // 5%
     const platformFee = totalAmount * platformFeePercentage;
     const influencerAmount = totalAmount - platformFee;
 
@@ -118,7 +118,7 @@ serve(async (req) => {
     console.log('Order completed successfully');
 
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         success: true,
         message: 'Commande terminée et paiement effectué à l\'influenceur'
       }),
@@ -129,9 +129,9 @@ serve(async (req) => {
     console.error('Error in complete-order-and-pay:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
-      { 
+      {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );
   }
