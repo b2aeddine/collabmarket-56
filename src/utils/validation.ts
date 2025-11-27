@@ -31,7 +31,7 @@ export const orderPaymentSchema = z.object({
   acceptTerms: z.boolean().refine(val => val === true, {
     message: "Vous devez accepter les conditions générales"
   }),
-  paymentMethod: z.enum(["card", "bank_transfer"]).optional(),
+  paymentMethod: z.enum(["card", "bank_transfer", "stripe"]).optional(),
 });
 
 export type OrderPaymentData = z.infer<typeof orderPaymentSchema>;
