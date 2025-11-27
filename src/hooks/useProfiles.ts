@@ -7,10 +7,9 @@ export const useProfiles = () => {
     queryKey: ['profiles'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('profiles')
+        .from('public_profiles')
         .select(`
           id,
-          email,
           role,
           first_name,
           last_name,
@@ -18,12 +17,11 @@ export const useProfiles = () => {
           bio,
           city,
           is_verified,
-          is_profile_public,
           created_at
         `)
         .order('created_at', { ascending: false })
         .limit(50); // Pagination - limit to 50 profiles
-      
+
       if (error) {
         throw error;
       }
@@ -41,7 +39,7 @@ export const useInfluencers = (filters?: { category?: string; minFollowers?: num
     queryFn: async () => {
       // Direct query that works for both authenticated and anonymous users
       const { data, error } = await supabase
-        .from('profiles')
+        .from('public_profiles')
         .select(`
           id,
           first_name,
@@ -80,32 +78,30 @@ export const useInfluencers = (filters?: { category?: string; minFollowers?: num
         `)
         .eq('role', 'influenceur')
         .eq('is_verified', true)
-        .eq('is_profile_public', true)
-        .eq('is_banned', false)
         .limit(20);
-      
+
       if (error) {
         throw error;
       }
-      
+
       // Filtrer les données si nécessaire
       let filteredData = data || [];
-      
+
       if (filters?.category && filters.category !== 'all') {
-        filteredData = filteredData.filter(influencer => 
-          influencer.profile_categories?.some(pc => 
+        filteredData = filteredData.filter(influencer =>
+          influencer.profile_categories?.some(pc =>
             pc.categories?.name === filters.category
           )
         );
       }
-      
+
       if (filters?.minFollowers) {
         filteredData = filteredData.filter(influencer => {
           const totalFollowers = influencer.social_links?.reduce((sum, link) => sum + (link.followers || 0), 0) || 0;
           return totalFollowers >= filters.minFollowers;
         });
       }
-      
+
       return filteredData;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes for influencer list
@@ -121,20 +117,20 @@ export const useProfile = (profileId: string) => {
       if (!profileId) {
         throw new Error('Profile ID is required');
       }
-      
+
       // Get current user to determine access level
       const { data: { user } } = await supabase.auth.getUser();
       const isOwnProfile = user?.id === profileId;
-      
+
       // Check if user is admin
       let isAdmin = false;
       if (user) {
         const { data: adminCheck } = await supabase.rpc('is_current_user_admin');
         isAdmin = adminCheck || false;
       }
-      
+
       let selectQuery = '';
-      
+
       if (isOwnProfile || isAdmin) {
         // Full access for own profile or admin
         selectQuery = `
@@ -224,17 +220,20 @@ export const useProfile = (profileId: string) => {
           )
         `;
       }
-      
+
+      // Use profiles for own/admin, public_profiles for others
+      const tableName = (isOwnProfile || isAdmin) ? 'profiles' : 'public_profiles';
+
       const { data, error } = await supabase
-        .from('profiles')
+        .from(tableName)
         .select(selectQuery)
         .eq('id', profileId)
         .maybeSingle();
-      
+
       if (error) {
         throw error;
       }
-      
+
       return data;
     },
     enabled: !!profileId,
@@ -246,7 +245,7 @@ export const useProfile = (profileId: string) => {
 
 export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async ({ profileId, data }: { profileId: string; data: Partial<User> }) => {
       const { error } = await supabase
@@ -256,7 +255,7 @@ export const useUpdateProfile = () => {
           updated_at: new Date().toISOString()
         })
         .eq('id', profileId);
-      
+
       if (error) {
         throw error;
       }
@@ -272,7 +271,7 @@ export const useUpdateProfile = () => {
 
 export const useIncrementProfileViews = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async ({ profileId }: { profileId: string }) => {
       // Simple optimized update instead of RPC
@@ -281,20 +280,20 @@ export const useIncrementProfileViews = () => {
         .select('profile_views')
         .eq('id', profileId)
         .single();
-      
+
       if (fetchError) {
         throw fetchError;
       }
-      
+
       const currentViews = currentProfile?.profile_views || 0;
-      
+
       const { error } = await supabase
         .from('profiles')
-        .update({ 
-          profile_views: currentViews + 1 
+        .update({
+          profile_views: currentViews + 1
         })
         .eq('id', profileId);
-      
+
       if (error) {
         throw error;
       }

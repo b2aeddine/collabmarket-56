@@ -136,7 +136,7 @@ const InfluencerDashboard = () => {
     }
   };
 
-  const handleAddOffer = async (newOffer: { type: string; price: number; platform: string; description?: string; deliveryTime?: string }) => {
+  const handleAddOffer = async (newOffer: { type: string; price: number; platform: string; description?: string; deliveryTime?: string; category_id?: string }) => {
     if (!user?.id) {
       toast.error("Vous devez être connecté pour créer une offre");
       return;
@@ -157,6 +157,7 @@ const InfluencerDashboard = () => {
         delivery_time: newOffer.deliveryTime || "2-3 jours",
         is_active: true,
         is_popular: false,
+        category_id: newOffer.category_id || null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       });

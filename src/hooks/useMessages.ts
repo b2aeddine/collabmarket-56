@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 
 export const useConversations = () => {
   const queryClient = useQueryClient();
-  
+
   const { data: conversations, isLoading, error } = useQuery({
     queryKey: ['conversations'],
     queryFn: async () => {
@@ -21,12 +21,12 @@ export const useConversations = () => {
         .from('conversations')
         .select(`
           *,
-          merchant:profiles!conversations_merchant_id_fkey(id, first_name, last_name, avatar_url),
-          influencer:profiles!conversations_influencer_id_fkey(id, first_name, last_name, avatar_url)
+          participant_1:profiles!conversations_participant_1_id_fkey(id, first_name, last_name, avatar_url),
+          participant_2:profiles!conversations_participant_2_id_fkey(id, first_name, last_name, avatar_url)
         `)
-        .or(`merchant_id.eq.${user.id},influencer_id.eq.${user.id}`)
+        .or(`participant_1_id.eq.${user.id},participant_2_id.eq.${user.id}`)
         .order('last_message_at', { ascending: false });
-      
+
       if (error) {
         console.error('❌ useConversations error:', error);
         throw error;
@@ -66,7 +66,7 @@ export const useConversations = () => {
 
 export const useMessages = (conversationId: string) => {
   const queryClient = useQueryClient();
-  
+
   const { data: messages, isLoading, error } = useQuery({
     queryKey: ['messages', conversationId],
     queryFn: async () => {
@@ -78,7 +78,7 @@ export const useMessages = (conversationId: string) => {
         `)
         .eq('conversation_id', conversationId)
         .order('created_at', { ascending: true });
-      
+
       if (error) throw error;
       return data;
     },
@@ -115,15 +115,15 @@ export const useMessages = (conversationId: string) => {
 
 export const useSendMessage = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: async ({ 
-      conversationId, 
+    mutationFn: async ({
+      conversationId,
       content,
       receiverId
-    }: { 
-      conversationId: string; 
-      content: string; 
+    }: {
+      conversationId: string;
+      content: string;
       receiverId: string;
     }) => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -139,7 +139,7 @@ export const useSendMessage = () => {
         }])
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -152,24 +152,24 @@ export const useSendMessage = () => {
 
 export const useCreateConversation = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: async ({ 
-      merchantId, 
-      influencerId 
-    }: { 
-      merchantId: string; 
-      influencerId: string; 
+    mutationFn: async ({
+      participant1Id,
+      participant2Id
+    }: {
+      participant1Id: string;
+      participant2Id: string;
     }) => {
       const { data, error } = await supabase
         .from('conversations')
         .insert([{
-          merchant_id: merchantId,
-          influencer_id: influencerId,
+          participant_1_id: participant1Id,
+          participant_2_id: participant2Id,
         }])
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -191,7 +191,7 @@ export const useUnreadMessagesCount = () => {
         .select('*', { count: 'exact', head: true })
         .eq('receiver_id', user.id)
         .eq('is_read', false);
-      
+
       if (error) throw error;
       return count || 0;
     },

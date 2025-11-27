@@ -19,6 +19,12 @@ export const useOffers = (influencerId?: string) => {
           created_at,
           updated_at,
           influencer_id,
+          category_id,
+          categories(
+            id,
+            name,
+            slug
+          ),
           profiles!offers_influencer_id_fkey(
             id,
             first_name,
@@ -45,6 +51,12 @@ export const useOffers = (influencerId?: string) => {
             created_at,
             updated_at,
             influencer_id,
+            category_id,
+            categories(
+              id,
+              name,
+              slug
+            ),
             profiles!offers_influencer_id_fkey(
               id,
               first_name,
@@ -70,7 +82,7 @@ export const useOffers = (influencerId?: string) => {
 
 export const useCreateOffer = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (offerData: Omit<Offer, 'id' | 'active'>) => {
       const { data, error } = await supabase
@@ -78,7 +90,7 @@ export const useCreateOffer = () => {
         .insert([offerData])
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -90,14 +102,14 @@ export const useCreateOffer = () => {
 
 export const useUpdateOffer = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async ({ offerId, data }: { offerId: string; data: Partial<Offer> }) => {
       const { error } = await supabase
         .from('offers')
         .update(data)
         .eq('id', offerId);
-      
+
       if (error) throw error;
     },
     onSuccess: async () => {
@@ -108,21 +120,21 @@ export const useUpdateOffer = () => {
 
 export const useDeleteOffer = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (offerId: string) => {
       console.log('[useDeleteOffer] Attempting to delete offer:', offerId);
-      
+
       const { error } = await supabase
         .from('offers')
         .delete()
         .eq('id', offerId);
-      
+
       if (error) {
         console.error('[useDeleteOffer] Delete error:', error);
         throw new Error(error.message || 'Impossible de supprimer l\'offre');
       }
-      
+
       console.log('[useDeleteOffer] Offer deleted successfully');
     },
     onSuccess: async () => {
