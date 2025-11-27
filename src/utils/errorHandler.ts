@@ -1,3 +1,7 @@
+// ============================================================
+// src/utils/errorHandler.ts
+// ============================================================
+
 export function getErrorMessage(error: unknown): string {
   // Cas 1 : Erreur nulle/undefined
   if (!error) {
@@ -37,7 +41,7 @@ export function getErrorMessage(error: unknown): string {
     }
 
     // Message custom (si pas trop technique)
-    if (err.message && typeof err.message === 'string' && !(error instanceof Error)) {
+    if (err.message && typeof err.message === 'string') {
       // On filtre les erreurs SQL brutes pour ne pas effrayer l'utilisateur
       if (err.message.includes('SELECT') || err.message.includes('INSERT') || err.message.includes('UPDATE')) {
         return "Une erreur technique s'est produite. Veuillez réessayer";
@@ -54,3 +58,6 @@ export function getErrorMessage(error: unknown): string {
   // Fallback
   return "Une erreur s'est produite. Veuillez réessayer";
 }
+
+// ✅ LE FIX EST ICI : On crée un alias pour que les anciens fichiers ne plantent pas
+export const handleError = getErrorMessage;
