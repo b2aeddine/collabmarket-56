@@ -182,7 +182,7 @@ const SignUp = () => {
 
     try {
       const userData: Record<string, string | boolean | undefined> = {
-        role: selectedRole === "influencer" ? "influencer" : selectedRole === "admin" ? "admin" : "merchant"
+        role: selectedRole === "influencer" ? "influenceur" : selectedRole === "admin" ? "admin" : "commercant"
       };
 
       if (selectedRole === "influencer") {
