@@ -1,0 +1,20 @@
+{
+  "ci": {
+    "collect": {
+      "numberOfRuns": 3,
+      "startServerCommand": "npx serve -s dist -p 3000",
+      "url": ["http://localhost:3000/"]
+    },
+    "assert": {
+      "preset": "lighthouse:recommended",
+      "assertions": {
+        "offscreen-images": "off",
+        "uses-webp-images": "off",
+        "csp-xss": "off"
+      }
+    },
+    "upload": {
+      "target": "temporary-public-storage"
+    }
+  }
+}
