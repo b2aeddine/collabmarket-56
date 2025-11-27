@@ -21,7 +21,7 @@ import { PaymentStatusAlert } from "@/components/PaymentStatusAlert";
 const OrdersManagement = () => {
   const { user } = useAuth();
   const { orders, isLoading } = useOrders(user?.role);
-  
+
   const [selectedOrderForDetails, setSelectedOrderForDetails] = useState(null);
   const [selectedOrderForAction, setSelectedOrderForAction] = useState(null);
   const [selectedOrderForMessage, setSelectedOrderForMessage] = useState(null);
@@ -37,7 +37,7 @@ const OrdersManagement = () => {
         .from('reviews')
         .select('order_id')
         .eq('merchant_id', user.id);
-      
+
       if (error) throw error;
       return data?.map(r => r.order_id) || [];
     },
@@ -46,74 +46,42 @@ const OrdersManagement = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'payment_authorized':
-        return 'bg-orange-100 text-orange-800';
-      case 'en_attente_confirmation_influenceur':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'refusée_par_influenceur':
-        return 'bg-red-100 text-red-800';
-      case 'en_cours':
-        return 'bg-blue-100 text-blue-800';
-      case 'delivered':
-        return 'bg-purple-100 text-purple-800';
-      case 'terminée':
-        return 'bg-green-100 text-green-800';
-      case 'en_contestation':
-        return 'bg-amber-100 text-amber-800';
-      case 'validée_par_plateforme':
-        return 'bg-emerald-100 text-emerald-800';
-      case 'annulée':
-        return 'bg-gray-100 text-gray-800';
-      case "completed": 
-        return "bg-green-100 text-green-800";
-      case "accepted": 
-        return "bg-blue-100 text-blue-800";
-      case "pending": 
+      case "pending":
         return "bg-yellow-100 text-yellow-800";
-      case "disputed": 
+      case "accepted":
+        return "bg-blue-100 text-blue-800";
+      case "delivered":
+        return "bg-purple-100 text-purple-800";
+      case "completed":
+        return "bg-green-100 text-green-800";
+      case "disputed":
         return "bg-red-100 text-red-800";
-      case "refused": 
+      case "refused":
         return "bg-gray-100 text-gray-800";
-      case "cancelled": 
-        return "bg-red-100 text-red-800";
-      default: 
+      case "cancelled":
+        return "bg-gray-300 text-gray-700";
+      default:
         return "bg-gray-100 text-gray-800";
     }
   };
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'payment_authorized':
-        return 'Paiement autorisé';
-      case 'en_attente_confirmation_influenceur':
-        return 'En attente de confirmation';
-      case 'refusée_par_influenceur':
-        return 'Refusée par l\'influenceur';
-      case 'en_cours':
-        return 'En cours';
-      case 'delivered':
-        return 'Livrée - En attente de confirmation';
-      case 'terminée':
-        return 'Terminée';
-      case 'en_contestation':
-        return 'En contestation';
-      case 'validée_par_plateforme':
-        return 'Validée par la plateforme';
-      case 'annulée':
-        return 'Annulée';
-      case "completed": 
-        return "Terminée";
-      case "accepted": 
-        return "Acceptée";
-      case "pending": 
+      case "pending":
         return "En attente";
-      case "disputed": 
+      case "accepted":
+        return "Acceptée";
+      case "delivered":
+        return "Livrée – en attente de confirmation";
+      case "completed":
+        return "Terminée";
+      case "disputed":
         return "En litige";
-      case "refused": 
+      case "refused":
         return "Refusée";
-      case "cancelled": 
+      case "cancelled":
         return "Annulée";
-      default: 
+      default:
         return status;
     }
   };
@@ -134,65 +102,52 @@ const OrdersManagement = () => {
   const getActionMessage = (order: Order, userRole: 'influenceur' | 'commercant') => {
     if (userRole === 'influenceur') {
       switch (order.status) {
-        case 'payment_authorized':
-          return "Nouveau - Paiement autorisé par le commerçant";
-        case 'en_attente_confirmation_influenceur':
+        case "pending":
           return "Nouvelle commande à valider";
-        case 'pending':
-          return "Nouvelle commande à valider";
-        case 'en_cours':
+        case "accepted":
           return "Commande en cours - Marquez comme livrée quand terminé";
-        case 'accepted':
-          return "Commande en cours - Marquez comme livrée quand terminé";
-        case 'delivered':
+        case "delivered":
           return "En attente de confirmation du commerçant";
-        case 'en_contestation':
-          return "Commande en litige";
-        case 'disputed':
-          return "Commande en litige";
-        default:
-          return "";
-      }
-    } else if (userRole === 'commercant') {
-      switch (order.status) {
-        case 'payment_authorized':
-          return "Paiement effectué - En attente de validation par l'influenceur";
-        case 'en_attente_confirmation_influenceur':
-          return "En attente de validation par l'influenceur";
-        case 'pending':
-          return "En attente de validation par l'influenceur";
-        case 'en_cours':
-          return "Commande acceptée - En cours de réalisation";
-        case 'accepted':
-          return "Commande acceptée - En cours de réalisation";
-        case 'delivered':
-          return "Prestation livrée - Confirmez la réception";
-        case 'en_contestation':
-          return "Commande en litige";
-        case 'disputed':
+        case "disputed":
           return "Commande en litige";
         default:
           return "";
       }
     }
+
+    if (userRole === 'commercant') {
+      switch (order.status) {
+        case "pending":
+          return "En attente de validation par l'influenceur";
+        case "accepted":
+          return "Commande acceptée - En cours de réalisation";
+        case "delivered":
+          return "Prestation livrée - Confirmez la réception";
+        case "disputed":
+          return "Commande en litige";
+        default:
+          return "";
+      }
+    }
+
     return "";
   };
 
   const handleContactUser = (order) => {
-    const otherUser = user?.role === 'commercant' 
+    const otherUser = user?.role === 'commercant'
       ? {
-          id: order.influencer_id,
-          username: `@${order.influencer?.first_name || 'influencer'}`,
-          fullName: `${order.influencer?.first_name || ''} ${order.influencer?.last_name || ''}`.trim(),
-          avatar: order.influencer?.avatar_url || "/placeholder.svg"
-        }
+        id: order.influencer_id,
+        username: `@${order.influencer?.first_name || 'influencer'}`,
+        fullName: `${order.influencer?.first_name || ''} ${order.influencer?.last_name || ''}`.trim(),
+        avatar: order.influencer?.avatar_url || "/placeholder.svg"
+      }
       : {
-          id: order.merchant_id,
-          username: `@${order.merchant?.first_name || 'merchant'}`,
-          fullName: `${order.merchant?.first_name || ''} ${order.merchant?.last_name || ''}`.trim(),
-          avatar: order.merchant?.avatar_url || "/placeholder.svg"
-        };
-    
+        id: order.merchant_id,
+        username: `@${order.merchant?.first_name || 'merchant'}`,
+        fullName: `${order.merchant?.first_name || ''} ${order.merchant?.last_name || ''}`.trim(),
+        avatar: order.merchant?.avatar_url || "/placeholder.svg"
+      };
+
     setSelectedOrderForMessage(otherUser);
   };
 
@@ -206,17 +161,18 @@ const OrdersManagement = () => {
 
   const hasActionAvailable = (order: Order, userRole: 'influenceur' | 'commercant') => {
     if (userRole === 'influenceur') {
-      return ['pending', 'payment_authorized', 'en_attente_confirmation_influenceur', 'en_cours', 'accepted', 'delivered'].includes(order.status);
-    } else if (userRole === 'commercant') {
+      return ['pending', 'accepted', 'delivered'].includes(order.status);
+    }
+    if (userRole === 'commercant') {
       return order.status === 'delivered';
     }
     return false;
   };
 
   const hasReviewAvailable = (order: Order) => {
-    return user?.role === 'commercant' && 
-           order.status === 'completed' && 
-           !existingReviews.includes(order.id);
+    return user?.role === 'commercant' &&
+      order.status === 'completed' &&
+      !existingReviews.includes(order.id);
   };
 
   const handleLeaveReview = (order) => {
@@ -234,31 +190,31 @@ const OrdersManagement = () => {
     );
   }
 
-  const userOrders = orders?.filter(order => 
+  const userOrders = orders?.filter(order =>
     user?.role === 'commercant' ? order.merchant_id === user.id : order.influencer_id === user.id
   ) || [];
 
   const orderStats = {
     total: userOrders.length,
-    completed: userOrders.filter(o => ["completed", "terminée", "validée_par_plateforme"].includes(o.status)).length,
-    pending: userOrders.filter(o => ["pending", "en_attente_confirmation_influenceur", "payment_authorized"].includes(o.status)).length,
-    inProgress: userOrders.filter(o => ["en_cours", "delivered", "accepted"].includes(o.status)).length,
-    disputed: userOrders.filter(o => ["disputed", "en_contestation"].includes(o.status)).length,
-    refused: userOrders.filter(o => ["refused", "refusée_par_influenceur"].includes(o.status)).length
+    completed: userOrders.filter(o => o.status === "completed").length,
+    pending: userOrders.filter(o => o.status === "pending").length,
+    inProgress: userOrders.filter(o => ["accepted", "delivered"].includes(o.status)).length,
+    disputed: userOrders.filter(o => o.status === "disputed").length,
+    refused: userOrders.filter(o => o.status === "refused").length
   };
 
   const getFilteredOrders = (tab: string) => {
     switch (tab) {
       case "pending":
-        return userOrders.filter(o => ["pending", "en_attente_confirmation_influenceur", "payment_authorized"].includes(o.status));
+        return userOrders.filter(o => o.status === "pending");
       case "inProgress":
-        return userOrders.filter(o => ["en_cours", "delivered", "accepted"].includes(o.status));
+        return userOrders.filter(o => ["accepted", "delivered"].includes(o.status));
       case "completed":
-        return userOrders.filter(o => ["completed", "terminée", "validée_par_plateforme"].includes(o.status));
+        return userOrders.filter(o => o.status === "completed");
       case "disputed":
-        return userOrders.filter(o => ["disputed", "en_contestation"].includes(o.status));
+        return userOrders.filter(o => o.status === "disputed");
       case "refused":
-        return userOrders.filter(o => ["refused", "refusée_par_influenceur"].includes(o.status));
+        return userOrders.filter(o => o.status === "refused");
       default:
         return userOrders;
     }
@@ -267,7 +223,7 @@ const OrdersManagement = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-teal-50">
       <Header />
-      
+
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-2xl sm:text-4xl font-bold mb-2 text-gradient">
@@ -290,7 +246,7 @@ const OrdersManagement = () => {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card className="border-0 shadow-lg">
             <CardContent className="p-4">
               <div className="text-center">
@@ -299,7 +255,7 @@ const OrdersManagement = () => {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card className="border-0 shadow-lg">
             <CardContent className="p-4">
               <div className="text-center">
@@ -308,7 +264,7 @@ const OrdersManagement = () => {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card className="border-0 shadow-lg">
             <CardContent className="p-4">
               <div className="text-center">
@@ -317,7 +273,7 @@ const OrdersManagement = () => {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card className="border-0 shadow-lg">
             <CardContent className="p-4">
               <div className="text-center">
@@ -372,7 +328,7 @@ const OrdersManagement = () => {
                   </TabsTrigger>
                 </TabsList>
               </div>
-              
+
               {/* Affichage desktop */}
               <div className="hidden sm:block">
                 <TabsList className="grid w-full grid-cols-6">
@@ -396,19 +352,18 @@ const OrdersManagement = () => {
                   </TabsTrigger>
                 </TabsList>
               </div>
-              
+
               {["all", "pending", "inProgress", "completed", "disputed", "refused"].map((tab) => (
                 <TabsContent key={tab} value={tab} className="mt-6">
                   <div className="space-y-6">
                     {getFilteredOrders(tab).length === 0 ? (
                       <div className="text-center py-8 text-gray-500">
-                        {tab === "all" ? "Aucune commande trouvée" : `Aucune commande ${
-                          tab === "pending" ? "en attente" :
-                          tab === "inProgress" ? "en cours" :
-                          tab === "completed" ? "terminée" :
-                          tab === "disputed" ? "en litige" :
-                          "refusée"
-                        }`}
+                        {tab === "all" ? "Aucune commande trouvée" : `Aucune commande ${tab === "pending" ? "en attente" :
+                            tab === "inProgress" ? "en cours" :
+                              tab === "completed" ? "terminée" :
+                                tab === "disputed" ? "en litige" :
+                                  "refusée"
+                          }`}
                       </div>
                     ) : (
                       getFilteredOrders(tab).map((order) => (
@@ -418,12 +373,12 @@ const OrdersManagement = () => {
                             <div className="flex items-center gap-3 flex-shrink-0">
                               <Avatar className="w-12 h-12">
                                 <AvatarImage src={
-                                  user?.role === 'commercant' 
-                                    ? order.influencer?.avatar_url 
+                                  user?.role === 'commercant'
+                                    ? order.influencer?.avatar_url
                                     : order.merchant?.avatar_url
                                 } />
                                 <AvatarFallback>
-                                  {user?.role === 'commercant' 
+                                  {user?.role === 'commercant'
                                     ? `${order.influencer?.first_name?.[0] || ''}${order.influencer?.last_name?.[0] || ''}`
                                     : `${order.merchant?.first_name?.[0] || ''}${order.merchant?.last_name?.[0] || ''}`
                                   }
@@ -431,7 +386,7 @@ const OrdersManagement = () => {
                               </Avatar>
                               <div>
                                 <h4 className="font-semibold text-gray-800">
-                                  {user?.role === 'commercant' 
+                                  {user?.role === 'commercant'
                                     ? `${order.influencer?.first_name || ''} ${order.influencer?.last_name || ''}`.trim() || 'Influenceur'
                                     : `${order.merchant?.first_name || ''} ${order.merchant?.last_name || ''}`.trim() || 'Commerçant'
                                   }
@@ -454,21 +409,20 @@ const OrdersManagement = () => {
                                   </span>
                                 </div>
                               </div>
-                              
+
                               {/* Message d'action */}
                               {user?.role && getActionMessage(order, user.role as 'influenceur' | 'commercant') && (
-                                <div className={`text-sm p-2 rounded-lg mb-3 ${
-                                  order.status === 'pending' && user?.role === 'influenceur' ? 'bg-yellow-50 text-yellow-800' :
-                                  order.status === 'delivered' && user?.role === 'commercant' ? 'bg-blue-50 text-blue-800' :
-                                  order.status === 'disputed' ? 'bg-red-50 text-red-800' :
-                                  'bg-gray-50 text-gray-800'
-                                }`}>
+                                <div className={`text-sm p-2 rounded-lg mb-3 ${order.status === 'pending' && user?.role === 'influenceur' ? 'bg-yellow-50 text-yellow-800' :
+                                    order.status === 'delivered' && user?.role === 'commercant' ? 'bg-blue-50 text-blue-800' :
+                                      order.status === 'disputed' ? 'bg-red-50 text-red-800' :
+                                        'bg-gray-50 text-gray-800'
+                                  }`}>
                                   {getActionMessage(order, user.role as 'influenceur' | 'commercant')}
                                 </div>
                               )}
-                              
+
                               <p className="text-gray-600 mb-3 text-sm">{order.requirements || order.special_instructions || 'Aucune instruction spéciale'}</p>
-                              
+
                               <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-gray-500 mb-4">
                                 <div className="flex items-center gap-1">
                                   <Calendar className="w-4 h-4" />
@@ -484,25 +438,25 @@ const OrdersManagement = () => {
 
                               {/* Action Buttons */}
                               <div className="flex flex-wrap gap-2">
-                                <Button 
-                                  size="sm" 
-                                  variant="outline" 
+                                <Button
+                                  size="sm"
+                                  variant="outline"
                                   className="flex items-center gap-1"
                                   onClick={() => handleContactUser(order)}
                                 >
                                   <MessageCircle className="w-4 h-4" />
                                   Contacter
                                 </Button>
-                                <Button 
-                                  size="sm" 
+                                <Button
+                                  size="sm"
                                   variant="outline"
                                   onClick={() => handleViewDetails(order)}
                                 >
                                   Voir détails
                                 </Button>
                                 {user?.role && hasActionAvailable(order, user.role as 'influenceur' | 'commercant') && (
-                                  <Button 
-                                    size="sm" 
+                                  <Button
+                                    size="sm"
                                     className="bg-gradient-to-r from-pink-500 to-orange-500 flex items-center gap-1"
                                     onClick={() => handleOrderAction(order)}
                                   >
@@ -511,8 +465,8 @@ const OrdersManagement = () => {
                                   </Button>
                                 )}
                                 {hasReviewAvailable(order) && (
-                                  <Button 
-                                    size="sm" 
+                                  <Button
+                                    size="sm"
                                     className="bg-gradient-to-r from-yellow-500 to-orange-500 flex items-center gap-1"
                                     onClick={() => handleLeaveReview(order)}
                                   >

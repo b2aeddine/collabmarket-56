@@ -70,11 +70,14 @@ const OrderActionModal = ({ order, isOpen, onClose, userRole }: OrderActionModal
 
   const handleAccept = async () => {
     try {
-      if (order.status === 'payment_authorized') {
-        // For direct payment: capture the payment
+      // Always use the RPC call, assuming payment capture is handled by backend triggers or separate process if needed
+      // But preserving the capture logic if it was intended for 'pending' state
+      if (order.status === 'pending') {
+        // If there's a specific need to capture payment on accept, keep it. 
+        // But 'payment_authorized' is gone. 'pending' is the start state.
+        // Assuming 'pending' means paid/authorized but not accepted.
         await capturePayment.mutateAsync(order.id);
       } else {
-        // For old flow: just accept the order
         await acceptOrder.mutateAsync(order.id);
         toast.success('Commande acceptée avec succès');
         onClose();
@@ -86,11 +89,9 @@ const OrderActionModal = ({ order, isOpen, onClose, userRole }: OrderActionModal
 
   const handleRefuse = async () => {
     try {
-      if (order.status === 'payment_authorized') {
-        // For direct payment: cancel the payment
+      if (order.status === 'pending') {
         await cancelPayment.mutateAsync(order.id);
       } else {
-        // For old flow: just refuse the order
         await refuseOrder.mutateAsync(order.id);
         toast.success('Commande refusée');
         onClose();
@@ -124,26 +125,20 @@ const OrderActionModal = ({ order, isOpen, onClose, userRole }: OrderActionModal
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'payment_authorized':
-        return 'bg-orange-100 text-orange-800';
-      case 'en_attente_confirmation_influenceur':
+      case 'pending':
         return 'bg-yellow-100 text-yellow-800';
-      case 'en_cours':
+      case 'in_progress':
         return 'bg-blue-100 text-blue-800';
-      case 'terminée':
+      case 'completed':
         return 'bg-green-100 text-green-800';
-      case 'refusée_par_influenceur':
+      case 'cancelled':
         return 'bg-red-100 text-red-800';
       case 'delivered':
         return 'bg-purple-100 text-purple-800';
-      case 'completed':
-        return 'bg-green-100 text-green-800';
-      case 'en_contestation':
+      case 'disputed':
         return 'bg-red-100 text-red-800';
-      case 'validée_par_plateforme':
-        return 'bg-green-100 text-green-800';
-      case 'annulée':
-        return 'bg-gray-100 text-gray-800';
+      case 'accepted':
+        return 'bg-blue-100 text-blue-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -151,26 +146,20 @@ const OrderActionModal = ({ order, isOpen, onClose, userRole }: OrderActionModal
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'payment_authorized':
-        return 'Paiement autorisé - En attente de confirmation';
-      case 'en_attente_confirmation_influenceur':
+      case 'pending':
         return 'En attente de confirmation';
-      case 'en_cours':
+      case 'in_progress':
         return 'En cours';
-      case 'terminée':
+      case 'completed':
         return 'Terminée';
-      case 'refusée_par_influenceur':
-        return 'Refusée par l\'influenceur';
+      case 'cancelled':
+        return 'Annulée';
       case 'delivered':
         return 'Livrée';
-      case 'completed':
-        return 'Confirmée par le client';
-      case 'en_contestation':
+      case 'disputed':
         return 'En contestation';
-      case 'validée_par_plateforme':
-        return 'Validée par la plateforme';
-      case 'annulée':
-        return 'Annulée';
+      case 'accepted':
+        return 'Acceptée';
       default:
         return status;
     }
@@ -190,7 +179,7 @@ const OrderActionModal = ({ order, isOpen, onClose, userRole }: OrderActionModal
       toast.error('Veuillez fournir une preuve ou explication');
       return;
     }
-    
+
     try {
       await contestOrder.mutateAsync({ orderId: order.id, preuveInfluenceur });
       toast.success('Contestation envoyée à l\'administration');
@@ -207,7 +196,7 @@ const OrderActionModal = ({ order, isOpen, onClose, userRole }: OrderActionModal
       toast.error('Veuillez fournir une preuve ou explication');
       return;
     }
-    
+
     try {
       await contestOrder.mutateAsync({ orderId: order.id, preuveInfluenceur: preuveMerchant });
       toast.success('Contestation envoyée à l\'administration');
@@ -219,9 +208,9 @@ const OrderActionModal = ({ order, isOpen, onClose, userRole }: OrderActionModal
     }
   };
 
-  const canAccept = userRole === 'influenceur' && (order.status === 'en_attente_confirmation_influenceur' || order.status === 'payment_authorized');
-  const canRefuse = userRole === 'influenceur' && (order.status === 'en_attente_confirmation_influenceur' || order.status === 'payment_authorized');
-  const canMarkDelivered = userRole === 'influenceur' && order.status === 'en_cours';
+  const canAccept = userRole === 'influenceur' && order.status === 'pending';
+  const canRefuse = userRole === 'influenceur' && order.status === 'pending';
+  const canMarkDelivered = userRole === 'influenceur' && (order.status === 'in_progress' || order.status === 'accepted');
   const canConfirmCompletion = userRole === 'commercant' && order.status === 'delivered';
   const canContest = userRole === 'influenceur' && order.status === 'delivered' && canContestOrder(order);
   const canMerchantContest = userRole === 'commercant' && order.status === 'delivered';
@@ -243,7 +232,7 @@ const OrderActionModal = ({ order, isOpen, onClose, userRole }: OrderActionModal
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="text-sm text-gray-600">
-            <p><strong>Service:</strong> {order.offer_title}</p>
+            <p><strong>Service:</strong> {order.offer?.title || order.offer_title}</p>
             <p><strong>Montant:</strong> {order.total_amount}€</p>
             <p><strong>Commande:</strong> #{order.id.slice(0, 8)}</p>
           </div>
@@ -258,7 +247,7 @@ const OrderActionModal = ({ order, isOpen, onClose, userRole }: OrderActionModal
                 {(acceptOrder.isPending || capturePayment.isPending) ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    {order.status === 'payment_authorized' ? 'Capture en cours...' : 'Acceptation...'}
+                    {order.status === 'pending' ? 'Capture en cours...' : 'Acceptation...'}
                   </>
                 ) : (
                   <>
@@ -278,7 +267,7 @@ const OrderActionModal = ({ order, isOpen, onClose, userRole }: OrderActionModal
                 {(refuseOrder.isPending || cancelPayment.isPending) ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    {order.status === 'payment_authorized' ? 'Annulation...' : 'Refus...'}
+                    {order.status === 'pending' ? 'Annulation...' : 'Refus...'}
                   </>
                 ) : (
                   <>
@@ -307,7 +296,7 @@ const OrderActionModal = ({ order, isOpen, onClose, userRole }: OrderActionModal
             {canConfirmCompletion && order.status === 'delivered' && (
               <Button
                 onClick={handleConfirmCompletion}
-                disabled={confirmCompletion.isPending || order.status === 'completed'}
+                disabled={confirmCompletion.isPending}
                 className="w-full bg-green-600 hover:bg-green-700"
               >
                 {confirmCompletion.isPending ? (

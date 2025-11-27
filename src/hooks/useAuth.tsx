@@ -12,32 +12,21 @@ import { useAuthSession } from './useAuthSession';
 export interface User {
   id: string;
   email: string;
-  role: string;
-  first_name?: string;
-  last_name?: string;
-  phone?: string;
-  city?: string;
-  avatar_url?: string;
-  bio?: string;
-  date_of_birth?: string;
-  profile_views?: number;
-  is_verified?: boolean;
-  created_at?: string;
-  updated_at?: string;
-  company_name?: string;
-  custom_username?: string;
-  is_profile_public?: boolean;
-  profile_share_count?: number;
-  stripe_identity_session_id?: string;
-  stripe_identity_status?: string;
-  stripe_identity_url?: string;
-  identity_status?: string;
-  stripe_connect_status?: string;
-  stripe_connect_account_id?: string;
-  is_stripe_connect_active?: boolean;
-  firstName?: string;
-  lastName?: string;
-  gender?: string;
+  role: 'influenceur' | 'commercant' | 'admin';
+  first_name: string | null;
+  last_name: string | null;
+  phone: string | null;
+  city: string | null;
+  avatar_url: string | null;
+  bio: string | null;
+  profile_views: number | null;
+  is_verified: boolean | null;
+  created_at: string | null;
+  updated_at: string | null;
+  stripe_account_id: string | null;
+  // Computed/Frontend-only fields
+  firstName?: string | null;
+  lastName?: string | null;
 }
 
 export const useAuth = () => {
@@ -54,12 +43,12 @@ export const useAuth = () => {
     const initializeAuth = async () => {
       try {
         const session = await authSession.getSession();
-        
+
         if (session?.user) {
           const profile = await loadProfile(session.user.id);
           setUser(profile);
         }
-        
+
         setLoading(false);
         setInitialized(true);
       } catch (error) {
@@ -99,8 +88,8 @@ export const useAuth = () => {
   };
 
   const signUp = async (
-    email: string, 
-    password: string, 
+    email: string,
+    password: string,
     userData: Record<string, string | boolean | undefined>
   ) => {
     return authSession.signUp({ email, password, userData });

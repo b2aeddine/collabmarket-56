@@ -14,7 +14,6 @@ interface Review {
   merchant?: {
     first_name?: string;
     last_name?: string;
-    company_name?: string;
     avatar_url?: string;
   };
 }
@@ -29,9 +28,9 @@ interface AllReviewsModalProps {
   };
 }
 
-const AllReviewsModal = ({ 
-  isOpen, 
-  onClose, 
+const AllReviewsModal = ({
+  isOpen,
+  onClose,
   reviews,
   reviewStats
 }: AllReviewsModalProps) => {
@@ -39,11 +38,10 @@ const AllReviewsModal = ({
     return Array.from({ length: 5 }).map((_, index) => (
       <Star
         key={index}
-        className={`${size} ${
-          index < rating 
-            ? "text-yellow-500 fill-current" 
+        className={`${size} ${index < rating
+            ? "text-yellow-500 fill-current"
             : "text-gray-300"
-        }`}
+          }`}
       />
     ));
   };
@@ -71,7 +69,7 @@ const AllReviewsModal = ({
             )}
           </div>
         </DialogHeader>
-        
+
         <div className="overflow-y-auto max-h-[calc(90vh-120px)] pr-2">
           {!reviews || reviews.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
@@ -88,9 +86,9 @@ const AllReviewsModal = ({
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-3">
                       <Avatar className="w-10 h-10">
-                        <AvatarImage 
-                          src={review.merchant?.avatar_url} 
-                          alt={`${review.merchant?.first_name} ${review.merchant?.last_name}`} 
+                        <AvatarImage
+                          src={review.merchant?.avatar_url}
+                          alt={`${review.merchant?.first_name} ${review.merchant?.last_name}`}
                         />
                         <AvatarFallback>
                           {review.merchant?.first_name?.[0] || 'U'}
@@ -100,9 +98,8 @@ const AllReviewsModal = ({
                       <div>
                         <div className="flex items-center gap-2">
                           <p className="font-medium">
-                            {review.merchant?.company_name || 
-                             `${review.merchant?.first_name} ${review.merchant?.last_name}` ||
-                             'Utilisateur anonyme'}
+                            {`${review.merchant?.first_name} ${review.merchant?.last_name}` ||
+                              'Utilisateur anonyme'}
                           </p>
                           {review.is_verified && (
                             <Badge variant="secondary" className="text-xs flex items-center gap-1">
@@ -120,7 +117,7 @@ const AllReviewsModal = ({
                       {renderStars(review.rating)}
                     </div>
                   </div>
-                  
+
                   {review.comment && (
                     <p className="text-gray-700 leading-relaxed">
                       {review.comment}

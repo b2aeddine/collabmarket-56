@@ -195,7 +195,7 @@ const SignUp = () => {
         const nameParts = formData.contactName.trim().split(' ');
         userData.first_name = nameParts[0] || '';
         userData.last_name = nameParts.slice(1).join(' ') || '';
-        userData.company_name = formData.companyName;
+        userData.bio = formData.companyName; // Store company name in bio field
         userData.business_email = formData.businessEmail;
         userData.website = formData.website;
         userData.siret = formData.siret;

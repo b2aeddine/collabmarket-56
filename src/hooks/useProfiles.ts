@@ -42,17 +42,15 @@ export const useInfluencers = (filters?: { category?: string; minFollowers?: num
         .from('public_profiles')
         .select(`
           id,
+          role,
           first_name,
           last_name,
           avatar_url,
           bio,
           city,
-          profile_views,
-          profile_share_count,
-          created_at,
-          custom_username,
           is_verified,
-          role,
+          profile_views,
+          created_at,
           social_links(
             id,
             platform,
@@ -60,14 +58,6 @@ export const useInfluencers = (filters?: { category?: string; minFollowers?: num
             followers,
             engagement_rate,
             is_active
-          ),
-          profile_categories(
-            category_id,
-            categories(
-              id,
-              name,
-              slug
-            )
           ),
           offers(
             id,
@@ -87,18 +77,16 @@ export const useInfluencers = (filters?: { category?: string; minFollowers?: num
       // Filtrer les données si nécessaire
       let filteredData = data || [];
 
+      // Note: Category filtering removed since profile_categories not accessible from public_profiles view
       if (filters?.category && filters.category !== 'all') {
-        filteredData = filteredData.filter(influencer =>
-          influencer.profile_categories?.some(pc =>
-            pc.categories?.name === filters.category
-          )
-        );
+        // Cannot filter by category from public_profiles view
+        console.warn('Category filtering not available for public profiles view');
       }
 
-      if (filters?.minFollowers) {
-        filteredData = filteredData.filter(influencer => {
-          const totalFollowers = influencer.social_links?.reduce((sum, link) => sum + (link.followers || 0), 0) || 0;
-          return totalFollowers >= filters.minFollowers;
+      if (filters?.minFollowers !== undefined && filters.minFollowers > 0) {
+        filteredData = filteredData.filter((influencer: any) => {
+          const totalFollowers = influencer.social_links?.reduce((sum: number, link: any) => sum + (link.followers || 0), 0) || 0;
+          return totalFollowers >= (filters.minFollowers || 0);
         });
       }
 
@@ -143,12 +131,8 @@ export const useProfile = (profileId: string) => {
           bio,
           city,
           phone,
-          company_name,
-          custom_username,
           is_verified,
-          is_profile_public,
           profile_views,
-          profile_share_count,
           created_at,
           social_links(
             id,
@@ -187,10 +171,8 @@ export const useProfile = (profileId: string) => {
           avatar_url,
           bio,
           city,
-          custom_username,
           is_verified,
           profile_views,
-          profile_share_count,
           created_at,
           social_links(
             id,
@@ -222,7 +204,7 @@ export const useProfile = (profileId: string) => {
       }
 
       // Use profiles for own/admin, public_profiles for others
-      const tableName = (isOwnProfile || isAdmin) ? 'profiles' : 'public_profiles';
+      const tableName = (isOwnProfile || isAdmin) ? 'profiles' as const : 'public_profiles' as const;
 
       const { data, error } = await supabase
         .from(tableName)

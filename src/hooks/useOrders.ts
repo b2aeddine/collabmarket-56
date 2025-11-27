@@ -26,22 +26,15 @@ export const useOrders = (userRole?: string) => {
           delivery_date,
           created_at,
           updated_at,
-          date_accepted,
-          date_completed,
-          special_instructions,
           requirements,
           influencer_id,
           merchant_id,
-          offer_id,
           offer_id,
           offer:offers(
             title,
             description,
             delivery_time
           ),
-          payment_captured,
-          stripe_payment_intent_id,
-          stripe_session_id,
           influencer:profiles!orders_influencer_id_fkey(
             id,
             first_name,
@@ -54,7 +47,7 @@ export const useOrders = (userRole?: string) => {
             first_name,
             last_name,
             avatar_url,
-            company_name
+            bio
           )
         `)
         .not('status', 'in', '("annulée","cancelled")')
@@ -100,7 +93,6 @@ export const useCreateOrder = () => {
       total_amount: number;
       net_amount: number;
       delivery_date?: string;
-      special_instructions?: string;
       requirements?: string;
     }) => {
       // Get current user
@@ -113,30 +105,128 @@ export const useCreateOrder = () => {
           ...orderData,
           merchant_id: user.id,
           status: 'pending',
-          date_creation_commande: new Date().toISOString(),
         }])
         .select()
         .single();
 
-      // ... (inside useAcceptOrder)
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+    },
+  });
+};
+
+export const useAcceptOrder = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (orderId: string) => {
       const { error } = await supabase.rpc('safe_update_order_status', {
         p_order_id: orderId,
-        p_new_status: 'in_progress'
-        // p_date_accepted removed as it's not in the RPC signature
+        p_new_status: 'accepted'
       });
-      return { id: orderId, status: 'in_progress' };
 
-      // ... (inside useRefuseOrder)
+      if (error) throw error;
+      return { id: orderId, status: 'accepted' };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+    },
+  });
+};
+
+export const useRefuseOrder = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (orderId: string) => {
       const { error } = await supabase.rpc('safe_update_order_status', {
         p_order_id: orderId,
         p_new_status: 'cancelled'
       });
-      return { id: orderId, status: 'cancelled' };
 
-      // ... (inside useContestOrder)
+      if (error) throw error;
+      return { id: orderId, status: 'cancelled' };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+    },
+  });
+};
+
+
+export const useMarkOrderAsDelivered = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (orderId: string) => {
+      const { error } = await supabase.rpc('safe_update_order_status', {
+        p_order_id: orderId,
+        p_new_status: 'delivered'
+      });
+
+      if (error) throw error;
+      return { id: orderId, status: 'delivered' };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+    },
+  });
+};
+
+export const useConfirmOrderCompletion = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (orderId: string) => {
+      const { error } = await supabase.rpc('safe_update_order_status', {
+        p_order_id: orderId,
+        p_new_status: 'completed'
+      });
+
+      if (error) throw error;
+      return { id: orderId, status: 'completed' };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+    },
+  });
+};
+
+export const useContestOrder = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ orderId, preuveInfluenceur }: { orderId: string; preuveInfluenceur: string }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      // 1. Create dispute record
+      const { error: disputeError } = await supabase
+        .from('disputes')
+        .insert([{
+          order_id: orderId,
+          user_id: user.id,
+          description: preuveInfluenceur,
+          status: 'pending',
+          date_opened: new Date().toISOString()
+        }]);
+
+      if (disputeError) throw disputeError;
+
+      // 2. Update order status via RPC
       const { error } = await supabase.rpc('safe_update_order_status', {
         p_order_id: orderId,
         p_new_status: 'disputed'
-        // p_date_contestation and p_dispute_evidence removed as they are not in the RPC signature
       });
+
+      if (error) throw error;
       return { id: orderId, status: 'disputed' };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+    },
+  });
+};

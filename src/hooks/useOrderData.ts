@@ -6,6 +6,7 @@ export interface OrderData {
   productName: string;
   brief: string;
   deadline: string;
+  requirements?: string;
   paymentMethod: string;
   acceptTerms: boolean;
   files: File[];
@@ -17,6 +18,7 @@ export const useOrderData = () => {
     productName: "",
     brief: "",
     deadline: "",
+    requirements: "",
     paymentMethod: "stripe",
     acceptTerms: false,
     files: [],

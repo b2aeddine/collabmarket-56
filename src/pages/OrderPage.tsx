@@ -21,7 +21,7 @@ import { orderPaymentSchema } from "@/utils/validation";
 const OrderPage = () => {
   const params = useParams();
   const [searchParams] = useSearchParams();
-  
+
   const { offerId, influencerId } = useMemo(() => {
     const offerId = params.serviceId;
     const influencerId = searchParams.get("influencer");
@@ -51,12 +51,12 @@ const OrderPage = () => {
 
   const pricingData = useMemo(() => {
     if (!offer) return null;
-    
+
     const totalPrice = Number(offer.price);
     const serviceFee = Math.round(totalPrice * 0.10);
     const finalTotal = totalPrice + serviceFee;
     const netAmount = totalPrice * 0.9; // 90% goes to influencer after 10% commission
-    
+
     return { totalPrice, serviceFee, finalTotal, netAmount };
   }, [offer]);
 
@@ -120,10 +120,10 @@ const OrderPage = () => {
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate form data with Zod schema
     const validationResult = orderPaymentSchema.safeParse(orderData);
-    
+
     if (!validationResult.success) {
       const firstError = validationResult.error.errors[0];
       toast.error(firstError.message);
@@ -145,7 +145,7 @@ const OrderPage = () => {
         productName: validationResult.data.productName,
         brief: validationResult.data.brief,
         deadline: validationResult.data.deadline,
-        specialInstructions: validationResult.data.specialInstructions,
+        requirements: validationResult.data.requirements,
       });
 
     } catch (_error) {
@@ -179,8 +179,8 @@ const OrderPage = () => {
                   <Button onClick={() => window.location.reload()} className="w-full text-sm sm:text-base">
                     Recharger la page
                   </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={() => window.history.back()}
                     className="w-full text-sm sm:text-base"
                   >
@@ -213,8 +213,8 @@ const OrderPage = () => {
                   <Button onClick={() => window.location.reload()} className="w-full text-sm sm:text-base">
                     Recharger la page
                   </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={() => window.history.back()}
                     className="w-full text-sm sm:text-base"
                   >
@@ -235,13 +235,13 @@ const OrderPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-teal-50">
       <Header />
-      
+
       <div className="py-6 sm:py-8 px-4">
         <div className="container mx-auto max-w-6xl">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
             <div className="lg:col-span-1 order-2 lg:order-1">
               <div className="lg:sticky lg:top-24">
-                <OrderSummary 
+                <OrderSummary
                   offer={offer}
                   influencer={influencer}
                   pricingData={pricingData}

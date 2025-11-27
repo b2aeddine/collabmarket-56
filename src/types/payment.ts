@@ -18,7 +18,7 @@ export interface StripeConnectPaymentParams {
   productName: string;
   brief: string;
   deadline?: string;
-  specialInstructions?: string;
+  requirements?: string;
 }
 
 export interface PaymentCaptureParams {

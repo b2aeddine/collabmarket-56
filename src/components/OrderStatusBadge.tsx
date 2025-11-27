@@ -7,7 +7,7 @@ interface OrderStatusBadgeProps {
 const OrderStatusBadge = ({ status }: OrderStatusBadgeProps) => {
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'payment_authorized':
+      case 'pending':
         return 'bg-orange-100 text-orange-800 border-orange-200';
       case 'en_attente_confirmation_influenceur':
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
@@ -32,8 +32,8 @@ const OrderStatusBadge = ({ status }: OrderStatusBadgeProps) => {
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'payment_authorized':
-        return 'Paiement autorisé';
+      case 'pending':
+        return 'En attente';
       case 'en_attente_confirmation_influenceur':
         return 'En attente de confirmation';
       case 'refusée_par_influenceur':

@@ -11,7 +11,7 @@ export const useInfluencerRevenues = () => {
       const { data, error } = await supabase.rpc('get_influencer_available_balance', {
         user_id: user.user.id
       });
-      
+
       if (error) throw error;
       return Number(data) || 0;
     },
@@ -26,36 +26,34 @@ export const useInfluencerRevenues = () => {
       if (!user.user) return [];
 
       const { data, error } = await supabase
-        .from('influencer_revenues')
+        .from('revenues')
         .select(`
           *,
           orders!inner (
             id,
             total_amount,
             created_at,
+            status,
             merchant_id,
-            payment_captured,
-            stripe_payment_intent_id,
             profiles!orders_merchant_id_fkey (
               first_name,
-              last_name,
-              company_name
+              last_name
             )
           )
         `)
         .eq('influencer_id', user.user.id)
         .order('created_at', { ascending: false });
-      
+
       if (error) throw error;
-      
-      // Filter out revenues for orders without captured payments
+
+      // Filter revenues for completed orders only
       const validRevenues = (data || []).filter(revenue => {
-        const order = revenue.orders as { status: string };
-        return order?.payment_captured === true && order?.stripe_payment_intent_id;
+        const order = revenue.orders as any;
+        return order?.status === 'completed';
       });
-      
-      console.log(`📊 Total revenues: ${data?.length}, Valid (captured): ${validRevenues.length}`);
-      
+
+      console.log(`📊 Total revenues: ${data?.length}, Valid (completed): ${validRevenues.length}`);
+
       return validRevenues;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes cache
@@ -69,28 +67,18 @@ export const useInfluencerRevenues = () => {
       if (!user.user) return [];
 
       const { data, error } = await supabase
-        .from('withdrawal_requests')
-        .select(`
-          *,
-          bank_accounts (
-            iban,
-            account_holder,
-            bank_name
-          )
-        `)
-        .eq('influencer_id', user.user.id)
+        .from('withdrawals')
+        .select('*')
+        .eq('user_id', user.user.id)
         .order('created_at', { ascending: false });
-      
+
       if (error) throw error;
       return data || [];
     },
     staleTime: 5 * 60 * 1000, // 5 minutes cache
     refetchOnWindowFocus: false,
   });
-  
-  // REMOVED: Auto-generation of fake revenues
-  // Revenues should only be created when payments are actually captured via Stripe
-  
+
   return {
     balance,
     revenues,

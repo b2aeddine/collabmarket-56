@@ -21,7 +21,7 @@ const MerchantDashboard = memo(() => {
   const { orders, isLoading: ordersLoading } = useOrders('commercant');
   const { favorites, isLoading: favoritesLoading } = useFavorites();
 
-  const handleSaveProfile = useCallback(async (updatedUser: { firstName?: string; lastName?: string; email?: string; phone?: string; company_name?: string; bio?: string; city?: string; avatar?: string; companyName?: string }) => {
+  const handleSaveProfile = useCallback(async (updatedUser: { firstName?: string; lastName?: string; email?: string; phone?: string; bio?: string; city?: string; avatar?: string }) => {
     try {
       const updateData = {
         first_name: updatedUser.firstName,
@@ -31,11 +31,10 @@ const MerchantDashboard = memo(() => {
         city: updatedUser.city,
         bio: updatedUser.bio,
         avatar_url: updatedUser.avatar,
-        company_name: updatedUser.companyName,
       };
 
       const { error } = await updateProfile(updateData);
-      
+
       if (error) {
         toast({
           title: "Erreur",
@@ -72,23 +71,21 @@ const MerchantDashboard = memo(() => {
     }
 
     // Filter completed orders
-    const completedOrders = orders.filter(order => 
+    const completedOrders = orders.filter(order =>
       ['completed', 'terminée', 'terminee'].includes(order.status.toLowerCase())
     );
 
-    // Calculate total spent ONLY for orders with CAPTURED payments (real Stripe payments)
-    const capturedOrders = orders.filter(order => 
-      order.payment_captured === true && 
-      order.stripe_payment_intent_id &&
-      !['annulée', 'annulee', 'cancelled', 'refusée_par_influenceur', 'pending'].includes(order.status.toLowerCase())
+    // Calculate total spent for completed orders
+    const capturedOrders = orders.filter(order =>
+      ['completed', 'terminée', 'terminee'].includes(order.status.toLowerCase())
     );
 
     const totalSpent = capturedOrders.reduce((sum, order) => sum + Number(order.total_amount || 0), 0);
 
     return {
       totalOrders: orders.length,
-      activeOrders: orders.filter(order => 
-        ['en_cours', 'delivered', 'payment_authorized', 'paid', 'en_attente_confirmation_influenceur', 'en_contestation'].includes(order.status.toLowerCase())
+      activeOrders: orders.filter(order =>
+        ['in_progress', 'delivered', 'pending', 'accepted', 'disputed'].includes(order.status.toLowerCase())
       ).length,
       completedOrders: completedOrders.length,
       totalSpent,
@@ -125,17 +122,17 @@ const MerchantDashboard = memo(() => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-teal-50">
       <Header />
-      
+
       <div className="py-6 sm:py-8 px-4">
         <div className="container mx-auto max-w-6xl">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
             {/* Profile Sidebar */}
             <div className="lg:col-span-1">
               <div className="lg:sticky lg:top-24 space-y-4 sm:space-y-6">
-                <ProfileCard 
-                  profile={profile} 
-                  user={user} 
-                  onSaveProfile={handleSaveProfile} 
+                <ProfileCard
+                  profile={profile}
+                  user={user}
+                  onSaveProfile={handleSaveProfile}
                 />
               </div>
             </div>
@@ -143,17 +140,17 @@ const MerchantDashboard = memo(() => {
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-4 sm:space-y-6">
               <PaymentStatusAlert />
-              
+
               <StatsGrid stats={stats} />
 
               <div className="grid grid-cols-1 gap-4 sm:gap-6">
-                <RecentOrdersCard 
-                  orders={orders} 
-                  isLoading={ordersLoading} 
+                <RecentOrdersCard
+                  orders={orders}
+                  isLoading={ordersLoading}
                 />
-                <FavoriteInfluencersCard 
-                  favorites={favorites} 
-                  isLoading={favoritesLoading} 
+                <FavoriteInfluencersCard
+                  favorites={favorites}
+                  isLoading={favoritesLoading}
                 />
               </div>
             </div>

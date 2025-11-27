@@ -17,13 +17,12 @@ export const useContestations = (adminView = false) => {
             id,
             total_amount,
             status,
-            offer_title,
             influencer:profiles!orders_influencer_id_fkey(first_name, last_name),
-            merchant:profiles!orders_merchant_id_fkey(first_name, last_name, company_name)
+            merchant:profiles!orders_merchant_id_fkey(first_name, last_name)
           )
         `)
         .order('created_at', { ascending: false });
-      
+
       // SECURITY: Use PostgREST filter syntax safely
       // Si ce n'est pas la vue admin, filtrer par utilisateur actuel
       if (!adminView) {
@@ -31,7 +30,7 @@ export const useContestations = (adminView = false) => {
       }
 
       const { data, error } = await query;
-      
+
       if (error) throw error;
       return data || [];
     },
@@ -44,7 +43,7 @@ export const useContestations = (adminView = false) => {
 export const useCreateContestation = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  
+
   return useMutation({
     mutationFn: async ({
       orderId,
@@ -88,13 +87,13 @@ export const useCreateContestation = () => {
         }])
         .select()
         .single();
-      
+
       if (error) throw error;
 
       // Mettre à jour le statut de la commande
       const { error: updateError } = await supabase
         .from('orders')
-        .update({ 
+        .update({
           status: 'en_contestation',
           date_contestation: new Date().toISOString()
         })
@@ -126,7 +125,7 @@ export const useCreateContestation = () => {
 export const useUpdateContestationStatus = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  
+
   return useMutation({
     mutationFn: async ({
       contestationId,
@@ -164,7 +163,7 @@ export const useUpdateContestationStatus = () => {
         .eq('id', contestationId)
         .select()
         .single();
-      
+
       if (error) throw error;
 
       // Traiter selon le statut

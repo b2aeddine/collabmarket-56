@@ -7,11 +7,11 @@ export const useReviews = (influencerId: string) => {
     queryKey: ['reviews', influencerId],
     queryFn: async () => {
       console.log('Fetching reviews for influencer:', influencerId);
-      
+
       if (!influencerId) {
         throw new Error('Influencer ID is required');
       }
-      
+
       const { data, error } = await supabase
         .from('reviews')
         .select(`
@@ -19,19 +19,18 @@ export const useReviews = (influencerId: string) => {
           merchant:profiles!reviews_merchant_id_fkey(
             first_name,
             last_name,
-            avatar_url,
-            company_name
+            avatar_url
           )
         `)
         .eq('influencer_id', influencerId)
         .eq('is_public', true)
         .order('created_at', { ascending: false });
-      
+
       if (error) {
         console.error('Error fetching reviews:', error);
         throw error;
       }
-      
+
       console.log('Fetched reviews:', data);
       return data || [];
     },
@@ -41,7 +40,7 @@ export const useReviews = (influencerId: string) => {
   // Calculer les statistiques des avis réelles
   const reviewStats = reviews ? {
     totalReviews: reviews.length,
-    averageRating: reviews.length > 0 
+    averageRating: reviews.length > 0
       ? Number((reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length).toFixed(1))
       : 0,
     ratingDistribution: {

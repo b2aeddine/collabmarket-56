@@ -21,7 +21,7 @@ export const useDirectPayment = () => {
         productName: params.productName,
         brief: params.brief,
         deadline: params.deadline,
-        specialInstructions: params.specialInstructions
+        requirements: params.requirements
       });
     },
     onSuccess: (data) => {

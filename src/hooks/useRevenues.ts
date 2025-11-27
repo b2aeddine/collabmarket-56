@@ -26,7 +26,7 @@ export const useRevenues = () => {
         `)
         .eq('influencer_id', user.id)
         .order('created_at', { ascending: false });
-      
+
       if (error) {
         console.error('❌ useRevenues error:', error);
         throw error;
@@ -55,9 +55,9 @@ export const useAvailableBalance = () => {
         .select('net_amount')
         .eq('influencer_id', user.user.id)
         .eq('status', 'available');
-      
+
       if (error) throw error;
-      
+
       const total = data?.reduce((sum, revenue) => sum + Number(revenue.net_amount), 0) || 0;
       return total;
     },
@@ -84,7 +84,7 @@ export const useBankAccounts = () => {
         .eq('user_id', user.id)
         .eq('is_active', true)
         .order('is_default', { ascending: false });
-      
+
       if (error) {
         console.error('❌ useBankAccounts error:', error);
         throw error;
@@ -102,7 +102,7 @@ export const useBankAccounts = () => {
 
 export const useCreateBankAccount = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (bankData: {
       iban: string;
@@ -123,7 +123,7 @@ export const useCreateBankAccount = () => {
         }])
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -135,7 +135,7 @@ export const useCreateBankAccount = () => {
 
 export const useCreateWithdrawal = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (withdrawalData: {
       bank_account_id: string;
@@ -145,15 +145,27 @@ export const useCreateWithdrawal = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
+      // First fetch the bank account details to store a snapshot
+      const { data: bankAccount, error: bankError } = await supabase
+        .from('bank_accounts')
+        .select('*')
+        .eq('id', withdrawalData.bank_account_id)
+        .single();
+
+      if (bankError || !bankAccount) throw new Error('Bank account not found');
+
       const { data, error } = await supabase
         .from('withdrawals')
         .insert([{
-          ...withdrawalData,
-          influencer_id: user.id
+          amount: withdrawalData.amount,
+          influencer_id: user.id,
+          status: 'pending',
+          payment_method: 'bank_transfer',
+          payment_details: bankAccount // Store snapshot of bank details
         }])
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -178,13 +190,10 @@ export const useWithdrawals = () => {
 
       const { data, error } = await supabase
         .from('withdrawals')
-        .select(`
-          *,
-          bank_accounts(bank_name, account_holder)
-        `)
+        .select('*')
         .eq('influencer_id', user.id)
         .order('created_at', { ascending: false });
-      
+
       if (error) {
         console.error('❌ useWithdrawals error:', error);
         throw error;

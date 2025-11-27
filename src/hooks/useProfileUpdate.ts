@@ -11,7 +11,6 @@ interface UpdateProfileParams {
     phone?: string | null;
     city?: string | null;
     bio?: string | null;
-    company_name?: string | null;
     avatar_url?: string | null;
   };
   categoryIds?: string[];

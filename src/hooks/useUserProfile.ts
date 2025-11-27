@@ -33,32 +33,20 @@ export const useUserProfile = () => {
       const userProfile: User = {
         id: data.id,
         email: data.email,
-        role: data.role,
+        role: data.role as 'influenceur' | 'commercant' | 'admin',
         first_name: data.first_name,
         last_name: data.last_name,
         phone: data.phone,
         city: data.city,
         avatar_url: data.avatar_url,
         bio: data.bio,
-        date_of_birth: data.date_of_birth,
         profile_views: data.profile_views,
         is_verified: data.is_verified,
         created_at: data.created_at,
         updated_at: data.updated_at,
-        company_name: data.company_name,
-        custom_username: data.custom_username,
-        is_profile_public: data.is_profile_public,
-        profile_share_count: data.profile_share_count,
-        stripe_identity_session_id: data.stripe_identity_session_id,
-        stripe_identity_status: data.stripe_identity_status,
-        stripe_identity_url: data.stripe_identity_url,
-        identity_status: data.identity_status,
-        stripe_connect_status: data.stripe_connect_status,
-        stripe_connect_account_id: data.stripe_connect_account_id,
-        is_stripe_connect_active: data.is_stripe_connect_active,
+        stripe_account_id: data.stripe_account_id,
         firstName: data.first_name,
         lastName: data.last_name,
-        gender: undefined,
       };
 
       setProfile(userProfile);
@@ -94,7 +82,7 @@ export const useUserProfile = () => {
         firstName: updates.first_name || prev.firstName,
         lastName: updates.last_name || prev.lastName,
       } : null);
-      
+
       return { error: null, data };
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Erreur inattendue';

@@ -1,15 +1,14 @@
 
+
 export interface SocialNetwork {
   id: string;
-  platform: string; // Changed from union type to string to match database
+  platform: string;
   username: string;
   profile_url: string;
   followers: number;
   engagement_rate: number;
   is_connected?: boolean;
   is_active?: boolean;
-  access_token?: string;
-  last_updated?: string;
   user_id: string;
   created_at: string;
 }
@@ -17,79 +16,86 @@ export interface SocialNetwork {
 export interface User {
   id: string;
   email: string;
-  role: 'influenceur' | 'commercant';
-  first_name?: string;
-  last_name?: string;
-  avatar_url?: string;
-  bio?: string;
-  city?: string;
-  phone?: string;
-  date_of_birth?: string;
-  is_verified?: boolean;
-  profile_views?: number;
-  custom_username?: string;
-  is_profile_public?: boolean;
-  profile_share_count?: number;
-  company_name?: string;
-  created_at: string;
-  updated_at: string;
-  // Add aliases for compatibility with EditProfileModal
-  firstName?: string;
-  lastName?: string;
-  gender?: string;
+  role: 'influenceur' | 'commercant' | 'admin';
+  first_name: string | null;
+  last_name: string | null;
+  avatar_url: string | null;
+  bio: string | null;
+  city: string | null;
+  phone: string | null;
+  is_verified: boolean | null;
+  profile_views: number | null;
+  stripe_account_id: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  // Computed/Frontend-only fields
+  firstName?: string | null;
+  lastName?: string | null;
 }
 
 export interface Offer {
   id: string;
   influencer_id: string;
-  platform?: SocialNetwork['platform'];
+  category_id?: string | null;
   title: string;
-  description: string;
+  description: string | null;
   price: number;
-  delivery_time: string;
-  is_active: boolean;
-  is_popular?: boolean;
-  created_at: string;
-  updated_at: string;
+  delivery_time: string | null;
+  is_active: boolean | null;
+  is_popular: boolean | null;
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 export interface Order {
   id: string;
   merchant_id: string;
   influencer_id: string;
-  offer_id: string;
-  offer_title?: string; // Snapshot of offer data
-  offer_description?: string;
-  offer_delivery_time?: string;
-  status: 'pending' | 'accepted' | 'refused' | 'delivered' | 'completed' | 'disputed' | 'cancelled';
+  offer_id: string | null;
+  status: 'pending' | 'accepted' | 'in_progress' | 'shipped' | 'delivered' | 'completed' | 'cancelled' | 'disputed';
   total_amount: number;
-  net_amount?: number;
-  delivery_date?: string;
-  special_instructions?: string;
-  requirements?: string;
-  created_at: string;
-  updated_at: string;
-  date_accepted?: string;
-  date_completed?: string;
-  date_disputed?: string;
-  dispute_reason?: string;
+  net_amount: number;
+  commission_rate: number | null;
+  delivery_date: string | null;
+  requirements: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  // Relations
+  offer?: {
+    title: string;
+    description: string | null;
+    delivery_time: string | null;
+  };
+  influencer?: {
+    first_name: string | null;
+    last_name: string | null;
+    avatar_url: string | null;
+  };
+  merchant?: {
+    first_name: string | null;
+    last_name: string | null;
+    avatar_url: string | null;
+  };
+  // Legacy fields (optional/removed but kept if needed for transition, though better to remove)
+  offer_title?: string;
 }
 
 export interface Message {
   id: string;
   conversation_id: string;
   sender_id: string;
+  receiver_id: string;
   content: string;
-  is_read: boolean;
-  created_at: string;
+  is_read: boolean | null;
+  created_at: string | null;
 }
 
 export interface Conversation {
   id: string;
-  merchant_id: string;
-  influencer_id: string;
-  last_message_at: string;
-  created_at: string;
+  participant_1_id: string;
+  participant_2_id: string;
+  last_message_at: string | null;
+  created_at: string | null;
 }
 
 export interface Revenue {
@@ -97,9 +103,10 @@ export interface Revenue {
   influencer_id: string;
   order_id: string;
   amount: number;
-  commission_rate: number;
+  commission: number;
   net_amount: number;
-  created_at: string;
+  status: 'pending' | 'available' | 'withdrawn';
+  created_at: string | null;
 }
 
 export interface WithdrawalRequest {
@@ -107,10 +114,12 @@ export interface WithdrawalRequest {
   influencer_id: string;
   bank_account_id: string;
   amount: number;
-  status: 'pending' | 'processing' | 'completed' | 'rejected';
-  requested_at: string;
-  processed_at?: string;
-  notes?: string;
+  status: string;
+  requested_at: string | null;
+  processed_at: string | null;
+  admin_notes: string | null;
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 export interface BankAccount {
@@ -120,28 +129,28 @@ export interface BankAccount {
   bic: string;
   account_holder: string;
   bank_name: string;
-  is_default: boolean;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
+  is_default: boolean | null;
+  is_active: boolean | null;
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 export interface Notification {
   id: string;
   user_id: string;
-  type: 'new_order' | 'message' | 'payment' | 'verification' | 'order_status_update' | 'revenue_earned' | 'order_accepted' | 'order_refused' | 'order_delivered' | 'order_disputed';
+  type: string;
   title: string;
   content: string;
-  is_read: boolean;
-  related_id?: string;
-  created_at: string;
+  is_read: boolean | null;
+  related_id: string | null;
+  created_at: string | null;
 }
 
 export interface Favorite {
   id: string;
   merchant_id: string;
   influencer_id: string;
-  created_at: string;
+  created_at: string | null;
 }
 
 export interface Review {
@@ -150,29 +159,21 @@ export interface Review {
   merchant_id: string;
   influencer_id: string;
   rating: number;
-  comment?: string;
-  is_public: boolean;
+  comment: string | null;
+  is_public: boolean | null;
+  is_verified: boolean | null;
   created_at: string;
+  updated_at: string;
 }
 
 export interface Category {
   id: string;
   name: string;
   slug: string;
-  description?: string;
-  icon_name?: string;
-  is_active: boolean;
-  created_at: string;
-}
-
-export interface ProfileView {
-  id: string;
-  profile_id: string;
-  viewer_id?: string;
-  viewer_ip?: string;
-  user_agent?: string;
-  referrer?: string;
-  viewed_at: string;
+  description: string | null;
+  icon_name: string | null;
+  is_active: boolean | null;
+  created_at: string | null;
 }
 
 export interface Dispute {
@@ -180,11 +181,11 @@ export interface Dispute {
   order_id: string;
   user_id: string;
   description: string;
-  status: 'pending' | 'resolved' | 'rejected';
+  status: string;
   date_opened: string;
-  resolution?: string;
-  resolved_by?: string;
-  resolved_at?: string;
-  created_at: string;
-  updated_at: string;
+  resolution: string | null;
+  resolved_by: string | null;
+  resolved_at: string | null;
+  created_at: string | null;
+  updated_at: string | null;
 }

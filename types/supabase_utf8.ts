@@ -1,4 +1,7 @@
-﻿export type Json =
+﻿Need to install the following packages:
+supabase@2.63.1
+Ok to proceed? (y) 
+export type Json =
   | string
   | number
   | boolean
@@ -298,3 +301,1378 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "conversations_participant_1_id_fkey"
+            columns: ["participant_1_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_participant_2_id_fkey"
+            columns: ["participant_2_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_participant_2_id_fkey"
+            columns: ["participant_2_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      disputes: {
+        Row: {
+          created_at: string | null
+          date_opened: string
+          description: string
+          id: string
+          order_id: string
+          resolution: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          date_opened?: string
+          description: string
+          id?: string
+          order_id: string
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          date_opened?: string
+          description?: string
+          id?: string
+          order_id?: string
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      favorites: {
+        Row: {
+          created_at: string | null
+          id: string
+          influencer_id: string
+          merchant_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          influencer_id: string
+          merchant_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          influencer_id?: string
+          merchant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favorites_influencer_id_fkey"
+            columns: ["influencer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "favorites_influencer_id_fkey"
+            columns: ["influencer_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "favorites_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "favorites_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      identity_documents: {
+        Row: {
+          created_at: string | null
+          document_back_url: string | null
+          document_front_url: string
+          document_type: string
+          id: string
+          rejection_reason: string | null
+          status: string | null
+          updated_at: string | null
+          uploaded_at: string | null
+          user_id: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          document_back_url?: string | null
+          document_front_url: string
+          document_type: string
+          id?: string
+          rejection_reason?: string | null
+          status?: string | null
+          updated_at?: string | null
+          uploaded_at?: string | null
+          user_id: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          document_back_url?: string | null
+          document_front_url?: string
+          document_type?: string
+          id?: string
+          rejection_reason?: string | null
+          status?: string | null
+          updated_at?: string | null
+          uploaded_at?: string | null
+          user_id?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: []
+      }
+      influencer_revenues: {
+        Row: {
+          amount: number
+          commission: number
+          created_at: string | null
+          id: string
+          influencer_id: string
+          net_amount: number
+          order_id: string | null
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          commission?: number
+          created_at?: string | null
+          id?: string
+          influencer_id: string
+          net_amount: number
+          order_id?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          commission?: number
+          created_at?: string | null
+          id?: string
+          influencer_id?: string
+          net_amount?: number
+          order_id?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          receiver_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          receiver_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          receiver_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversation_pairs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          related_id: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          related_id?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          related_id?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      offers: {
+        Row: {
+          category_id: string | null
+          created_at: string | null
+          delivery_time: string | null
+          description: string | null
+          id: string
+          influencer_id: string
+          is_active: boolean | null
+          is_popular: boolean | null
+          price: number
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          category_id?: string | null
+          created_at?: string | null
+          delivery_time?: string | null
+          description?: string | null
+          id?: string
+          influencer_id: string
+          is_active?: boolean | null
+          is_popular?: boolean | null
+          price: number
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          category_id?: string | null
+          created_at?: string | null
+          delivery_time?: string | null
+          description?: string | null
+          id?: string
+          influencer_id?: string
+          is_active?: boolean | null
+          is_popular?: boolean | null
+          price?: number
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offers_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offers_influencer_id_fkey"
+            columns: ["influencer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offers_influencer_id_fkey"
+            columns: ["influencer_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          commission_rate: number | null
+          created_at: string | null
+          delivery_date: string | null
+          id: string
+          influencer_id: string
+          merchant_id: string
+          net_amount: number
+          offer_id: string | null
+          requirements: string | null
+          status: string
+          total_amount: number
+          updated_at: string | null
+        }
+        Insert: {
+          commission_rate?: number | null
+          created_at?: string | null
+          delivery_date?: string | null
+          id?: string
+          influencer_id: string
+          merchant_id: string
+          net_amount: number
+          offer_id?: string | null
+          requirements?: string | null
+          status?: string
+          total_amount: number
+          updated_at?: string | null
+        }
+        Update: {
+          commission_rate?: number | null
+          created_at?: string | null
+          delivery_date?: string | null
+          id?: string
+          influencer_id?: string
+          merchant_id?: string
+          net_amount?: number
+          offer_id?: string | null
+          requirements?: string | null
+          status?: string
+          total_amount?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_influencer_id_fkey"
+            columns: ["influencer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_influencer_id_fkey"
+            columns: ["influencer_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "offers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_logs: {
+        Row: {
+          created_at: string | null
+          event_data: Json | null
+          event_type: string
+          id: string
+          order_id: string | null
+          processed: boolean | null
+          stripe_session_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          order_id?: string | null
+          processed?: boolean | null
+          stripe_session_id: string
+        }
+        Update: {
+          created_at?: string | null
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          order_id?: string | null
+          processed?: boolean | null
+          stripe_session_id?: string
+        }
+        Relationships: []
+      }
+      portfolio_items: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          id: string
+          image_url: string
+          influencer_id: string
+          is_active: boolean | null
+          link_url: string | null
+          title: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          image_url: string
+          influencer_id: string
+          is_active?: boolean | null
+          link_url?: string | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          image_url?: string
+          influencer_id?: string
+          is_active?: boolean | null
+          link_url?: string | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      profile_categories: {
+        Row: {
+          category_id: string
+          created_at: string | null
+          id: string
+          profile_id: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string | null
+          id?: string
+          profile_id: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string | null
+          id?: string
+          profile_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          city: string | null
+          created_at: string | null
+          email: string
+          first_name: string | null
+          id: string
+          is_verified: boolean | null
+          last_name: string | null
+          phone: string | null
+          profile_views: number | null
+          role: string
+          stripe_account_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          city?: string | null
+          created_at?: string | null
+          email: string
+          first_name?: string | null
+          id: string
+          is_verified?: boolean | null
+          last_name?: string | null
+          phone?: string | null
+          profile_views?: number | null
+          role: string
+          stripe_account_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          city?: string | null
+          created_at?: string | null
+          email?: string
+          first_name?: string | null
+          id?: string
+          is_verified?: boolean | null
+          last_name?: string | null
+          phone?: string | null
+          profile_views?: number | null
+          role?: string
+          stripe_account_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      revenues: {
+        Row: {
+          amount: number
+          commission: number
+          created_at: string | null
+          id: string
+          influencer_id: string
+          net_amount: number
+          order_id: string
+          status: string
+        }
+        Insert: {
+          amount: number
+          commission: number
+          created_at?: string | null
+          id?: string
+          influencer_id: string
+          net_amount: number
+          order_id: string
+          status?: string
+        }
+        Update: {
+          amount?: number
+          commission?: number
+          created_at?: string | null
+          id?: string
+          influencer_id?: string
+          net_amount?: number
+          order_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "revenues_influencer_id_fkey"
+            columns: ["influencer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "revenues_influencer_id_fkey"
+            columns: ["influencer_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "revenues_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          influencer_id: string
+          is_public: boolean | null
+          is_verified: boolean | null
+          merchant_id: string
+          order_id: string
+          rating: number
+          updated_at: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          influencer_id: string
+          is_public?: boolean | null
+          is_verified?: boolean | null
+          merchant_id: string
+          order_id: string
+          rating: number
+          updated_at?: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          influencer_id?: string
+          is_public?: boolean | null
+          is_verified?: boolean | null
+          merchant_id?: string
+          order_id?: string
+          rating?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      search_analytics: {
+        Row: {
+          avg_search_time: number | null
+          conversion_rate: number | null
+          created_at: string | null
+          date: string
+          id: string
+          top_filters: string[] | null
+          top_search_terms: string[] | null
+          total_searches: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          avg_search_time?: number | null
+          conversion_rate?: number | null
+          created_at?: string | null
+          date: string
+          id?: string
+          top_filters?: string[] | null
+          top_search_terms?: string[] | null
+          total_searches?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          avg_search_time?: number | null
+          conversion_rate?: number | null
+          created_at?: string | null
+          date?: string
+          id?: string
+          top_filters?: string[] | null
+          top_search_terms?: string[] | null
+          total_searches?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      search_history: {
+        Row: {
+          clicked_profile_id: string | null
+          created_at: string | null
+          filters: Json | null
+          id: string
+          result_count: number | null
+          search_term: string
+          user_id: string | null
+        }
+        Insert: {
+          clicked_profile_id?: string | null
+          created_at?: string | null
+          filters?: Json | null
+          id?: string
+          result_count?: number | null
+          search_term: string
+          user_id?: string | null
+        }
+        Update: {
+          clicked_profile_id?: string | null
+          created_at?: string | null
+          filters?: Json | null
+          id?: string
+          result_count?: number | null
+          search_term?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      social_accounts: {
+        Row: {
+          access_token: string | null
+          created_at: string | null
+          engagement_rate: number | null
+          expires_at: string | null
+          followers: number | null
+          id: string
+          is_active: boolean | null
+          last_synced_at: string | null
+          platform: string
+          refresh_token: string | null
+          total_views: number | null
+          updated_at: string | null
+          user_id: string
+          username: string | null
+        }
+        Insert: {
+          access_token?: string | null
+          created_at?: string | null
+          engagement_rate?: number | null
+          expires_at?: string | null
+          followers?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_synced_at?: string | null
+          platform: string
+          refresh_token?: string | null
+          total_views?: number | null
+          updated_at?: string | null
+          user_id: string
+          username?: string | null
+        }
+        Update: {
+          access_token?: string | null
+          created_at?: string | null
+          engagement_rate?: number | null
+          expires_at?: string | null
+          followers?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_synced_at?: string | null
+          platform?: string
+          refresh_token?: string | null
+          total_views?: number | null
+          updated_at?: string | null
+          user_id?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+      social_links: {
+        Row: {
+          created_at: string | null
+          engagement_rate: number | null
+          followers: number | null
+          id: string
+          is_active: boolean | null
+          is_connected: boolean | null
+          platform: string
+          profile_url: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          created_at?: string | null
+          engagement_rate?: number | null
+          followers?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_connected?: boolean | null
+          platform: string
+          profile_url: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          created_at?: string | null
+          engagement_rate?: number | null
+          followers?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_connected?: boolean | null
+          platform?: string
+          profile_url?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_links_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "social_links_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stripe_accounts: {
+        Row: {
+          account_status: string | null
+          capabilities_card_payments: boolean | null
+          capabilities_transfers: boolean | null
+          charges_enabled: boolean | null
+          country: string | null
+          created_at: string | null
+          currency: string | null
+          details_submitted: boolean | null
+          external_account_bank_name: string | null
+          external_account_last4: string | null
+          id: string
+          onboarding_completed: boolean | null
+          payouts_enabled: boolean | null
+          stripe_account_id: string
+          tos_acceptance_date: string | null
+          updated_at: string | null
+          user_id: string
+          verification_status: string | null
+        }
+        Insert: {
+          account_status?: string | null
+          capabilities_card_payments?: boolean | null
+          capabilities_transfers?: boolean | null
+          charges_enabled?: boolean | null
+          country?: string | null
+          created_at?: string | null
+          currency?: string | null
+          details_submitted?: boolean | null
+          external_account_bank_name?: string | null
+          external_account_last4?: string | null
+          id?: string
+          onboarding_completed?: boolean | null
+          payouts_enabled?: boolean | null
+          stripe_account_id: string
+          tos_acceptance_date?: string | null
+          updated_at?: string | null
+          user_id: string
+          verification_status?: string | null
+        }
+        Update: {
+          account_status?: string | null
+          capabilities_card_payments?: boolean | null
+          capabilities_transfers?: boolean | null
+          charges_enabled?: boolean | null
+          country?: string | null
+          created_at?: string | null
+          currency?: string | null
+          details_submitted?: boolean | null
+          external_account_bank_name?: string | null
+          external_account_last4?: string | null
+          id?: string
+          onboarding_completed?: boolean | null
+          payouts_enabled?: boolean | null
+          stripe_account_id?: string
+          tos_acceptance_date?: string | null
+          updated_at?: string | null
+          user_id?: string
+          verification_status?: string | null
+        }
+        Relationships: []
+      }
+      stripe_transfers: {
+        Row: {
+          amount: number
+          created_at: string | null
+          currency: string | null
+          failure_reason: string | null
+          id: string
+          influencer_amount: number
+          influencer_id: string | null
+          merchant_id: string | null
+          order_id: string | null
+          platform_fee: number
+          status: string | null
+          stripe_payment_intent_id: string | null
+          stripe_transfer_id: string | null
+          transferred_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          currency?: string | null
+          failure_reason?: string | null
+          id?: string
+          influencer_amount: number
+          influencer_id?: string | null
+          merchant_id?: string | null
+          order_id?: string | null
+          platform_fee: number
+          status?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_transfer_id?: string | null
+          transferred_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          currency?: string | null
+          failure_reason?: string | null
+          id?: string
+          influencer_amount?: number
+          influencer_id?: string | null
+          merchant_id?: string | null
+          order_id?: string | null
+          platform_fee?: number
+          status?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_transfer_id?: string | null
+          transferred_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      withdrawal_requests: {
+        Row: {
+          admin_notes: string | null
+          amount: number
+          bank_account_id: string
+          created_at: string | null
+          id: string
+          influencer_id: string
+          processed_at: string | null
+          processed_by: string | null
+          requested_at: string | null
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          amount: number
+          bank_account_id: string
+          created_at?: string | null
+          id?: string
+          influencer_id: string
+          processed_at?: string | null
+          processed_by?: string | null
+          requested_at?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          amount?: number
+          bank_account_id?: string
+          created_at?: string | null
+          id?: string
+          influencer_id?: string
+          processed_at?: string | null
+          processed_by?: string | null
+          requested_at?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "withdrawal_requests_bank_account_id_fkey"
+            columns: ["bank_account_id"]
+            isOneToOne: false
+            referencedRelation: "bank_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      withdrawals: {
+        Row: {
+          amount: number
+          created_at: string | null
+          id: string
+          influencer_id: string
+          payment_details: Json | null
+          payment_method: string | null
+          processed_at: string | null
+          status: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          id?: string
+          influencer_id: string
+          payment_details?: Json | null
+          payment_method?: string | null
+          processed_at?: string | null
+          status?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          id?: string
+          influencer_id?: string
+          payment_details?: Json | null
+          payment_method?: string | null
+          processed_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "withdrawals_influencer_id_fkey"
+            columns: ["influencer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "withdrawals_influencer_id_fkey"
+            columns: ["influencer_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+    }
+    Views: {
+      conversation_pairs: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          last_message_at: string | null
+          p1: string | null
+          p2: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          last_message_at?: string | null
+          p1?: never
+          p2?: never
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          last_message_at?: string | null
+          p1?: never
+          p2?: never
+        }
+        Relationships: []
+      }
+      dashboard_stats: {
+        Row: {
+          completed_orders: number | null
+          total_influencers: number | null
+          total_merchants: number | null
+          total_volume_eur: number | null
+        }
+        Relationships: []
+      }
+      public_profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          city: string | null
+          created_at: string | null
+          first_name: string | null
+          id: string | null
+          is_verified: boolean | null
+          last_name: string | null
+          profile_views: number | null
+          role: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          city?: string | null
+          created_at?: string | null
+          first_name?: string | null
+          id?: string | null
+          is_verified?: boolean | null
+          last_name?: string | null
+          profile_views?: number | null
+          role?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          city?: string | null
+          created_at?: string | null
+          first_name?: string | null
+          id?: string | null
+          is_verified?: boolean | null
+          last_name?: string | null
+          profile_views?: number | null
+          role?: string | null
+        }
+        Relationships: []
+      }
+    }
+    Functions: {
+      auto_cancel_expired_orders: { Args: never; Returns: undefined }
+      auto_cancel_payment_authorized_orders: { Args: never; Returns: undefined }
+      auto_cancel_pending_orders: { Args: never; Returns: undefined }
+      auto_confirm_completed_orders: { Args: never; Returns: undefined }
+      auto_handle_expired_orders: { Args: never; Returns: undefined }
+      can_contest_order: { Args: { order_id: string }; Returns: boolean }
+      cleanup_invalid_revenues: {
+        Args: never
+        Returns: {
+          deleted_count: number
+        }[]
+      }
+      cleanup_rate_limit_entries: { Args: never; Returns: undefined }
+      create_admin_account: { Args: never; Returns: undefined }
+      create_initial_admin: { Args: never; Returns: undefined }
+      enable_contestation_for_delivered_orders: {
+        Args: never
+        Returns: undefined
+      }
+      get_available_balance: { Args: { user_id: string }; Returns: number }
+      get_current_user_role: { Args: never; Returns: string }
+      get_influencer_available_balance: {
+        Args: { user_id: string }
+        Returns: number
+      }
+      get_influencer_total_earned: {
+        Args: { user_id: string }
+        Returns: number
+      }
+      get_influencer_total_earned_verified: {
+        Args: { user_id: string }
+        Returns: number
+      }
+      get_influencer_total_withdrawn: {
+        Args: { user_id: string }
+        Returns: number
+      }
+      get_merchant_total_spent: { Args: { user_id: string }; Returns: number }
+      get_public_influencers: {
+        Args: { limit_count?: number }
+        Returns: {
+          avatar_url: string
+          bio: string
+          city: string
+          created_at: string
+          custom_username: string
+          first_name: string
+          id: string
+          is_verified: boolean
+          last_name: string
+          profile_share_count: number
+          profile_views: number
+          role: string
+        }[]
+      }
+      get_public_profile_data: {
+        Args: { profile_id: string }
+        Returns: {
+          avatar_url: string
+          bio: string
+          city: string
+          created_at: string
+          custom_username: string
+          first_name: string
+          id: string
+          is_verified: boolean
+          last_name: string
+          profile_share_count: number
+          profile_views: number
+          role: string
+        }[]
+      }
+      get_user_role: { Args: { user_id?: string }; Returns: string }
+      is_admin: { Args: never; Returns: boolean }
+      is_current_user_admin: { Args: never; Returns: boolean }
+      safe_update_order_status: {
+        Args: { p_new_status: string; p_order_id: string }
+        Returns: undefined
+      }
+      sync_social_analytics: {
+        Args: { account_id: string }
+        Returns: undefined
+      }
+    }
+    Enums: {
+      app_role: "admin" | "influenceur" | "commercant"
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {
+      app_role: ["admin", "influenceur", "commercant"],
+    },
+  },
+} as const
