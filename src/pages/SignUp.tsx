@@ -27,7 +27,7 @@ const SignUp = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -51,7 +51,7 @@ const SignUp = () => {
   });
 
   const categories = [
-    "Tech & Gaming", "Mode & Lifestyle", "Beauté & Cosmétiques", 
+    "Tech & Gaming", "Mode & Lifestyle", "Beauté & Cosmétiques",
     "Food & Cooking", "Fitness & Sport", "Voyage & Aventure",
     "Art & Créativité", "Business & Finance", "Famille & Parentalité"
   ];
@@ -63,7 +63,7 @@ const SignUp = () => {
       ...prev,
       [name]: value,
     }));
-    
+
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -77,7 +77,7 @@ const SignUp = () => {
       ...prev,
       [name]: value,
     }));
-    
+
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -91,7 +91,7 @@ const SignUp = () => {
       ...prev,
       [name]: checked,
     }));
-    
+
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -101,7 +101,7 @@ const SignUp = () => {
   };
 
   const validateStep = (step: number) => {
-    const newErrors: {[key: string]: string} = {};
+    const newErrors: { [key: string]: string } = {};
 
     if (step === 1) {
       if (!formData.email.trim()) {
@@ -173,7 +173,7 @@ const SignUp = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateStep(3)) {
       return;
     }
@@ -182,7 +182,7 @@ const SignUp = () => {
 
     try {
       const userData: Record<string, string | boolean | undefined> = {
-        role: selectedRole === "influencer" ? "influenceur" : selectedRole === "admin" ? "admin" : "commercant"
+        role: selectedRole === "influencer" ? "influencer" : selectedRole === "admin" ? "admin" : "merchant"
       };
 
       if (selectedRole === "influencer") {
@@ -202,10 +202,10 @@ const SignUp = () => {
       }
 
       const { error } = await signUp(formData.email, formData.password, userData);
-      
+
       if (error) {
         const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
-        
+
         if (errorMessage.includes('User already registered') || errorMessage.includes('already registered')) {
           setErrors({ email: "Un compte avec cet email existe déjà" });
           toast.error("Un compte avec cet email existe déjà. Essayez de vous connecter.");
@@ -223,9 +223,9 @@ const SignUp = () => {
         setIsLoading(false);
         return;
       }
-      
+
       toast.success("Inscription réussie ! Redirection vers votre dashboard...");
-      
+
       // Redirection immédiate selon le rôle sans attendre la vérification email
       setTimeout(() => {
         if (selectedRole === "influencer") {
@@ -235,7 +235,7 @@ const SignUp = () => {
           window.location.href = "/merchant-dashboard";
         }
       }, 1000);
-      
+
     } catch (error) {
       logger.error('Unexpected signup error:', error);
       toast.error("Une erreur inattendue s'est produite. Veuillez réessayer.");
@@ -260,7 +260,7 @@ const SignUp = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-teal-50">
         <Header />
-        
+
         <div className="py-6 sm:py-12 px-4">
           <div className="container mx-auto max-w-2xl">
             <Card className="shadow-xl border-0 text-center">
@@ -288,7 +288,7 @@ const SignUp = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-teal-50">
       <Header />
-      
+
       <div className="py-6 sm:py-12 px-4">
         <div className="container mx-auto max-w-2xl">
           <div className="text-center mb-6 sm:mb-8">
@@ -388,7 +388,7 @@ const SignUp = () => {
                     <p className="text-sm text-gray-600 mb-4">
                       Vous pourrez connecter vos comptes plus tard depuis votre profil pour afficher vos statistiques automatiquement.
                     </p>
-                    
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <InputField
                         label="Instagram"
@@ -543,8 +543,8 @@ const SignUp = () => {
                     <Button variant="outline" onClick={prevStep} type="button">
                       Retour
                     </Button>
-                    <GradientButton 
-                      type="submit" 
+                    <GradientButton
+                      type="submit"
                       disabled={isLoading}
                     >
                       {isLoading ? (
