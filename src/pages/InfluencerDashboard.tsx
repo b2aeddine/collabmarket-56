@@ -9,7 +9,8 @@ import AddSocialNetworkModal from "@/components/AddSocialNetworkModal";
 import EditProfileModal from "@/components/EditProfileModal";
 import ProfileShareButton from "@/components/ProfileShareButton";
 import ProfileSettingsModal from "@/components/ProfileSettingsModal";
-import { Eye, ShoppingBag, Instagram, MessageCircle, Camera, Zap, Megaphone, Euro, MapPin, Settings } from "lucide-react";
+import { Eye, ShoppingBag, Instagram, MessageCircle, Camera, Zap, Megaphone, Euro, MapPin, Settings, User } from "lucide-react";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 import { SocialNetwork } from "@/types";
 import { Link, useSearchParams } from "react-router-dom";
@@ -47,7 +48,7 @@ const InfluencerDashboard = () => {
   useEffect(() => {
     const onboardingParam = searchParams.get('onboarding');
     const skipped = localStorage.getItem('stripe_onboarding_skipped');
-    
+
     if (onboardingParam === 'stripe') {
       setShowOnboardingModal(true);
     } else if (!skipped && accountStatus !== undefined) {
@@ -58,7 +59,7 @@ const InfluencerDashboard = () => {
       }
     }
   }, [searchParams, accountStatus]);
-  
+
   const createOfferMutation = useCreateOffer();
   const updateOfferMutation = useUpdateOffer();
   const deleteOfferMutation = useDeleteOffer();
@@ -117,7 +118,7 @@ const InfluencerDashboard = () => {
       case "snapchat": return (
         <div className="w-5 h-5 bg-yellow-400 rounded-lg flex items-center justify-center">
           <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12.206 2.024c-1.018 0-6.683.585-6.683 7.728 0 1.374.336 2.591.611 3.415-.317.132-.675.278-1.026.423-1.322.546-1.93 1.004-1.93 1.65 0 .697.644 1.278 1.415 1.278.212 0 .433-.042.664-.126.87-.322 1.576-.48 2.098-.48.284 0 .474.066.632.169-.349.679-1.09 2.148-3.167 2.802-.133.042-.197.13-.197.245 0 .228.28.413.56.413.076 0 .152-.013.226-.04 2.638-.914 3.694-2.871 4.094-3.679.136.007.274.011.414.011.138 0 .276-.004.412-.011.4.808 1.456 2.765 4.094 3.679.074.027.15.04.226.04.28 0 .56-.185.56-.413 0-.115-.064-.203-.197-.245-2.077-.654-2.818-2.123-3.167-2.802.158-.103.348-.169.632-.169.522 0 1.228.158 2.098.48.231.084.452.126.664.126.771 0 1.415-.581 1.415-1.278 0-.646-.608-1.104-1.93-1.65-.351-.145-.709-.291-1.026-.423.275-.824.611-2.041.611-3.415 0-7.143-5.665-7.728-6.683-7.728l-.081.001-.081-.001z"/>
+            <path d="M12.206 2.024c-1.018 0-6.683.585-6.683 7.728 0 1.374.336 2.591.611 3.415-.317.132-.675.278-1.026.423-1.322.546-1.93 1.004-1.93 1.65 0 .697.644 1.278 1.415 1.278.212 0 .433-.042.664-.126.87-.322 1.576-.48 2.098-.48.284 0 .474.066.632.169-.349.679-1.09 2.148-3.167 2.802-.133.042-.197.13-.197.245 0 .228.28.413.56.413.076 0 .152-.013.226-.04 2.638-.914 3.694-2.871 4.094-3.679.136.007.274.011.414.011.138 0 .276-.004.412-.011.4.808 1.456 2.765 4.094 3.679.074.027.15.04.226.04.28 0 .56-.185.56-.413 0-.115-.064-.203-.197-.245-2.077-.654-2.818-2.123-3.167-2.802.158-.103.348-.169.632-.169.522 0 1.228.158 2.098.48.231.084.452.126.664.126.771 0 1.415-.581 1.415-1.278 0-.646-.608-1.104-1.93-1.65-.351-.145-.709-.291-1.026-.423.275-.824.611-2.041.611-3.415 0-7.143-5.665-7.728-6.683-7.728l-.081.001-.081-.001z" />
           </svg>
         </div>
       );
@@ -144,7 +145,7 @@ const InfluencerDashboard = () => {
     try {
       // Validation des champs obligatoires
       if (!newOffer.type || !newOffer.price || !newOffer.platform) {
-      toast.error('Tous les champs obligatoires doivent être remplis (plateforme, type, prix)');
+        toast.error('Tous les champs obligatoires doivent être remplis (plateforme, type, prix)');
         return;
       }
 
@@ -159,7 +160,7 @@ const InfluencerDashboard = () => {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       });
-      
+
       toast.success("Offre créée avec succès !");
     } catch (_error) {
       toast.error("Erreur lors de la création de l'offre");
@@ -179,7 +180,7 @@ const InfluencerDashboard = () => {
           is_active: newActiveState,
         }
       });
-      
+
       toast.success(`Réseau social ${newActiveState ? 'activé' : 'désactivé'} avec succès !`);
     } catch (_error) {
       toast.error("Erreur lors de la modification du réseau social");
@@ -264,7 +265,7 @@ const InfluencerDashboard = () => {
       };
 
       const { error } = await updateProfile(updateData);
-      
+
       if (error) {
         toast.error("Erreur lors de la mise à jour du profil");
         return;
@@ -324,7 +325,7 @@ const InfluencerDashboard = () => {
     const titleParts = offer.title?.split(' - ') || [];
     const platform = titleParts[0]?.toLowerCase() || "instagram";
     const type = titleParts.slice(1).join(' - ') || offer.title;
-    
+
     return {
       id: offer.id,
       platform: platform,
@@ -357,7 +358,7 @@ const InfluencerDashboard = () => {
     <TooltipProvider>
       <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-teal-50">
         <Header />
-        
+
         <div className="py-6 sm:py-8 px-4">
           <div className="container mx-auto max-w-6xl">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
@@ -374,7 +375,7 @@ const InfluencerDashboard = () => {
                               {user?.first_name?.[0]}{user?.last_name?.[0]}
                             </AvatarFallback>
                           </Avatar>
-                          
+
                           {/* Bouton de partage à côté de la photo de profil */}
                           <div className="absolute -top-2 -right-2">
                             <ProfileShareButton
@@ -384,7 +385,7 @@ const InfluencerDashboard = () => {
                             />
                           </div>
                         </div>
-                        
+
                         <div className="mb-3 sm:mb-4">
                           <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-3">
                             {categoriesLoading ? (
@@ -393,8 +394,8 @@ const InfluencerDashboard = () => {
                               </Badge>
                             ) : profileCategories && profileCategories.length > 0 ? (
                               profileCategories.map((categoryItem: { id: string; categories?: { name: string } }) => (
-                                <Badge 
-                                  key={categoryItem.id} 
+                                <Badge
+                                  key={categoryItem.id}
                                   className="bg-gradient-to-r from-pink-500 to-orange-500 text-white text-xs"
                                 >
                                   {categoryItem.categories?.name || 'Catégorie inconnue'}
@@ -408,7 +409,7 @@ const InfluencerDashboard = () => {
                           </div>
 
                           <h2 className="text-xl font-bold mb-2">{user?.first_name} {user?.last_name}</h2>
-                          
+
                           <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-gray-600 mb-3">
                             <span className="text-sm">{user?.email}</span>
                             {user?.city && (
@@ -426,7 +427,7 @@ const InfluencerDashboard = () => {
                         </div>
 
                         <div className="space-y-3">
-                          <Button 
+                          <Button
                             onClick={() => setIsEditModalOpen(true)}
                             variant="outline"
                             className="w-full"
@@ -434,8 +435,8 @@ const InfluencerDashboard = () => {
                             <User className="w-4 h-4 mr-2" />
                             Modifier le profil
                           </Button>
-                          
-                          <Button 
+
+                          <Button
                             onClick={() => setIsSettingsModalOpen(true)}
                             variant="outline"
                             className="w-full"
@@ -447,7 +448,7 @@ const InfluencerDashboard = () => {
                       </div>
                     </CardContent>
                   </Card>
-                  
+
                   {/* Account Setup Section */}
                   <AccountSetupSection />
                 </div>
@@ -533,7 +534,7 @@ const InfluencerDashboard = () => {
                     {offersLoading ? (
                       <OffersSkeleton />
                     ) : (
-                      <OffersCarousel 
+                      <OffersCarousel
                         offers={userOffers}
                         onToggleActive={handleToggleOffer}
                         onDelete={handleDeleteOffer}
@@ -557,7 +558,7 @@ const InfluencerDashboard = () => {
                     {socialLinksLoading ? (
                       <SocialNetworksSkeleton />
                     ) : (
-                      <SocialNetworksCarousel 
+                      <SocialNetworksCarousel
                         networks={socialNetworks || []}
                         onToggleActive={(network) => handleUpdateNetwork({
                           ...network,
@@ -580,11 +581,11 @@ const InfluencerDashboard = () => {
 
         {/* Modals */}
         {userForModal && (
-          <EditProfileModal 
-            user={userForModal} 
-            onSave={handleSaveProfile} 
-            isOpen={isEditModalOpen} 
-            onClose={() => setIsEditModalOpen(false)} 
+          <EditProfileModal
+            user={userForModal}
+            onSave={handleSaveProfile}
+            isOpen={isEditModalOpen}
+            onClose={() => setIsEditModalOpen(false)}
           />
         )}
         <ProfileSettingsModal

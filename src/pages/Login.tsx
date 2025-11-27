@@ -17,7 +17,7 @@ const Login = () => {
   const { signIn, user, loading } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -26,16 +26,16 @@ const Login = () => {
   // Immediate redirect if user is logged in
   useEffect(() => {
     if (user && !loading) {
-      
+
       // Redirect to dashboard based on role
-      const redirectTo = user.role === 'admin' 
+      const redirectTo = user.role === 'admin'
         ? '/admin/dashboard'
         : user.role === 'influenceur'
-        ? '/influencer-dashboard'
-        : user.role === 'commercant'
-        ? '/merchant-dashboard'
-        : '/';
-      
+          ? '/influencer-dashboard'
+          : user.role === 'commercant'
+            ? '/merchant-dashboard'
+            : '/';
+
       navigate(redirectTo, { replace: true });
     }
   }, [user, loading, navigate]);
@@ -60,7 +60,7 @@ const Login = () => {
       ...prev,
       [name]: value,
     }));
-    
+
     // Effacer l'erreur quand l'utilisateur commence à taper
     if (errors[name]) {
       setErrors(prev => ({
@@ -71,7 +71,7 @@ const Login = () => {
   };
 
   const validateForm = () => {
-    const newErrors: {[key: string]: string} = {};
+    const newErrors: { [key: string]: string } = {};
 
     if (!formData.email.trim()) {
       newErrors.email = "L'email est requis";
@@ -89,7 +89,7 @@ const Login = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -99,25 +99,27 @@ const Login = () => {
     try {
       console.log('Attempting login with:', formData.email);
       const { error } = await signIn(formData.email, formData.password);
-      
+
       if (error) {
         console.error('Login error:', error);
-        
-        if (error.message.includes('Invalid login credentials') || error.message.includes('invalid_credentials')) {
+
+        const errorMessage = (error as { message?: string })?.message || 'Erreur inconnue';
+
+        if (errorMessage.includes('Invalid login credentials') || errorMessage.includes('invalid_credentials')) {
           setErrors({
             email: "Email ou mot de passe incorrect",
             password: "Email ou mot de passe incorrect"
           });
           toast.error("Email ou mot de passe incorrect");
-        } else if (error.message.includes('Email not confirmed') || error.message.includes('email_not_confirmed')) {
+        } else if (errorMessage.includes('Email not confirmed') || errorMessage.includes('email_not_confirmed')) {
           toast.error("Veuillez confirmer votre email avant de vous connecter");
         } else {
-          toast.error("Erreur de connexion: " + error.message);
+          toast.error("Erreur de connexion: " + errorMessage);
         }
       } else {
         console.log('Login successful, user should be updated soon');
         toast.success("Connexion réussie !");
-        
+
         // Forcer une redirection immédiate après connexion réussie
         // Récupérer la session pour obtenir le user_id et son rôle
         const { data: { session } } = await supabase.auth.getSession();
@@ -128,16 +130,16 @@ const Login = () => {
             .select('role')
             .eq('id', session.user.id)
             .single();
-            
+
           if (profile?.role) {
-            const redirectTo = profile.role === 'admin' 
+            const redirectTo = profile.role === 'admin'
               ? '/admin/dashboard'
               : profile.role === 'influenceur'
-              ? '/influencer-dashboard'
-              : profile.role === 'commercant'
-              ? '/merchant-dashboard'
-              : '/';
-            
+                ? '/influencer-dashboard'
+                : profile.role === 'commercant'
+                  ? '/merchant-dashboard'
+                  : '/';
+
             console.log('Redirecting immediately to:', redirectTo);
             navigate(redirectTo, { replace: true });
             return; // Sortir de la fonction pour éviter d'arrêter le loading
@@ -155,7 +157,7 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-teal-50">
       <Header />
-      
+
       <div className="py-6 sm:py-12 px-4">
         <div className="container mx-auto max-w-sm sm:max-w-md">
           <div className="text-center mb-6 sm:mb-8">
@@ -210,8 +212,8 @@ const Login = () => {
                 </div>
 
 
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   disabled={isLoading}
                   className="w-full bg-gradient-primary text-base sm:text-lg py-5 sm:py-6 hover:opacity-90 transition-all"
                 >

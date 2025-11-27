@@ -4,24 +4,25 @@
 export function getCorsHeaders(origin: string | null): HeadersInit {
   // Get allowed origins from environment variable
   const allowedOriginsEnv = Deno.env.get('ALLOWED_ORIGINS');
-  
+
   // Detect environment - default to development for Lovable previews
   const isLovablePreview = origin?.includes('lovable.app') || origin?.includes('lovable.dev');
   const isLocalhost = origin?.includes('localhost') || origin?.includes('127.0.0.1');
-  const isDevelopment = isLovablePreview || isLocalhost || Deno.env.get('ENVIRONMENT') === 'development';
-  
+  const isVercelDeployment = origin?.includes('.vercel.app');
+  const isDevelopment = isLovablePreview || isLocalhost || isVercelDeployment || Deno.env.get('ENVIRONMENT') === 'development';
+
   // For webhooks (no origin), be restrictive
   const isWebhook = !origin;
-  
+
   let allowedOrigin: string | null = null;
-  
+
   if (isWebhook) {
     // Webhooks don't have an origin - allow in dev, restrict in prod
     allowedOrigin = isDevelopment ? '*' : null;
   } else if (allowedOriginsEnv) {
     // Check if origin is in allowed list
     const origins = allowedOriginsEnv.split(',').map(o => o.trim()).filter(Boolean);
-    
+
     if (origins.includes(origin)) {
       allowedOrigin = origin;
     } else if (isDevelopment) {
@@ -45,7 +46,7 @@ export function getCorsHeaders(origin: string | null): HeadersInit {
       allowedOrigin = null;
     }
   }
-  
+
   // If no origin is allowed, return minimal headers (will cause CORS error)
   if (!allowedOrigin) {
     console.error('CORS blocked - no allowed origin found');
@@ -55,7 +56,7 @@ export function getCorsHeaders(origin: string | null): HeadersInit {
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     };
   }
-  
+
   return {
     'Access-Control-Allow-Origin': allowedOrigin,
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
